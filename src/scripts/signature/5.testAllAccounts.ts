@@ -7,7 +7,8 @@ import { Account, ec, RpcProvider, encode, typedData, Signature, stark, ArraySig
 import * as dotenv from "dotenv";
 import fs from "fs";
 import axios from "axios";
-import { account2BraavosTestnetAddress, account2BraavosTestnetPrivateKey, account7TestnetAddress, account7TestnetPrivateKey } from "../../A1priv/A1priv";
+import { account2BraavosTestnetAddress, account2BraavosTestnetPrivateKey, account3TestnetAddress, account3TestnetPrivateKey } from "../../A1priv/A1priv";
+import LogC from "../utils/logColors";
 dotenv.config();
 
 //    👇👇👇
@@ -18,21 +19,20 @@ async function createOZ():Promise<{OZaddr:string,OZpk:string}> {
     const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only for starknet-devnet-rs
     console.log("Provider connected to Starknet-devnet-rs");
 
-    // initialize existing predeployed account 0 of Devnet
+    // initialize existing pre-deployed account 0 of Devnet
     console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
-    console.log('OZ_ACCOUNT_PRIVATE_KEY=', process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY);
     const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
     const accountAddress0: string = process.env.OZ_ACCOUNT0_DEVNET_ADDRESS ?? "";
     const account0 = new Account(provider, accountAddress0, privateKey0);
     console.log("Account 0 connected.\n");
 
-    // new Open Zeppelin account v0.7.0 (Cairo 1) :
+    // new Open Zeppelin account v0.8.0 (Cairo 1) :
 
     // Generate public and private key pair.
     const privateKey = stark.randomAddress();
     // or for random private key :
     //const privateKey = stark.randomAddress();
-    console.log('New account :\nprivateKey=', privateKey);
+    console.log('New account OZ080 :\nprivateKey=', privateKey);
     const starkKeyPub = ec.starkCurve.getStarkKey(privateKey);
     console.log('publicKey=', starkKeyPub);
     //declare OZ wallet contract
@@ -66,7 +66,7 @@ async function createOZ():Promise<{OZaddr:string,OZpk:string}> {
         constructorCalldata: OZaccountConstructorCallData, 
         addressSalt: starkKeyPub 
     }, { maxFee: estimatedFee1*11n/10n });
-    //const { transaction_hash, contract_address } = await OZaccount.deployAccount({ classHash: OZaccountClashHass, constructorCalldata: OZaccountConstructorCallData, addressSalt: starkKeyPub }); // without estimateFee
+    //const { transaction_hash, contract_address } = await OZaccount.deployAccount({ classHash: OZaccountClashHash, constructorCalldata: OZaccountConstructorCallData, addressSalt: starkKeyPub }); // without estimateFee
     console.log('✅ New OpenZeppelin account created.\n   final address =', contract_address);
     await provider.waitForTransaction(transaction_hash);
     return {OZaddr:contract_address,OZpk:privateKey}
@@ -77,7 +77,7 @@ async function createAX():Promise<{AXaddr:string,AXpk:string}> {
     const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only for starknet-devnet-rs
     console.log("Provider connected to Starknet-devnet-rs");
 
-    // initialize existing predeployed account 0 of Devnet
+    // initialize existing pre-deployed account 0 of Devnet
     console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
     console.log('OZ_ACCOUNT_PRIVATE_KEY=', process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY);
     const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
@@ -123,27 +123,27 @@ async function createAX():Promise<{AXaddr:string,AXpk:string}> {
         contractAddress: accountAXAddress,
         addressSalt: starkKeyPubAX
     };
-    const { transaction_hash: AXdAth, contract_address: accountAXFinalAdress } = await accountAX.deployAccount(deployAccountPayload);
-    console.log("Final address =",accountAXFinalAdress);
+    const { transaction_hash: AXdAth, contract_address: accountAXFinalAddress } = await accountAX.deployAccount(deployAccountPayload);
+    console.log("Final address =",accountAXFinalAddress);
     await provider.waitForTransaction(AXdAth);
     console.log('✅ ArgentX wallet deployed.');
-    return {AXaddr:accountAXFinalAdress,AXpk:privateKeyAX}
+    return {AXaddr:accountAXFinalAddress,AXpk:privateKeyAX}
 }
 
 async function main() {
     //initialize Provider with DEVNET
     const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
     console.log("Provider connected");
-    const providerTestnet= new RpcProvider({ nodeUrl: "https://starknet-testnet.public.blastapi.io/rpc/v0.5" });
+    const providerTestnet= new RpcProvider({ nodeUrl: "https://starknet-testnet.public.blastapi.io/rpc/v0_6" });
 
-    // initialize existing predeployed account 0 of Devnet
+    // initialize existing pre-deployed account 0 of Devnet
     const privateKey0 = "0x71d7bb07b9a64f6f78ac4c816aff4da9";
     // const starkKeyPair0 = ec.getKeyPair(privateKey0);
     const accountAddress0 = "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691";
     console.log('OZ_ACCOUNT_ADDRESS=', accountAddress0);
     console.log('OZ_ACCOUNT_PRIVATE_KEY=', privateKey0);
     const account0 = new Account(provider, accountAddress0, privateKey0);
-    console.log('✅ OZ predeployed account 0 connected.');
+    console.log('✅ OZ pre-deployed account 0 connected.');
 
     // creation of message signature
     // const privateKey = stark.randomAddress();
@@ -151,13 +151,13 @@ async function main() {
     const starknetPublicKey = ec.starkCurve.getStarkKey(privateKey);
     const fullPubKey = encode.addHexPrefix(encode.buf2hex(ec.starkCurve.getPublicKey(privateKey, false))); // complete public key
     console.log("publicKey calculated =", starknetPublicKey, typeof (starknetPublicKey));
-    console.log('fullpubKey =', fullPubKey);
+    console.log('fullPubKey =', fullPubKey);
 
     //devnet
     const {OZaddr,OZpk}=await createOZ();
     const OZaccount=new Account(provider,OZaddr,OZpk);
     // const {AXaddr,AXpk}=await createAX();
-    const AXaccount=new Account(providerTestnet,account7TestnetAddress,account7TestnetPrivateKey);
+    const AXaccount=new Account(providerTestnet,account3TestnetAddress,account3TestnetPrivateKey);
     // testnet
     const {BRaddr,BRpk}={BRaddr:account2BraavosTestnetAddress,BRpk:account2BraavosTestnetPrivateKey}
     const BRaccount=new Account(providerTestnet,BRaddr,BRpk);
@@ -303,33 +303,50 @@ async function main() {
     console.log(" :>> ", res);
     console.log("Hash =", msgHash, "\nSignature =", signature0);
 
-    console.log("▶️ Verify Devnet-OZ050 (cairo 0):");
+    console.log(LogC.fg.blue,"▶️ Verify Devnet-OZ050 (cairo 0):",LogC.reset);
     const signatureOZ0: Signature = await account0.signMessage(typedMessage);
     const signatureOZ: Signature = await OZaccount.signMessage(typedMessage);
     const resOZ0 = await account0.verifyMessage(typedMessage, signatureOZ0);
     console.log("isValidSignature OZ050 with signature valid :",resOZ0);
-    const resOZ0wrong = await account0.verifyMessage(typedMessage, signatureOZ);
-    console.log("isValidSignature OZ050 with wrong signature :",resOZ0wrong);
+    try{
+        const resOZ0wrong = await account0.verifyMessage(typedMessage, signatureOZ);
+        console.log("isValidSignature OZ050 with wrong signature :",resOZ0wrong);
+    } catch (err) {
+        console.log("isValidSignature OZ050 with wrong signature : fail", err);
 
-    console.log("▶️ Verify Devnet-OZ080 :");
+    }
+
+    console.log(LogC.fg.blue,"▶️ Verify Devnet-OZ080 :",LogC.reset);
     const resOZ = await OZaccount.verifyMessage(typedMessage, signatureOZ);
     console.log("isValidSignature OZ080 with signature valid :",resOZ);
+    try{
     const resOZwrong = await OZaccount.verifyMessage(typedMessage, signature0);
     console.log("isValidSignature OZ080 with wrong signature :",resOZwrong);
+    }catch(err){
+    console.log("isValidSignature OZ080 with wrong signature : fail",err);
+    }
 
-    console.log("▶️ Verify Devnet-ArgentX :");
+    console.log(LogC.fg.blue,"▶️ Verify Devnet-ArgentX :",LogC.reset);
     const signatureAX: Signature = await AXaccount.signMessage(typedMessage);
     const resAX = await AXaccount.verifyMessage(typedMessage, signatureAX);
     console.log("isValidSignature AX with signature valid :",resAX);
+    try{
     const resAXwrong = await AXaccount.verifyMessage(typedMessage, signature0);
     console.log("isValidSignature AX with wrong signature :",resAXwrong);
+    }catch(err){
+    console.log("isValidSignature AX with wrong signature : fail",err);
+    }
 
-    console.log("▶️ Verify Devnet-Braavos :");
+    console.log(LogC.fg.blue,"▶️ Verify Devnet-Braavos :",LogC.reset);
     const signatureBR: Signature = await BRaccount.signMessage(typedMessage);
     const resBR = await BRaccount.verifyMessage(typedMessage, signatureBR);
     console.log("isValidSignature BR with signature valid :",resBR);
+    try{
     const resBRwrong = await BRaccount.verifyMessage(typedMessage, signature0);
     console.log("isValidSignature BR with wrong signature :",resBRwrong);
+    }catch(err){
+    console.log("isValidSignature BR with wrong signature : fail",err);
+    }
 
     console.log('✅ Test completed.');
 

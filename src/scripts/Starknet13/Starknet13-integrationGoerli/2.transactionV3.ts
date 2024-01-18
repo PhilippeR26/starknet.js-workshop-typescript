@@ -10,7 +10,6 @@
 import { constants, Contract, Account, json, shortString, RpcProvider, types, RPC, num, hash, CallData, cairo, ec } from "starknet";
 import fs from "fs";
 import { account1IntegrationGoerliAXaddress, account1IntegrationGoerliAXprivateKey, account5TestnetAddress, account5TestnetPrivateKey, goerliIntegrationUrl } from "../../../A1priv/A1priv";
-import { infuraKey, account4MainnetAddress, account4MainnetPrivateKey, blastKey } from "../../../A-MainPriv/mainPriv";
 import { account0OZSepoliaAddress, account0OZSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZaddress, account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
 import { ethAddress, strkAddress } from "../../utils/constants";
@@ -45,7 +44,7 @@ async function main() {
     const response = await axios.post(goerliIntegrationUrl.slice(0, 26) + "/rpc/pathfinder/v0.1", payload_Pathfinder);
 
     console.log('Version:', response.data);
-
+process.exit(5);
     // *** Devnet-rs 
     // const privateKey0 = "0x71d7bb07b9a64f6f78ac4c816aff4da9";
     // const accountAddress0: string = "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691";

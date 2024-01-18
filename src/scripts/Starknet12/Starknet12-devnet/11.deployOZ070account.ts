@@ -5,6 +5,8 @@
 import { constants, Provider, Contract, Account, json, shortString, RpcProvider, ec, CallData ,hash} from "starknet";
 import fs from "fs";
 import axios from "axios";
+import * as dotenv from "dotenv";
+dotenv.config();
 
 //          👇👇👇
 // 🚨🚨🚨   Launch 'starknet-devnet --seed 0 --cairo-compiler-manifest /D/Cairo1-dev/cairo/Cargo.toml' before using this script (with Cairo 2.2.0 fetched and built).
@@ -21,15 +23,17 @@ async function main() {
     const bl = await provider.getBlock('latest');
     console.log("Block =", bl.block_number);
 
-    // initialize existing predeployed account 0 of Devnet
-    const privateKey0 = "0xe3e70682c2094cac629f6fbed82c07cd";
-    const accountAddress0: string = "0x7e00d496e324876bbc8531f2d9a82bf154d1a04a50218ee74cdd372f75a551a";
+    // initialize existing pre-deployed account 0 of Devnet
+    console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
+    console.log('OZ_ACCOUNT_PRIVATE_KEY=', process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY);
+    const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
+    const accountAddress0: string = process.env.OZ_ACCOUNT0_DEVNET_ADDRESS ?? "";
     const account0 = new Account(provider, accountAddress0, privateKey0);
-    console.log('✅ Predeployed account connected\nOZ_ACCOUNT_ADDRESS=', account0.address);
+    console.log("Account 0 connected.\n In progress...");
 
     console.log("A")
-    const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo220/accountOZ070.sierra.json").toString("ascii"));
-    const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo220/accountOZ070.casm.json").toString("ascii"));
+    const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo220/openzeppelin070Account.sierra.json").toString("ascii"));
+    const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo220/openzeppelin070Account.casm.json").toString("ascii"));
 
 
     const privateKeyOZ = "0x987654321aabbccddeeff";

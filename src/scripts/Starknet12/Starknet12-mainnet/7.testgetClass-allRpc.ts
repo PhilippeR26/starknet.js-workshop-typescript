@@ -2,9 +2,9 @@
 // Launch with npx ts-node src/scripts/mainnet/7.testgetClass.ts
 // Coded with Starknet.js v5.14.1
 
-import { Provider, RpcProvider, Contract, Account, json, uint256, Abi, constants, shortString, CompiledContract, ContractClass, RPC, SequencerProvider, ContractClassResponse, stark, contractClassResponseToLegacyCompiledContract, LegacyCompiledContract, hash, num } from "starknet";
+import { Provider, RpcProvider, Contract, Account, json, uint256, Abi, constants, shortString, CompiledContract, ContractClass, RPC,  ContractClassResponse, stark, contractClassResponseToLegacyCompiledContract, LegacyCompiledContract, hash, num } from "starknet";
 import { alchemyKey, infuraKey, blastKey, lavaMainnetKey } from "../../../A-MainPriv/mainPriv";
-import { account4MainnetAddress, account4MainnetPrivateKey, junoNMmainnet } from "../../../A-MainPriv/mainPriv";
+import { account1MainnetAddress, account1MainnetPrivateKey, junoNMmainnet } from "../../../A-MainPriv/mainPriv";
 import { account2TestnetAddress, account2TestnetPrivateKey, junoNMtestnet } from "../../../A1priv/A1priv";
 import { resetDevnetNow } from "../../utils/resetDevnetFunc";
 import fs from "fs";
@@ -27,7 +27,7 @@ async function main() {
     // Public Lava node rpc for Mainnet : 
     const providerMainnetLavaPublic = new RpcProvider({ nodeUrl: "https://json-rpc.starknet-mainnet.public.lavanet.xyz" });
     // with your own local Pathfinder node, in your local network : 
-    const providerPathfinderMainnetRpcLocNetwork = new RpcProvider({ nodeUrl: "http://192.168.1.44:9545/rpc/v0.5" });
+    const providerPathfinderMainnetRpcLocNetwork = new RpcProvider({ nodeUrl: "http://192.168.1.7:9545/rpc/v0.5" });
     // with your own local Pathfinder node, in the same computer : 
     const providerPathfinderMainnetRpcLocComputer = new RpcProvider({ nodeUrl: "http://127.0.0.1:9545/rpc/v0.5" });
     // Nethermind Juno node rpc for Mainnet (only whitelisted access) :
@@ -38,9 +38,8 @@ async function main() {
     // with your own local Juno node, in the same computer : 
     const providerJunoMainnetRpcLocComputer = new RpcProvider({ nodeUrl: "http://127.0.0.1:6060/v0_5" });
     // with your own local Juno node rpc 0.5.1, in your local network : 
-    const providerJunoMainnetRpcLocNetwork = new RpcProvider({ nodeUrl: "http://192.168.1.44:6060/v0_5" });
-    // mainnet sequencer (soon deprecated) :
-    const providerMainnetSequencer = new SequencerProvider({ network: constants.NetworkName.SN_MAIN });
+    const providerJunoMainnetRpcLocNetwork = new RpcProvider({ nodeUrl: "http://192.168.1.7:6060/v0_5" });
+    
 
     // ******* GOERLI TESTNET ************
     // Alchemy node rpc 0.5.0 for Testnet (do not work today) :
@@ -59,11 +58,9 @@ async function main() {
     // Public Lava node rpc 0.4.0 for Testnet : 
     const providerTestnetLavaPublic = new RpcProvider({ nodeUrl: "https://json-rpc.starknet-testnet.public.lavanet.xyz" });
     // with your own local Pathfinder node, in your local network : 
-    const providerPathfinderTestnetRpcLocNetwork = new RpcProvider({ nodeUrl: 'http://192.168.1.44:9545/rpc/v0.5' });
+    const providerPathfinderTestnetRpcLocNetwork = new RpcProvider({ nodeUrl: 'http://192.168.1.7:9545/rpc/v0.5' });
     // with your own local Pathfinder node, in the same computer : 
     const providerPathfinderTestnetRpcLocComputer = new RpcProvider({ nodeUrl: 'http://127.0.0.1:9545/rpc/v0.5' });
-    // Testnet 1 sequencer (soon deprecated):
-    const providerTestnet = new SequencerProvider({ network: constants.NetworkName.SN_GOERLI });
 
     // ******* SEPOLIA TESTNET ********
     // Public Blast node rpc for Testnet : 
@@ -73,15 +70,13 @@ async function main() {
     const providerNethermindSepoliaTestnetPublic = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_5"});
     const providerNethermindSepoliaTestnetPublicV6 = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno"});
     // with your own local Pathfinder node, in your local network : 
-    const providerPathfinderSepoliaTestnetRpcLocNetwork = new RpcProvider({ nodeUrl: 'http://192.168.1.44:9545/rpc/v0.5' });
+    const providerPathfinderSepoliaTestnetRpcLocNetwork = new RpcProvider({ nodeUrl: 'http://192.168.1.7:9545/rpc/v0.5' });
 
     // ******* SEPOLIA INTEGRATION ********
 // with your own local Pathfinder node, in your local network : 
-const providerPathfinderSepoliaIntegrationRpcLocNetwork = new RpcProvider({ nodeUrl: 'http://192.168.1.44:9550/rpc/v0.5' });
+const providerPathfinderSepoliaIntegrationRpcLocNetwork = new RpcProvider({ nodeUrl: 'http://192.168.1.7:9550/rpc/v0.5' });
 
     // ******* DEVNETS ************
-    // Starknet-devnet sequencer :
-    const providerDevnetSequencer = new SequencerProvider({ baseUrl: "http://127.0.0.1:5050" });
     // Starknet-Devnet rpc & Starknet-devnet-rs:
     const providerDevnetRpc = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
     // Katana devnet, but needs today maxFee parameter as mandatory.

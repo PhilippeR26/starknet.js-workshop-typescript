@@ -1,6 +1,4 @@
 # ArgentX class hashes history
-source [here](https://argenthq.notion.site/argenthq/11e1b194b0304124b05f6118e450e553?v=46e893ed521f4850ba801d1747cc84ef)
-
 
 | version | class hash |
 | --- | --- |
@@ -11,5 +9,7 @@ source [here](https://argenthq.notion.site/argenthq/11e1b194b0304124b05f6118e450
 |v0.2.1|0x06a1776964b9f991c710bfe910b8b37578b32b26a7dffd1669a1a59ac94bf82f|
 |v0.2.0|0x07595b4f7d50010ceb00230d8b5656e3c3dd201b6df35d805d3f2988c69a1432|
 |v0.1.0|0x02c3348ad109f7f3967df6494b3c48741d61675d9a7915b265aa7101a631dc33|
+
+source [here](https://argenthq.notion.site/argenthq/11e1b194b0304124b05f6118e450e553?v=46e893ed521f4850ba801d1747cc84ef)
 
 Code Cairo : https://github.com/argentlabs/argent-contracts-starknet

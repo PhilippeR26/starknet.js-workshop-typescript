@@ -24,7 +24,6 @@ async function main() {
     const ch = await provider.getChainId();
     console.log(ch);
     console.log("chain Id =", shortString.decodeShortString(ch), ", rpc", await provider.getSpecVersion());
-    process.exit(5);
     const payload_Pathfinder = {
         jsonrpc: '2.0',
         id: 1,
@@ -41,11 +40,12 @@ async function main() {
     const response = await axios.post("http://192.168.1.44:9545/rpc/pathfinder/v0.1", payload_Pathfinder);
 
     console.log('Version:', response.data);
+    process.exit(5);
    
     // *** Devnet-rs 
     // const privateKey0 = "0x71d7bb07b9a64f6f78ac4c816aff4da9";
     // const accountAddress0: string = "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691";
-    // *** initialize existing Argent X Goerly Testnet  account
+    // *** initialize existing Argent X Goerli Testnet  account
     // const privateKey0 = account5TestnetPrivateKey;
     // const accountAddress0 = account5TestnetAddress
     // *** initialize existing Argent X mainnet  account
@@ -70,7 +70,7 @@ async function main() {
 
     const myTestContract = new Contract(compiledSierra.abi, contractAddress, provider);
     myTestContract.connect(account0);
-    //const { transaction_hash: txH } = await myTestContract.invoke("test_fail", [100], { maxFee: 1 * 10 ** 15,  }); // maxFee is necessary to avoid error during estimateFeee
+    //const { transaction_hash: txH } = await myTestContract.invoke("test_fail", [100], { maxFee: 1 * 10 ** 15,  }); // maxFee is necessary to avoid error during estimateFee
     const myCall=myTestContract.populate("test_fail",[100]);
     const { transaction_hash: txH } = await account0.execute(myCall,undefined,
         {

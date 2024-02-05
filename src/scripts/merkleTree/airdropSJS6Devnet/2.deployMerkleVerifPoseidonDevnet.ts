@@ -4,9 +4,9 @@
 
 import { Account, Call, Calldata, CallData, Contract, json, RPC, RpcProvider } from 'starknet';
 import fs from "fs";
+import { resetDevnetNow } from '../../utils/resetDevnetFunc';
 
 import * as dotenv from "dotenv";
-import { resetDevnetNow } from '../utils/resetDevnetFunc';
 dotenv.config();
 
 //    👇👇👇
@@ -24,7 +24,7 @@ async function main() {
     console.log('OZ_ACCOUNT_PRIVATE_KEY=', process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY);
     const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
     const accountAddress0: string = process.env.OZ_ACCOUNT0_DEVNET_ADDRESS ?? "";
-    const account0 = new Account(provider, accountAddress0, privateKey0, undefined, RPC.ETransactionVersion.V2);
+    const account0 = new Account(provider, accountAddress0, privateKey0);
     console.log("Account 0 connected.\n In progress...");
 
     // deploy ERC20
@@ -32,9 +32,9 @@ async function main() {
     const compiledCasmERC20 = json.parse(fs.readFileSync("compiledContracts/cairo220/erc20OZ070.casm.json").toString("ascii"));
     const myCallERC20 = new CallData(compiledSierraERC20.abi);
     const myConstructorERC20: Calldata = myCallERC20.compile("constructor", {
-        name: "SuperToken",
-        symbol: "STK",
-        initial_supply: 1000,
+        name: "Starknet.js-v6-celebration",
+        symbol: "SJS6",
+        initial_supply: 40000,
         recipient: account0.address,
 
     });
@@ -53,7 +53,8 @@ async function main() {
     const compiledSierraMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo240/merkle_verify_poseidon.sierra.json").toString("ascii"));
     const compiledCasmMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo240/merkle_verify_poseidon.casm.json").toString("ascii"));
     const myCallMerkleVerify = new CallData(compiledSierraMerkleVerify.abi);
-    const root = "0x4bad3f80e8041eb3d32432fa4aed9f904db8c8ab34109879a99da696a0c5a81"
+    //    👇👇👇 result of script 1
+    const root = "0x2f9e76ae7d7c98e94b848e7bfa684a6158e5f285654d336c9d6524b9ccf7c36"
     const myConstructorMerkleVerify: Calldata = myCallMerkleVerify.compile("constructor", {
           merkle_root: root,
     });
@@ -65,7 +66,7 @@ async function main() {
     
     const merkleAddress = deployResponse.deploy.contract_address;
     const merkleClassHash = deployResponse.declare.class_hash;
-    console.log("Airdrop contract :");
+    console.log("MerkleVerify contract :");
     console.log("class_hash =", merkleClassHash);
     console.log("address =", merkleAddress);
 

@@ -9,7 +9,7 @@
 
 import { constants, Contract, Account, json, shortString, RpcProvider, types, RPC, num, hash, CallData, cairo, ec } from "starknet";
 import fs from "fs";
-import { account1IntegrationGoerliAXaddress, account1IntegrationGoerliAXprivateKey, account2IntegrationGoerliOZ081address, account2IntegrationGoerliOZ081privateKey, account5TestnetAddress, account5TestnetPrivateKey, goerliIntegrationUrl } from "../../../A1priv/A1priv";
+import { account1IntegrationGoerliAXaddress, account1IntegrationGoerliAXprivateKey, account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account5TestnetAddress, account5TestnetPrivateKey, goerliIntegrationUrl } from "../../../A1priv/A1priv";
 import { account0OZSepoliaAddress, account0OZSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZaddress, account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
 import { ethAddress, strkAddress } from "../../utils/constants";
@@ -20,9 +20,9 @@ import axios from "axios";
 
 async function main() {
     // initialize Provider 
-    const provider = new RpcProvider({ nodeUrl: goerliIntegrationUrl });
+    // const provider = new RpcProvider({ nodeUrl: goerliIntegrationUrl });
     //const provider = new RpcProvider({ nodeUrl: 'https://starknet-testnet.blastapi.io/' + blastKey + "/rpc/v0_6" }); // Goerli Testnet
-    //const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_6" }); // local Sepolia Testnet node
+    const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_6" }); // local Sepolia Testnet node
     //const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9550/rpc/v0_6" }); // local Sepolia Integration node
     //const provider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" }); //v0.6.0
 
@@ -51,12 +51,9 @@ async function main() {
     // *** initialize existing Argent X Goerli Testnet  account
     // const privateKey0 = account5TestnetPrivateKey;
     // const accountAddress0 = account5TestnetAddress
-    // *** initialize existing Argent X Goerli integration  account
-    // const privateKey0 = account1IntegrationGoerliAXprivateKey;
-    // const accountAddress0 = account1IntegrationGoerliAXaddress;
-    // *** initialize existing OZ081 Goerli integration account
-    const accountAddress0 = account2IntegrationGoerliOZ081address;
-    const privateKey0 = account2IntegrationGoerliOZ081privateKey;
+    // *** initialize existing Argent X Goerli Testnet  account
+    const accountAddress0 = account1OZSepoliaAddress;
+    const privateKey0 = account1OZSepoliaPrivateKey;
     // *** initialize existing Argent X mainnet  account
     // const privateKey0 = account4MainnetPrivateKey;
     // const accountAddress0 = account4MainnetAddress
@@ -72,9 +69,9 @@ async function main() {
 
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo210/reject.sierra.json").toString("ascii"));
     // const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo210/reject.casm.json").toString("ascii"));
-    const contractAddress = "0x7688d6bd38fe908104c5fe9da9956d53e5a4dace48fd9c776b035bcda90ddf4"; // Goerli integration
+    // const contractAddress = "0x7688d6bd38fe908104c5fe9da9956d53e5a4dace48fd9c776b035bcda90ddf4"; // Goerli integration
     // const contractAddress = "0x01073c451258ff87d4e280fb00bc556767cdd464d14823f84fcbb8ba44895a34"; //Goerli Testnet
-    // const contractAddress = "0x37bfdeb9c262566183211b89e85b871518eb0c32cbcb026dce9a486560a03e0"; //Sepolia Testnet
+    const contractAddress = "0x37bfdeb9c262566183211b89e85b871518eb0c32cbcb026dce9a486560a03e0"; //Sepolia Testnet
     // const contractAddress = "0x33852427be21d24eca46797a31363597f52afcc315763ce32e83e5218eed2e3"; //Sepolia Integration
     // const contractAddress = "0x45861f05e9181dd99e107537a568a2786e5f59181787249db5278c2df5468f"; // devnet-rs
 
@@ -116,7 +113,7 @@ async function main() {
         }
     }
     );
-    console.log("authorized cost =", formatBalance(maxQtyGasAuthorized * maxPriceAuthorizeForOneGas, 18), "STRK");
+    console.log("authorized cost =", formatBalance(maxQtyGasAuthorized * maxPriceAuthorizeForOneGas, 18), "FRI");
 
     //const { transaction_hash: txH } = await myTestContract.test_fail(100);
     const txR = await provider.waitForTransaction(txH);

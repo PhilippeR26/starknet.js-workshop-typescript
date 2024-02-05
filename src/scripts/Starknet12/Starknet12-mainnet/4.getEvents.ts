@@ -7,7 +7,7 @@ import { DAIaddress, USDCaddress, ethAddress } from '../../utils/constants';
 
 async function main() {
 
-    const provider = new RpcProvider({ nodeUrl: "http://192.168.1.44:6060" }); // local network Juno Mainnet
+    const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:6060" }); // local network Juno Mainnet
     
     const keyFilter = [num.toHex(hash.starknetKeccak("Transfer"))]
     let block = await provider.getBlock('latest');

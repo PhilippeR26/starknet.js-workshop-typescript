@@ -2,7 +2,7 @@
 // use Starknet.js v5.16.0, starknet-devnet 0.5.5
 // launch with npx ts-node src/scripts/cairo11-devnet/4b.declareDeployHello.ts
 
-import { Provider, Account, Contract, json } from "starknet";
+import { Provider, Account, Contract, json, RpcProvider } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -14,14 +14,14 @@ dotenv.config();
 
 async function main() {
     //initialize Provider 
-    const provider = new Provider({ sequencer: { baseUrl: "http://127.0.0.1:5050" } });
+    const provider = new RpcProvider({  nodeUrl: "http://127.0.0.1:5050" } );
     console.log('✅ Connected to devnet.');
 
-    // initialize existing predeployed account 0 of Devnet
-    const privateKey = "0xe3e70682c2094cac629f6fbed82c07cd";
-    const accountAddress: string = "0x7e00d496e324876bbc8531f2d9a82bf154d1a04a50218ee74cdd372f75a551a";
+    // initialize existing pre-deployed account 0 of Devnet
+    const privateKey = "0x71d7bb07b9a64f6f78ac4c816aff4da9";
+    const accountAddress: string = "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691";
     const account0 = new Account(provider, accountAddress, privateKey);
-    console.log('✅ Predeployed account connected\nOZ_ACCOUNT_ADDRESS=', account0.address);
+    console.log('✅ Pre-deployed account connected\nOZ_ACCOUNT_ADDRESS=', account0.address);
     console.log('OZ_ACCOUNT_PRIVATE_KEY=', privateKey);
 
     // Declare & deploy Test contract in devnet

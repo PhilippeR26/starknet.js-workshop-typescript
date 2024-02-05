@@ -20,7 +20,7 @@ declare enum StarknetChainId {
 async function testProvider(providerUrl: string): Promise<string> {
     const provider = new RpcProvider({ nodeUrl: providerUrl });
     let chId: StarknetChainId;
-    let result: string = "*** " + providerUrl;
+    let result: string = LogC.fg.yellow+"*** " + providerUrl;
 
     try {
         chId = await provider.getChainId();
@@ -53,7 +53,7 @@ async function main() {
         constants.NetworkName.SN_GOERLI, // default Testnet
         constants.NetworkName.SN_MAIN, // default Testnet
 
-        //sepolia testnet
+        // ************** Sepolia testnet
         "https://starknet-sepolia.public.blastapi.io/rpc/v0.5",
         "https://starknet-sepolia.public.blastapi.io/rpc/v0_6",
         "https://free-rpc.nethermind.io/sepolia-juno",
@@ -61,7 +61,7 @@ async function main() {
         "https://free-rpc.nethermind.io/sepolia-juno/v0_6",
         "http://192.168.1.11:9545/rpc/v0.5",
         "http://192.168.1.11:9545/rpc/v0_6",
-        // goerli testnet
+        // ************** Goerli testnet
         "https://starknet-goerli.g.alchemy.com/v2/" + alchemyKey,
         "https://starknet-goerli.g.alchemy.com/starknet/version/rpc/v0.5/" + alchemyKey,
         "https://starknet-goerli.g.alchemy.com/starknet/version/rpc/v0_6/" + alchemyKey, // use 0.4.0
@@ -84,9 +84,11 @@ async function main() {
         'http://192.168.1.11:9545/rpc/v0.5', //pathfinder 0.10.3
         'http://192.168.1.11:9545/rpc/v0_5', //pathfinder 0.10.3
         'http://192.168.1.11:9545/rpc/v0_6', //pathfinder 0.10.3
-        // mainnet
+        // *************** Mainnet
         "https://starknet-mainnet.g.alchemy.com/v2/" + alchemyKey,
         "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.5/" + alchemyKey,
+        "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/" + alchemyKey,
+        "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_6/" + alchemyKey,
         "https://starknet-mainnet.infura.io/v3/" + infuraKey,
         'https://starknet-mainnet.infura.io/rpc/v0.5/' + infuraKey,
         "https://starknet-mainnet.blastapi.io/" + blastKey + "/rpc/v0.5",

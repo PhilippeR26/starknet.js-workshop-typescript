@@ -11,7 +11,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS1",
-            "program": "${workspaceFolder}/src/scripts/merkleTree/6.testAirdropPoseidonDevnet.ts",
+            "program": "${workspaceFolder}/src/scripts/calldata/1.decodeParameters.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

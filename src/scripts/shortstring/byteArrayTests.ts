@@ -22,13 +22,13 @@ async function main() {
 
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo240/string.sierra.json").toString("ascii"));
     const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo240/string.casm.json").toString("ascii"));
-    // const { deploy } = await account0.declareAndDeploy({
-    //     contract: compiledSierra,
-    //     casm: compiledCasm,
-    // });
-    // console.log("deployed at =",deploy.contract_address);
-    // const address=deploy.contract_address;
-    const address = "0x3e958cbf80a6eb96ef48f234ad83a2c5e5f05b6fd043581561d03ce1cbb73b4";
+    const { deploy } = await account0.declareAndDeploy({
+        contract: compiledSierra,
+        casm: compiledCasm,
+    });
+    console.log("deployed at =",deploy.contract_address);
+    const address=deploy.contract_address;
+    // const address = "0x3e958cbf80a6eb96ef48f234ad83a2c5e5f05b6fd043581561d03ce1cbb73b4";
 
     const stringContract = new Contract(compiledSierra.abi, address, account0);
 

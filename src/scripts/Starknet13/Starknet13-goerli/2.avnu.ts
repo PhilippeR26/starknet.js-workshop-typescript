@@ -1,8 +1,8 @@
 // Invoke JediSwap
 // launch with npx ts-node src/scripts/Starknet12/Starknet12-testnet/8.JediSwap.ts
-// Coded with Starknet.js v6.0.0 beta11
+// Coded with Starknet.js v6.0.0 beta13
 
-import { Account, json, RpcProvider, Contract, cairo, Uint256, num, uint256, shortString, Abi } from "starknet";
+import { Account, json, RpcProvider, Contract, cairo, Uint256, num, uint256, shortString, Abi, BigNumberish } from "starknet";
 import { account2TestnetAddress, account2TestnetPrivateKey } from "../../../A1priv/A1priv";
 import { DAIaddress, DAIaddressGoerli, ethAddress } from "../../utils/constants";
 import { blastKey } from "../../../A-MainPriv/mainPriv";
@@ -64,7 +64,7 @@ async function main() {
     const approveReceipt = await provider.waitForTransaction(res.transaction_hash);
 
     // perform the swap
-    
+
     // abi (Cairo 0) of the function :
     // "inputs": [
     // {
@@ -108,6 +108,43 @@ async function main() {
     const adminAddr = account0.address;
     const deadline = Math.floor(Date.now() / 1000) + 60 * 10;
     console.log("deadline =", deadline);
+
+
+    type Route = {
+        token_from: BigNumberish,
+        token_to: BigNumberish,
+        exchange_address: BigNumberish,
+        percent: BigNumberish,
+        additional_swap_params: BigNumberish[]
+    }
+    const route1: Route = {
+        token_from: "0x0123",
+        token_to: "0x0123",
+        exchange_address: "0x0123",
+        percent: 10,
+        additional_swap_params: [10, 25]
+    };
+    const route2: Route = {
+        token_from: "0x01a4",
+        token_to: "0x01a4",
+        exchange_address: "0x01a4",
+        percent: 90,
+        additional_swap_params: [11, 26]
+    };
+    const myCall0 = swapContract.populate("multi_route_swap", {
+        token_from_address: "0x34ea",
+        token_from_amount: 800,
+        token_to_address: "0x34ea",
+        token_to_amount: 500,
+        token_to_min_amount: 1000,
+        beneficiary: "0x34ea",
+        integrator_fee_amount_bps: 200,
+        integrator_fee_recipient: "0x34ea",
+        routes: [route1, route2]
+    })
+    const resp0 = await account0.execute(myCall0);
+    console.log("Tx hash =", resp0.transaction_hash);
+
 
     const myCall = swapContract.populate("swap_exact_tokens_for_tokens",
         {

@@ -7,7 +7,7 @@
     "devnet": "starknet-devnet --seed 0 2> /dev/null &",
     "fork2": "starknet-devnet --fork-network alpha-goerli2 2> /dev/null &",
     "stop-devnet": "pkill starknet-devnet || /bin/true",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node out/app.js",
     "prestart": "npm run build",
     "build": "tsc"
@@ -31,18 +31,22 @@
     "pako": "^2.1.0",
     "rpc-websockets": "^7.6.0",
     "rsv-signature": "^1.1.0",
-    "starknet": "6.0.0-beta.11",
+    "starknet": "6.0.0-beta.13",
     "starknet-merkle-tree": "^1.0.0",
     "web3-utils": "^4.0.2",
     "ws": "^8.14.2"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.23.9",
+    "@babel/preset-typescript": "^7.23.3",
     "@types/elliptic": "^6.4.14",
+    "@types/jest": "^29.5.11",
     "@types/node": "^20.4.0",
     "@types/pako": "^2.0.0",
     "@types/url-join": "^4.0.1",
     "@types/ws": "^8.5.5",
     "dotenv": "^16.3.1",
+    "ts-jest": "^29.1.2",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   }

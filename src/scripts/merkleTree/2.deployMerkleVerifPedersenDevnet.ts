@@ -1,12 +1,12 @@
-// Deploy a contract to verify a Pedersen Merkle tree
+// Declare/Deploy a contract to verify a Pedersen Merkle tree
 // Coded with Starknet.js v6.0.0-beta.11 and Starknet-devnet-rs (compatible rpc 0.6.0)
-// launch with npx ts-node src/scripts/merkleTree/2.deployMerkle.ts
+// launch with npx ts-node src/scripts/merkleTree/2.deployMerkleVerifPedersenDevnet.ts
 
 import { Account, Call, Calldata, CallData, Contract, json, RPC, RpcProvider } from 'starknet';
-import { resetDevnetNow } from '../utils/resetDevnetFunc';
-
 import fs from "fs";
+
 import * as dotenv from "dotenv";
+import { resetDevnetNow } from '../utils/resetDevnetFunc';
 dotenv.config();
 
 //    👇👇👇
@@ -49,36 +49,26 @@ async function main() {
     console.log("class_hash =", erc20ClassHash);
     console.log("address =", erc20Address);
 
-    // deploy Airdrop
-    const compiledSierraAirdrop = json.parse(fs.readFileSync("compiledContracts/cairo240/merkle_verify_pedersen.sierra.json").toString("ascii"));
-    const compiledCasmAirdrop = json.parse(fs.readFileSync("compiledContracts/cairo240/merkle_verify_pedersen.casm.json").toString("ascii"));
-    const myCallAirdrop = new CallData(compiledSierraAirdrop.abi);
+    // deploy MerkleVerify
+    const compiledSierraMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo240/merkle_verify_pedersen.sierra.json").toString("ascii"));
+    const compiledCasmMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo240/merkle_verify_pedersen.casm.json").toString("ascii"));
+    const myCallMerkleVerify = new CallData(compiledSierraMerkleVerify.abi);
     const root = "0x22f696d3dd16ed893c66899f07ff4d5eacb70416c02b50fd3b53378105d60bc"
-    const myConstructorAirdrop: Calldata = myCallAirdrop.compile("constructor", {
-        erc20_address: erc20Address,
-        start_time: 1704811578,
-        merkle_root: root,
+    const myConstructorMerkleVerify: Calldata = myCallMerkleVerify.compile("constructor", {
+          merkle_root: root,
     });
     const deployResponse = await account0.declareAndDeploy({
-        contract: compiledSierraAirdrop,
-        casm: compiledCasmAirdrop,
-        constructorCalldata: myConstructorAirdrop
+        contract: compiledSierraMerkleVerify,
+        casm: compiledCasmMerkleVerify,
+        constructorCalldata: myConstructorMerkleVerify
     });
-    const airdropAddress = deployResponse.deploy.contract_address;
-    const airdropClassHash = deployResponse.declare.class_hash;
+    
+    const merkleAddress = deployResponse.deploy.contract_address;
+    const merkleClassHash = deployResponse.declare.class_hash;
     console.log("Airdrop contract :");
-    console.log("class_hash =", airdropClassHash);
-    console.log("address =", airdropAddress);
+    console.log("class_hash =", merkleClassHash);
+    console.log("address =", merkleAddress);
 
-    // authorize the Airdrop contract to transfer some tokens
-    const erc20Contract = new Contract(compiledSierraERC20.abi, erc20Address, account0);
-    const authorize: Call = erc20Contract.populate("approve", {
-        spender: airdropAddress,
-        amount: 500
-    });
-    const tx = await account0.execute(authorize);
-    const txR = await provider.waitForTransaction(tx.transaction_hash);
-    console.log("authorize =",txR.execution_status);
     console.log("✅ test completed.");
 }
 main()

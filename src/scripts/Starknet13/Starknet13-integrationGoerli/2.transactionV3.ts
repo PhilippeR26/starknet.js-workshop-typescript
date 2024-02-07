@@ -66,7 +66,7 @@ async function main() {
     // *** initialize existing Sepolia Integration account
     // const privateKey0 = account1IntegrationOZprivateKey;
     // const accountAddress0 = account1IntegrationOZaddress;
-    const account0 = new Account(provider, accountAddress0, privateKey0, undefined, constants.TRANSACTION_VERSION.V3);
+    const account0 = new Account(provider, accountAddress0, privateKey0, undefined, constants.TRANSACTION_VERSION.V2);
     console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
     console.log('existing account connected.\n');
 
@@ -93,7 +93,7 @@ async function main() {
     //const { transaction_hash: txH } = await myTestContract.invoke("test_fail", [100], { maxFee: 1 * 10 ** 15,  }); // maxFee is necessary to avoid error during estimateFee
     const myCall = myTestContract.populate("test_fail", [100]);
     const maxQtyGasAuthorized = 1800n; // max quantity of gas authorized
-    const maxPriceAuthorizeForOneGas = 12n * 10n ** 9n; // max FRI authorized to pay 1 gas
+    const maxPriceAuthorizeForOneGas = 19n * 10n ** 9n; // max FRI authorized to pay 1 gas
 
     const fee = await account0.estimateInvokeFee(myCall);
     console.log("Invoke fee=", fee);

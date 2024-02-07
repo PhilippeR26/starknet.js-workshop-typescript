@@ -67,7 +67,7 @@ async function main() {
         merkle_address: MERKLE_VERIF_ADDRESS,
         erc20_owner: account0.address,
         start_time: 0, // no date of airdrop start
-        consolation_remaining: 2,
+        consolation_remaining: 200,
     });
     const deployResponse = await account0.declareAndDeploy({
         contract: compiledSierraAirdrop,

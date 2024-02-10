@@ -36,10 +36,10 @@ async function main() {
     console.log('publicKey=', starkKeyPub);
     //declare OZ wallet contract
     const compiledOZAccount = json.parse(
-        fs.readFileSync("./compiledContracts/cairo231/openzeppelin080Account.sierra.json").toString("ascii")
+        fs.readFileSync("./compiledContracts/cairo241/accountOZ081.sierra.json").toString("ascii")
     );
     const casmOZAccount = json.parse(
-        fs.readFileSync("./compiledContracts/cairo231/openzeppelin080Account.casm.json").toString("ascii")
+        fs.readFileSync("./compiledContracts/cairo241/accountOZ081.casm.json").toString("ascii")
     );
     const { transaction_hash: declTH, class_hash: decClassHash } = await account0.declareIfNot({ contract: compiledOZAccount, casm: casmOZAccount });
     console.log('OpenZeppelin account class hash =', decClassHash);

@@ -25,8 +25,8 @@ async function main() {
     const account0 = new Account(provider, accountAddress0, privateKey0);
     console.log("Account 0 connected.\n");
     
-    const accountAXsierra = json.parse(fs.readFileSync("./compiledContracts/cairo200/ArgentXaccount030.sierra.json").toString("ascii"));
-    const accountAXcasm = json.parse(fs.readFileSync("./compiledContracts/cairo200/ArgentXaccount030.casm.json").toString("ascii"));
+    const accountAXsierra = json.parse(fs.readFileSync("./compiledContracts/cairo243/ArgentXAccount031.sierra.json").toString("ascii"));
+    const accountAXcasm = json.parse(fs.readFileSync("./compiledContracts/cairo243/ArgentXAccount031.casm.json").toString("ascii"));
     const ch=hash.computeContractClassHash(accountAXsierra);
     console.log("Class Hash of ArgentX contract =",ch);
     
@@ -38,7 +38,7 @@ async function main() {
     
     // declare
     const respDecl=await account0.declare({contract:accountAXsierra,casm:accountAXcasm});
-    const contractAXclassHash = "0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003";
+    const contractAXclassHash = "0x029927c8af6bccf3f6fda035981e765a7bdbf18a2dc0d630494f8758aa908e2b";
     //const contractAXclassHash=respDecl.class_hash;
     await provider.waitForTransaction(respDecl.transaction_hash);
     console.log("ArgentX Cairo 1 contract declared")

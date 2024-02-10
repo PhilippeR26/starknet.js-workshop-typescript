@@ -24,7 +24,7 @@ async function main() {
     const account0 = new Account(provider, accountAddress0, privateKey0);
     console.log("Account 0 connected.\n");
 
-    // my customized account, with administrators :
+    // my customized Cairo 0 account, with administrators :
 
     // Generate public and private key pair.
     const AAprivateKey = process.env.AA_NEW_ACCOUNT_PRIVKEY ?? "";

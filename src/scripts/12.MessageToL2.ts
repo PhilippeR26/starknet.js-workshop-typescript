@@ -1,5 +1,5 @@
 // Connect a predeployed OZ account in devnet. 
-// address and PrivKey are displayed when lanching starknet-devnet, and have been  stored in .env file.
+// address and PrivKey are displayed when launching starknet-devnet, and have been  stored in .env file.
 // launch with npx ts-node src/scripts/12.MessageToL2.ts
 // Coded with Starknet.js v5.16.0, Starknet-devnet-rs v0.1.0
 

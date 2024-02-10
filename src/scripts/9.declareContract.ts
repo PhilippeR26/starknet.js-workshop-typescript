@@ -23,10 +23,11 @@ async function main() {
     const account0 = new Account(provider, accountAddress0, privateKey0);
     console.log("Account 0 connected.\n");
     // Declare Test contract in devnet
-    const compiledTest = json.parse(fs.readFileSync("./compiledContracts/cairo060/test.json").toString("ascii"));
-    const { suggestedMaxFee: fee1 } = await account0.estimateDeclareFee({ contract: compiledTest });
+    const testSierra = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.sierra.json").toString("ascii"));
+    const testCasm = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.casm.json").toString("ascii"));
+    const { suggestedMaxFee: fee1 } = await account0.estimateDeclareFee({ contract: testSierra, casm: testCasm });
     console.log("suggestedMaxFee =", fee1.toString(), "wei");
-    const declareResponse = await account0.declare({ contract: compiledTest }, { maxFee: fee1 * 11n / 10n });
+    const declareResponse = await account0.declare({ contract: testSierra, casm: testCasm }, { maxFee: fee1 * 11n / 10n });
 
     console.log('Test Contract Class Hash =', declareResponse.class_hash);
     await provider.waitForTransaction(declareResponse.transaction_hash);

@@ -10,13 +10,13 @@ dotenv.config();
 
 //          👇👇👇
 // 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet-rs directory before using this script
-//          Launch also the script for deployement of Test (script5).
+//          Before execution, launch the script for deployment of Test (script 4 or 5).
 //          👆👆👆
 async function main() {
     const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only for starknet-devnet-rs
     console.log("Provider connected to Starknet-devnet-rs");
 
-    // initialize existing predeployed account 0 of Devnet
+    // initialize existing predeployed account 0 of Devnet-rs
     console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
     console.log('OZ_ACCOUNT_PRIVATE_KEY=', process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY);
     const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
@@ -24,26 +24,27 @@ async function main() {
     const account0 = new Account(provider, accountAddress0, privateKey0);
     console.log("Account 0 connected.\n");
 
-    // Connect the deployed Test instance in devnet
-    const testAddress = "0x1e90aef7a2d5489f2f3707aae854c77e27f16dee6d34339eb93d18451c317c6"; // modify in accordance with result of script 5
-    const compiledTest = json.parse(fs.readFileSync("./compiledContracts/cairo060/test.json").toString("ascii"));
+    // Connect the deployed Test instance in devnet-rs
+    //          👇👇👇
+    // 🚨🚨🚨 modify in accordance with result of script 5
+    const testAddress = "0x2a843f4719d17b03be9fcdaa8d97e96f869e904fc68a271bf178e64ec155554";
+    const compiledTest = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.sierra.json").toString("ascii"));
     const myTestContract = new Contract(compiledTest.abi, testAddress, provider);
     console.log('Test Contract connected at =', myTestContract.address);
 
     // Interactions with the contract with call & invoke
     myTestContract.connect(account0);
-    const { res } = await myTestContract.get_balance();
+    const  bal1  = await myTestContract.get_balance();
     const bal1b = await myTestContract.call("get_balance");
-    console.log("Initial balance =", res);
-    console.log("Initial balance =", res.toString());
-    // console.log("Initial balance =", bal1b.res.toString());
+    console.log("Initial balance =", bal1);
+    console.log("Initial balance =", bal1b);
     // estimate fee
-    const { suggestedMaxFee: estimatedFee1 } = await account0.estimateInvokeFee({ contractAddress: testAddress, entrypoint: "increase_balance", calldata: ["10", "30"] });
+    const { suggestedMaxFee: estimatedFee1 } = await account0.estimateInvokeFee({ contractAddress: testAddress, entrypoint: "increase_counter", calldata: [10] });
 
-    const resu = await myTestContract.invoke("increase_balance", [10, 30]);
+    const resu = await myTestContract.invoke("increase_counter", [10]);
     await provider.waitForTransaction(resu.transaction_hash);
     const bal2 = await myTestContract.get_balance();
-    console.log("Final balance =", bal2.res.toString());
+    console.log("Final balance =", bal2);
     console.log('✅ Test completed.');
 }
 main()

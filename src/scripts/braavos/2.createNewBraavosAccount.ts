@@ -2,7 +2,7 @@
 // use Starknet.js v5.11.1, starknet-devnet 0.5.2
 // launch with npx ts-node src/scripts/braavos/2.createNewBraavosAccount.ts
 
-import { Provider, Account, num } from "starknet";
+import { Provider, Account, num, RpcProvider } from "starknet";
 import { calculateAddressBraavos, deployBraavosAccount, estimateBraavosAccountDeployFee } from "./3a.deployBraavos";
 import { account3BraavosTestnetAddress, account3BraavosTestnetPrivateKey } from "../../A1priv/A1priv";
 import axios from "axios";
@@ -16,7 +16,7 @@ async function main() {
     //          👆👆👆
 
     //initialize Provider 
-    const providerDevnet = new Provider({ sequencer: { baseUrl: "http://127.0.0.1:5050" } });
+    const providerDevnet = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050"  });
 
     const privateKeyAccount0 = "0xe3e70682c2094cac629f6fbed82c07cd";
     const account0Address: string = "0x7e00d496e324876bbc8531f2d9a82bf154d1a04a50218ee74cdd372f75a551a";

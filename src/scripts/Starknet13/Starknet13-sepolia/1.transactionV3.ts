@@ -16,14 +16,12 @@ async function main() {
     // initialize Provider 
     //const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only starknet-devnet-rs
     //const provider = new RpcProvider({ nodeUrl: 'https://starknet-testnet.blastapi.io/' + blastKey + "/rpc/v0_6" }); // Goerli Testnet
-    const provider = new RpcProvider({ nodeUrl: "http://192.168.1.44:9545/rpc/v0_6" }); // local Sepolia Testnet node
+    const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_6" }); // local Sepolia Testnet node
     //const provider = new RpcProvider({ nodeUrl: "http://192.168.1.44:9550/rpc/v0_6" }); // local Sepolia Integration node
     //const provider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" }); //v0.6.0
 
     // Check that communication with provider is OK
-    const ch = await provider.getChainId();
-    console.log(ch);
-    console.log("chain Id =", shortString.decodeShortString(ch), ", rpc", await provider.getSpecVersion());
+    console.log("chain Id =", shortString.decodeShortString(await provider.getChainId()), ", rpc", await provider.getSpecVersion());
     const payload_Pathfinder = {
         jsonrpc: '2.0',
         id: 1,

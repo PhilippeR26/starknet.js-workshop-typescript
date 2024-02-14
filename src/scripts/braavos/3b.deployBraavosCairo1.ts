@@ -1,4 +1,4 @@
-// Collection of functions for Braavos account (Cairo 0) creation
+// Collection of functions for Braavos account (Cairo 1) creation
 // coded with Starknet.js v6.0.0
 
 import { ec, hash, num, constants, Provider, CallData, stark, BigNumberish, type RpcProvider, RPC, type V2InvocationsSignerDetails, } from "starknet";

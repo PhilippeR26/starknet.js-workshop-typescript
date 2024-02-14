@@ -32,9 +32,9 @@
     "rpc-websockets": "^7.6.0",
     "rsv-signature": "^1.1.0",
     "starknet": "^6.0.0",
-    "starknet-merkle-tree": "^1.0.0",
+    "starknet-merkle-tree": "^1.0.2",
     "web3-utils": "^4.0.2",
-    "ws": "^8.14.2"
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.23.9",
@@ -48,6 +48,6 @@
     "dotenv": "^16.3.1",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.3.3"
   }
 }

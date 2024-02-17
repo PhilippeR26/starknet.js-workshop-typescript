@@ -10,8 +10,9 @@ const BraavosAccountClassHash1 = "0x2c2b8f559e1221468140ad7b2352b1acvv5be32660d0
 const BraavosAccountClassHash = "0x0105c0cf7aadb6605c9538199797920884694b5ce84fc68f92c832b0c9f57ad9"; // 27/aug/2023, will probably change over time
 
 export function getBraavosSignature(
-    BraavosProxyAddress: num.BigNumberish,
-    BraavosProxyConstructorCallData: Calldata,
+    BraavosAddress: BigNumberish,
+    classHash: BigNumberish,
+    BraavosConstructorCallData: Calldata,
     starkKeyPubBraavos: num.BigNumberish,
     version: `${RPC.ETransactionVersion2}`,
     max_fee: num.BigNumberish,
@@ -21,66 +22,67 @@ export function getBraavosSignature(
 ): string[] {
     const txnHash = hash.calculateDeployAccountTransactionHash(
         {
-            contractAddress: BraavosProxyAddress,
-            classHash: BraavosProxyClassHash,
-            constructorCalldata: BraavosProxyConstructorCallData,
+            contractAddress: BraavosAddress,
+            classHash: classHash,
+            constructorCalldata: BraavosConstructorCallData,
             salt: starkKeyPubBraavos,
             version: RPC.ETransactionVersion2.V1,
-            maxFee:max_fee,
+            maxFee: max_fee,
             chainId,
             nonce
         }
     );
     console.log("inputHash =\n",
-        BraavosProxyAddress,
-        BraavosProxyClassHash,
-        BraavosProxyConstructorCallData,
+        BraavosAddress,
+        classHash,
+        BraavosConstructorCallData,
         starkKeyPubBraavos,
         version,
         max_fee,
         chainId,
         nonce
     )
-    console.log("MshHash =",txnHash);
+    console.log("MshHash =", txnHash);
 
     const parsedOtherSigner = [0, 0, 0, 0, 0, 0, 0];
     const { r, s } = ec.starkCurve.sign(
         hash.computeHashOnElements([
             txnHash,
-            BraavosAccountClassHash,
+            classHash,
             ...parsedOtherSigner,
         ]),
         num.toHex(privateKeyBraavos),
     );
-    const signature = [r.toString(), s.toString(), BraavosAccountClassHash.toString(), ...parsedOtherSigner.map(e => e.toString())];
+    const signature = [r.toString(), s.toString(), classHash.toString(), ...parsedOtherSigner.map(e => e.toString())];
     console.log("signature =", signature);
     return signature
 }
 
 const calcBraavosInit = (starkKeyPubBraavos: string) => CallData.compile({ public_key: starkKeyPubBraavos });
-const BraavosProxyConstructor = (BraavosInitializer: Calldata) => CallData.compile({
-    implementation_address: BraavosInitialClassHash,
-    initializer_selector: hash.getSelectorFromName("initializer"),
-    calldata: [...BraavosInitializer,]
-});
+// const BraavosProxyConstructor = (BraavosInitializer: Calldata) => CallData.compile({
+//     implementation_address: BraavosInitialClassHash,
+//     initializer_selector: hash.getSelectorFromName("initializer"),
+//     calldata: [...BraavosInitializer,]
+// });
 
 export function calculateAddressBraavos(
-    privateKeyBraavos: num.BigNumberish,
+    privateKeyBraavos: BigNumberish,
+    classHash: BigNumberish
 ): string {
     const starkKeyPubBraavos = ec.starkCurve.getStarkKey(num.toHex(privateKeyBraavos));
-    const BraavosInitializer: Calldata = calcBraavosInit(starkKeyPubBraavos);
-    const BraavosProxyConstructorCallData = BraavosProxyConstructor(BraavosInitializer);
+
+    const BraavosConstructorCallData = CallData.compile([starkKeyPubBraavos]);
 
     return hash.calculateContractAddressFromHash(
         starkKeyPubBraavos,
-        BraavosProxyClassHash,
-        BraavosProxyConstructorCallData,
+        classHash,
+        BraavosConstructorCallData,
         0);
 
 }
 
 async function buildBraavosAccountDeployPayload(
-    privateKeyBraavos: num.BigNumberish,
+    privateKeyBraavos: BigNumberish,
     {
         classHash,
         addressSalt,
@@ -92,10 +94,11 @@ async function buildBraavosAccountDeployPayload(
     const compiledCalldata = CallData.compile(constructorCalldata ?? []);
     const contractAddress =
         providedContractAddress ??
-        calculateAddressBraavos(privateKeyBraavos);
+        calculateAddressBraavos(privateKeyBraavos, classHash);
     const starkKeyPubBraavos = ec.starkCurve.getStarkKey(num.toHex(privateKeyBraavos));
     const signature = getBraavosSignature(
         contractAddress,
+        classHash,
         compiledCalldata,
         starkKeyPubBraavos,
         version,
@@ -115,30 +118,32 @@ async function buildBraavosAccountDeployPayload(
 export async function estimateBraavosAccountDeployFee(
     privateKeyBraavos: num.BigNumberish,
     provider: RpcProvider,
+    classHash: BigNumberish,
     { blockIdentifier, skipValidate }: EstimateFeeDetails = {}
 ): Promise<bigint> {
     const version = RPC.ETransactionVersion2.F1;
     const nonce = constants.ZERO;
     const chainId = await provider.getChainId();
-    const cairoVersion: CairoVersion = "0";
+    const cairoVersion: CairoVersion = "1";
     const starkKeyPubBraavos = ec.starkCurve.getStarkKey(num.toHex(privateKeyBraavos));
-    const BraavosProxyAddress = calculateAddressBraavos(privateKeyBraavos);
-    const BraavosInitializer = calcBraavosInit(starkKeyPubBraavos);
-    const BraavosProxyConstructorCallData = BraavosProxyConstructor(BraavosInitializer);
+    const BraavosAddress = calculateAddressBraavos(privateKeyBraavos, classHash);
+    // const BraavosInitializer = calcBraavosInit(starkKeyPubBraavos);
+    // const BraavosProxyConstructorCallData = BraavosProxyConstructor(BraavosInitializer);
+    const BraavosConstructorCallData = CallData.compile([starkKeyPubBraavos]);
 
     const payload = await buildBraavosAccountDeployPayload(
         privateKeyBraavos,
         {
-            classHash: BraavosProxyClassHash.toString(),
+            classHash: classHash.toString(),
             addressSalt: starkKeyPubBraavos,
-            constructorCalldata: BraavosProxyConstructorCallData,
-            contractAddress: BraavosProxyAddress
+            constructorCalldata: BraavosConstructorCallData,
+            contractAddress: BraavosAddress
         },
         {
             nonce,
             chainId,
             version,
-            walletAddress: BraavosProxyAddress,
+            walletAddress: BraavosAddress,
             maxFee: constants.ZERO,
             cairoVersion: cairoVersion,
         }
@@ -156,21 +161,24 @@ export async function estimateBraavosAccountDeployFee(
 }
 
 export async function deployBraavosAccount(
-    privateKeyBraavos: num.BigNumberish,
+    privateKeyBraavos: BigNumberish,
     provider: RpcProvider,
+    classHash: BigNumberish,
     max_fee?: num.BigNumberish,
 ): Promise<DeployContractResponse> {
     const nonce = constants.ZERO;
     const starkKeyPubBraavos = ec.starkCurve.getStarkKey(num.toHex(privateKeyBraavos));
     console.log("pubkey =", starkKeyPubBraavos.toString())
-    const BraavosProxyAddress = calculateAddressBraavos(privateKeyBraavos);
+    const BraavosProxyAddress = calculateAddressBraavos(privateKeyBraavos, classHash);
     const BraavosInitializer = calcBraavosInit(starkKeyPubBraavos);
-    const BraavosProxyConstructorCallData = BraavosProxyConstructor(BraavosInitializer);
-    console.log("proxy constructor =",BraavosProxyConstructorCallData);
-    max_fee ??= await estimateBraavosAccountDeployFee(privateKeyBraavos, provider);
+    // const BraavosProxyConstructorCallData = BraavosProxyConstructor(BraavosInitializer);
+    const BraavosProxyConstructorCallData = CallData.compile([BraavosInitializer]);
+    console.log("proxy constructor =", BraavosProxyConstructorCallData);
+    max_fee ??= await estimateBraavosAccountDeployFee(privateKeyBraavos, provider, classHash);
     const version = RPC.ETransactionVersion2.V1;
     const signatureBraavos = getBraavosSignature(
         BraavosProxyAddress,
+        classHash,
         BraavosProxyConstructorCallData,
         starkKeyPubBraavos,
         version,
@@ -182,7 +190,7 @@ export async function deployBraavosAccount(
 
     return provider.deployAccountContract(
         {
-            classHash: BraavosProxyClassHash.toString(),
+            classHash: classHash.toString(),
             addressSalt: starkKeyPubBraavos,
             constructorCalldata: BraavosProxyConstructorCallData,
             signature: signatureBraavos

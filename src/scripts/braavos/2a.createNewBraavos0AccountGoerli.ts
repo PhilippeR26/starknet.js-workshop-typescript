@@ -1,6 +1,6 @@
 // Deploy a new braavos account (Cairo 0) in Goerli Testnet.
 // use Starknet.js v6.0.0, Goerli testnet
-// launch with npx ts-node src/scripts/braavos/2a.createNewBraavosAccountGoerli.ts
+// launch with npx ts-node src/scripts/braavos/2a.createNewBraavos0AccountGoerli.ts
 
 import {  Account, cairo, Contract, json, num, RpcProvider, shortString, stark } from "starknet";
 import { calculateAddressBraavos, deployBraavosAccount, estimateBraavosAccountDeployFee } from "./3a.deployBraavos";

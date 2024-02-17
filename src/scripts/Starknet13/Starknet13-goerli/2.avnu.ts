@@ -19,11 +19,13 @@ async function main() {
     console.log("Provider connected at", shortString.decodeShortString(await provider.getChainId()));
 
     // testnet
-    const privateKey0 = account2TestnetPrivateKey;
     const account0Address = account2TestnetAddress;
+    const privateKey0 = account2TestnetPrivateKey;
     const account0 = new Account(provider, account0Address, privateKey0);
     console.log('AX account connected.\n');
 
+    console.log(await account0.getNonce());
+    // process.exit(5);
     //read abi of JediSwap (behind a proxy)
     const swapContractAddress = "0x02bcc885342ebbcbcd170ae6cafa8a4bed22bb993479f49806e72d96af94c965";
     const swapAbiFilePath = "./src/scripts/Starknet12/Starknet12-testnet/8a.JediSwap.abi.json";

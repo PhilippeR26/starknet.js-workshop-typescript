@@ -11,7 +11,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS1",
-            "program": "${workspaceFolder}/src/scripts/calldata/1.decodeParameters.ts",
+            "program": "${workspaceFolder}/src/scripts/15.createNewETHaccount.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

@@ -7,7 +7,7 @@ import * as bip32 from "@scure/bip32";
 import * as bip39 from '@scure/bip39';
 
 const mnemonic = "inquiry tuition toe harvest vanish dress doctor maid divorce mystery cross loyal";
-const contractAXclassHash = "0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003";
+const contractAXclassHash = "0x029927c8af6bccf3f6fda035981e765a7bdbf18a2dc0d630494f8758aa908e2b";
 
 const masterSeed = bip39.mnemonicToSeedSync(mnemonic);
 const hdKey1 = bip32.HDKey.fromMasterSeed(masterSeed).derive("m/44'/60'/0'/0/0");
@@ -29,6 +29,7 @@ for (let i = 0; i < 5; i++) {
 
 // |version|                   class hash                                       |
 // | ----- | ------------------------------------------------------------------ |
+// |v0.3.1|0x029927c8af6bccf3f6fda035981e765a7bdbf18a2dc0d630494f8758aa908e2b|
 // |v0.3.0 |0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003   |
 // |v0.2.3.1|0x033434ad846cdd5f23eb73ff09fe6fddd568284a0fb7d1be20ee482f044dabe2 |
 // |v0.2.3 |0x01a7820094feaf82d53f53f214b81292d717e7bb9a92bb2488092cd306f3993f  |

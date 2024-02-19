@@ -2,7 +2,7 @@
 // launch with : npx src/scripts/14.createNewBraavosAccount.ts
 // Coded with Starknet.js v6.0.0, Starknet-devnet-rs v0.1.0
 
-import { RpcProvider, Account, ec, json, stark, hash, CallData, Contract, type BigNumberish } from "starknet";
+import { RpcProvider, Account, ec, json, stark, hash, CallData, Contract, type BigNumberish, CairoCustomEnum } from "starknet";
 
 import fs from "fs";
 import axios from "axios";
@@ -40,13 +40,13 @@ async function main() {
     // declare
     const respDecl = await account0.declareIfNot({ contract: accountBraavosBaseSierra, casm: accountBraavosBaseCasm });
     //const contractAXclassHash = "0x029927c8af6bccf3f6fda035981e765a7bdbf18a2dc0d630494f8758aa908e2b";
-    const contractBraavosClassHash=respDecl.class_hash;
-   if (respDecl.transaction_hash) {await provider.waitForTransaction(respDecl.transaction_hash)};
-    console.log("Braavos base contract declared. Ch=",respDecl.class_hash)
+    const contractBraavosClassHash = respDecl.class_hash;
+    if (respDecl.transaction_hash) { await provider.waitForTransaction(respDecl.transaction_hash) };
+    console.log("Braavos base contract declared. Ch=", respDecl.class_hash)
 
     const calldataBraavos = new CallData(accountBraavosBaseSierra.abi);
-    type StarkPubKey={pub_key:BigNumberish};
-    const myPubKey:StarkPubKey={pub_key:starkKeyPubBraavosBase};
+    type StarkPubKey = { pub_key: BigNumberish };
+    const myPubKey: StarkPubKey = { pub_key: starkKeyPubBraavosBase };
     const ConstructorBraavosCallData = calldataBraavos.compile("constructor", {
         stark_pub_key: myPubKey,
     });
@@ -67,11 +67,29 @@ async function main() {
     };
     const estimatedFee = await estimateBraavosAccountDeployFee(privateKeyBraavosBase, provider);
     console.log("calculated fee =", estimatedFee);
-    const respDeploy = deployBraavosAccount(privateKeyBraavosBase, provider,estimatedFee);
+    const respDeploy = deployBraavosAccount(privateKeyBraavosBase, provider, estimatedFee);
     // console.log("Final address =", accountBraavosBaseFinalAddress);
     // await provider.waitForTransaction(BraavosBaseCH);
 
     console.log('✅ Braavos wallet deployed.');
+
+
+    // type Secp256r1PubKey = {
+    //     pub_x: BigNumberish  //u256
+    //     pub_y: BigNumberish  //u256
+    // }
+    // const pubKey: Secp256r1PubKey = {
+    //     pub_x: "0xa9a02d48081294b9bb0d8740d70d3607feb20876964d432846d9b9100b91eefd",
+    //     pub_y: "0x18b410b5523a1431024a6ab766c89fa5d062744c75e49efb9925bf8025a7c09e"
+    // }
+    // const myEnum = new CairoCustomEnum({ Secp256r1: {} });
+    // const myCall = myContract.populate("add_secp256r1_signer", {
+    //     secp256r1_signer: pubKey,
+    //     signer_type: myEnum,
+    //     multisig_threshold: 2
+    // })
+    // const resp = myAccount.execute([myCall]);
+
 
 }
 main()

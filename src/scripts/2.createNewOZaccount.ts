@@ -3,7 +3,7 @@
 // Coded with Starknet.js v5.21.0, Starknet-devnet-rs v0.1.0
 
 
-import { Account, ec, json, Provider, hash, CallData, RpcProvider } from "starknet";
+import { Account, ec, json, Provider, hash, CallData, RpcProvider, stark } from "starknet";
 import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";
@@ -28,9 +28,7 @@ async function main() {
     // new Open Zeppelin account v0.8.0 (Cairo 1) :
 
     // Generate public and private key pair.
-    const privateKey = process.env.C20_NEW_ACCOUNT_PRIVKEY!;
-    // or for random private key :
-    //const privateKey = stark.randomAddress();
+    const privateKey = stark.randomAddress();
     console.log('New account :\nprivateKey=', privateKey);
     const starkKeyPub = ec.starkCurve.getStarkKey(privateKey);
     console.log('publicKey=', starkKeyPub);
@@ -43,7 +41,7 @@ async function main() {
     );
     const { transaction_hash: declTH, class_hash: decClassHash } = await account0.declareIfNot({ contract: compiledOZAccount, casm: casmOZAccount });
     console.log('OpenZeppelin account class hash =', decClassHash);
-    await provider.waitForTransaction(declTH);
+    if (declTH) {await provider.waitForTransaction(declTH);}
 
     // Calculate future address of the account
     const OZaccountConstructorCallData = CallData.compile({ publicKey: starkKeyPub });
@@ -56,15 +54,16 @@ async function main() {
     
     // deploy account
     const OZaccount = new Account(provider, OZcontractAddress, privateKey);
-    const { suggestedMaxFee: estimatedFee1 } = await OZaccount.estimateAccountDeployFee({ 
-        classHash: decClassHash, 
-        addressSalt: starkKeyPub, 
-        constructorCalldata: OZaccountConstructorCallData });
+    // const { suggestedMaxFee: estimatedFee1 } = await OZaccount.estimateAccountDeployFee({ 
+    //     classHash: decClassHash, 
+    //     addressSalt: starkKeyPub, 
+    //     constructorCalldata: OZaccountConstructorCallData });
     const { transaction_hash, contract_address } = await OZaccount.deployAccount({ 
         classHash: decClassHash, 
         constructorCalldata: OZaccountConstructorCallData, 
-        addressSalt: starkKeyPub 
-    }, { maxFee: estimatedFee1*11n/10n });
+        addressSalt: starkKeyPub,
+        contractAddress:OZcontractAddress
+    });
     //const { transaction_hash, contract_address } = await OZaccount.deployAccount({ classHash: OZaccountClashHass, constructorCalldata: OZaccountConstructorCallData, addressSalt: starkKeyPub }); // without estimateFee
     console.log('✅ New OpenZeppelin account created.\n   final address =', contract_address);
     await provider.waitForTransaction(transaction_hash);

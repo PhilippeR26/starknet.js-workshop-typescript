@@ -1,4 +1,4 @@
-// Deploy a new ArgentX wallet (Cairo1 0.3.0).
+// Deploy a new ArgentX wallet (Cairo1 0.3.1).
 // launch with : npx ts-node ssrc/scripts/3.createNewArgentXaccount.ts
 // Coded with Starknet.js v5.19.5, Starknet-devnet-rs v0.1.0
 

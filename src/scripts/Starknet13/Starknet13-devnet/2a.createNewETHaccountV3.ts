@@ -162,6 +162,21 @@ async function main() {
     if (declTH2) { await provider.waitForTransaction(declTH2) } else[console.log("Already declared.")];
     console.log("✅ Declare proceeded");
 
+     // ********** test deploy contract
+     const feeEstimationDeploy = await ETHaccount.estimateDeployFee({ classHash: decClassHash2 });
+     const { contract_address: deployAddress, transaction_hash: txHDepl } = await ETHaccount.deployContract({ classHash: decClassHash2 },  {
+        resourceBounds: {
+            l2_gas: { max_amount: '0x0', max_price_per_unit: '0x0' },
+            l1_gas: {
+                max_amount: num.toHex(BigInt(feeEstimationDeploy.resourceBounds.l1_gas.max_amount) * 2n),
+                max_price_per_unit: num.toHex(BigInt(feeEstimationDeploy.resourceBounds.l1_gas.max_price_per_unit) * 2n)
+            }
+        }
+    });
+     console.log("deploy address =", deployAddress);
+     console.log("✅ Deploy contract performed");
+     if (txHDepl) { await provider.waitForTransaction(txHDepl) } else { console.log("Already declared.") };
+
     console.log('✅ Tests performed.');
 }
 main()

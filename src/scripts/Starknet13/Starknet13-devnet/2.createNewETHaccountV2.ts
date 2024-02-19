@@ -132,20 +132,27 @@ async function main() {
     // ********** test transaction
     const ethContract2 = new Contract(compiledERC20Contract.abi, ethAddress, ETHaccount);
     const respTransfer = await ethContract2.transfer(account0.address, 1 * 10 ** 15);
-    console.log("✅ Transfer proceeded");
+    console.log("✅ Transfer performed");
     await provider.waitForTransaction(respTransfer.transaction_hash);
 
     // ********* test declare
-    const accountAXsierra = json.parse(fs.readFileSync("./compiledContracts/cairo243/ArgentXAccount031.sierra.json").toString("ascii"));
-    const accountAXcasm = json.parse(fs.readFileSync("./compiledContracts/cairo243/ArgentXAccount031.casm.json").toString("ascii"));
-    const feeEstimationDecl = await ETHaccount.estimateDeclareFee({ contract: accountAXsierra, casm: accountAXcasm });
+    const accountTestSierra = json.parse(fs.readFileSync("./compiledContracts/cairo241/name.sierra.json").toString("ascii"));
+    const accountTestCasm = json.parse(fs.readFileSync("./compiledContracts/cairo241/name.casm.json").toString("ascii"));
+    const feeEstimationDecl = await ETHaccount.estimateDeclareFee({ contract: accountTestSierra, casm: accountTestCasm });
     console.log({ feeEstimationDecl });
     // process.exit(5);
 
-    const { transaction_hash: declTH2, class_hash: decClassHash2 } = await ETHaccount.declareIfNot({ contract: accountAXsierra, casm: accountAXcasm }, { maxFee: feeEstimationDecl.suggestedMaxFee * 2n });
+    const { transaction_hash: declTH2, class_hash: decClassHash2 } = await ETHaccount.declareIfNot({ contract: accountTestSierra, casm: accountTestCasm }, { maxFee: feeEstimationDecl.suggestedMaxFee * 2n });
     console.log('test contract class hash =', decClassHash2);
     console.log("✅ Declare proceeded");
     if (declTH2) { await provider.waitForTransaction(declTH2) } else { console.log("Already declared.") };
+
+    // ********** test deploy contract
+    const feeEstimationDeploy = await ETHaccount.estimateDeployFee({ classHash: decClassHash2 });
+    const { contract_address: deployAddress, transaction_hash: txHDepl } = await ETHaccount.deployContract({ classHash: decClassHash2 }, { maxFee: feeEstimationDeploy.suggestedMaxFee * 2n });
+    console.log("deploy address =", deployAddress);
+    console.log("✅ Deploy contract performed");
+    if (txHDepl) { await provider.waitForTransaction(txHDepl) } else { console.log("Already declared.") };
 
     console.log('✅ Tests performed.');
 }

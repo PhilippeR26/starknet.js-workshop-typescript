@@ -1,6 +1,6 @@
 // Verify Ethereum signature. 
-// Coded with Starknet.js v5.24.5+commit
-// launch with npx ts-node src/scripts/signature/14.ethSigner.ts
+// Coded with Starknet.js v6.1.2
+// launch with npx ts-node src/scripts/signature/14.ethSignerTests.ts
 
 import { Account, CairoVersion, EthSigner, InvocationsSignerDetails, WeierstrassSignatureType, ec, encode, eth, num, constants, stark, types, RPC, DeclareSignerDetails, Contract, json, Call, DeployAccountSignerDetails, RpcProvider } from 'starknet';
 import fs from "fs";

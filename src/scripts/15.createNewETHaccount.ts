@@ -85,7 +85,6 @@ async function main() {
         constructorCalldata: accountETHconstructorCalldata,
         addressSalt: salt
     }, {
-        skipValidate: true,
         maxFee: feeEstimation.suggestedMaxFee
     }
     );

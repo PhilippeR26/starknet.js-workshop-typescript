@@ -3,16 +3,13 @@
 // Coded with Starknet.js v6.0.0, Starknet-devnet-rs v0.1.0
 
 
-import { Account, ec, json, Provider, hash, CallData, RpcProvider, EthSigner, eth, num, stark, addAddressPadding, encode, cairo, constants } from "starknet";
+import { Account, ec, json, Provider, hash, CallData, RpcProvider, EthSigner, eth, num, stark, addAddressPadding, encode, cairo, constants ,Contract} from "starknet";
 import { secp256k1 } from '@noble/curves/secp256k1';
-
 import { account1TestnetAddress, account1TestnetPrivateKey, account1BraavosSepoliaAddress, account1BraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
-
 import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";
 import { ethAddress, strkAddress } from "../../utils/constants";
-import { Contract } from "starknet";
 import { formatBalance } from "../../utils/formatBalance";
 dotenv.config();
 
@@ -35,17 +32,18 @@ async function main() {
     // new Open Zeppelin ETHEREUM account v0.9.0 (Cairo 1) :
 
     //const privateKeyETH = eth.ethRandomPrivateKey();
-    const privateKeyETH = encode.sanitizeHex(num.toHex("0x45397ee6ca34cb49060f1c303c6cb7ee2d6123e617601ef3e31ccf7bf5bef1f9"));
-    const noblePublicKey = encode.addHexPrefix(encode.buf2hex(secp256k1.getPublicKey(encode.removeHexPrefix(privateKeyETH), false)));
+    const privateKeyETHraw="0x97ee6ca34cb49060f1c303c6cb7ee2d6123e617601ef3e31ccf7bf5bef1f9"; // 3 missing leading zeros to have 32 bytes
+    const privateKeyETHformatted = encode.addHexPrefix(encode.removeHexPrefix(privateKeyETHraw).padStart(64, "0"));
+    const privateKeyETHbuffer=num.hexToBytes(privateKeyETHraw);
 
-    const strkPriv = stark.randomAddress();
     //const privateKeyETH = strkPriv;
-    console.log('New account :\nprivateKey=', privateKeyETH);
-    console.log("strk priv =", strkPriv);
-    console.log("strk pub  =", ec.starkCurve.getStarkKey(strkPriv));
-    const ethSigner = new EthSigner(privateKeyETH);
-    const pubKeyETH = encode.addHexPrefix(encode.removeHexPrefix(await ethSigner.getPubKey()).padStart(128, "0"));
-    console.log("nob pub =", noblePublicKey);
+    console.log('New account :\nprivateKey=', privateKeyETHformatted);
+    const ethSigner = new EthSigner(privateKeyETHraw);
+    const ethSigner2 = new EthSigner(privateKeyETHbuffer);
+    const pub=await ethSigner.getPubKey();
+    const pub2=await ethSigner2.getPubKey();
+    console.log({pub,pub2});
+    const pubKeyETH = await ethSigner.getPubKey();
     console.log("eth pub =", pubKeyETH);
 
     const pubKeyETHy = cairo.uint256(addAddressPadding(encode.addHexPrefix(pubKeyETH.slice(-64))));
@@ -98,24 +96,21 @@ async function main() {
             classHash: decClassHash,
             constructorCalldata: accountETHconstructorCalldata,
             salt: salt,
-            version: "0x2",
-            maxFee: "0x69e5202b42800",
+            version: "0x1",
+            maxFee: "0xa9e5202b42800",
             chainId: constants.StarknetChainId.SN_GOERLI,
             nonce: 0,
         }
     );
-    const txHBytes = encode.utf8ToArray(encode.removeHexPrefix(encode.sanitizeHex(transactionHash)));
-    console.log("Calculated transaction hash =", transactionHash, txHBytes);
-    const nobleSignature = secp256k1.sign(txHBytes, BigInt(privateKeyETH));
-    console.log("Noble signature =", num.toHex(nobleSignature.r), num.toHex(nobleSignature.s), nobleSignature.recovery);
-    const recoveredPubKey = nobleSignature.recoverPublicKey(encode.removeHexPrefix(encode.sanitizeHex(transactionHash)));
-    console.log("recoveredPubKey =", num.toHex(recoveredPubKey.px), num.toHex(recoveredPubKey.py));
+  
+    console.log("Calculated transaction hash =", transactionHash);
+    
     // ********* transaction V2
     const { transaction_hash, contract_address } = await ETHaccount.deployAccount({
         classHash: decClassHash,
         constructorCalldata: accountETHconstructorCalldata,
         addressSalt: salt
-    }, { skipValidate: true, maxFee: feeEstimation.suggestedMaxFee }
+    }, {  maxFee: "0xa9e5202b42800" }
     );
 
     console.log("Real txH =", transaction_hash);

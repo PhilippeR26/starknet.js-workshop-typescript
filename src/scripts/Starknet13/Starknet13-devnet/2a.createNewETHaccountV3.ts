@@ -113,13 +113,12 @@ async function main() {
     console.log("Noble signature =", num.toHex(nobleSignature.r), num.toHex(nobleSignature.s), nobleSignature.recovery);
     const recoveredPubKey = nobleSignature.recoverPublicKey(encode.removeHexPrefix(encode.sanitizeHex(transactionHash)));
     console.log("recoveredPubKey =", num.toHex(recoveredPubKey.px), num.toHex(recoveredPubKey.py));
-    // ********* transaction V3
+    // ********* deploy account V3
     const { transaction_hash, contract_address } = await ETHaccount.deployAccount({
         classHash: decClassHash,
         constructorCalldata: accountETHconstructorCalldata,
         addressSalt: salt
     }, {
-        skipValidate: true,
         resourceBounds: {
             l2_gas: { max_amount: '0x0', max_price_per_unit: '0x0' },
             l1_gas: { max_amount: num.toHex(BigInt(feeEstimation.resourceBounds.l1_gas.max_amount) * 2n), max_price_per_unit: num.toHex(BigInt(feeEstimation.resourceBounds.l1_gas.max_price_per_unit) * 2n) }
@@ -138,13 +137,23 @@ async function main() {
     console.log(" ETH account has a balance of :", formatBalance(balETH, 18), "ETH");
     console.log("ETH account has a balance of :", formatBalance(balSTRK, 18), "STRK");
 
-    // ********** test transaction
+    // ********** test transaction V3
     const ethContract2 = new Contract(compiledERC20Contract.abi, ethAddress, ETHaccount);
-    const respTransfer = await ethContract2.transfer(account0.address, 1 * 10 ** 15);
+    const txCallData=ethContract2.populate("transfer",[account0.address, 1 * 10 ** 15]);
+    const feeTransfer=await ETHaccount.estimateInvokeFee(txCallData);
+    const respTransfer = await ETHaccount.execute(txCallData,undefined,{
+        resourceBounds: {
+            l2_gas: { max_amount: '0x0', max_price_per_unit: '0x0' },
+            l1_gas: {
+                max_amount: num.toHex(BigInt(feeTransfer.resourceBounds.l1_gas.max_amount) * 2n),
+                max_price_per_unit: num.toHex(BigInt(feeTransfer.resourceBounds.l1_gas.max_price_per_unit) * 2n)
+            }
+        }
+    });
     console.log("✅ Transfer proceeded");
     await provider.waitForTransaction(respTransfer.transaction_hash);
 
-    // ********* test declare
+    // ********* test declare V3
     const accountTestSierra = json.parse(fs.readFileSync("./compiledContracts/cairo241/name.sierra.json").toString("ascii"));
     const accountTestCasm = json.parse(fs.readFileSync("./compiledContracts/cairo241/name.casm.json").toString("ascii"));
     const feeEstimationDecl = await ETHaccount.estimateDeclareFee({ contract: accountTestSierra, casm: accountTestCasm });

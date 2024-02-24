@@ -8,17 +8,22 @@ import fs from "fs";
 //          👇👇👇
 // 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet-rs directory before using this script
 //          👆👆👆
+
+// definition of Eth public key  "core::starknet::secp256k1::Secp256k1Point" : https://github.com/OpenZeppelin/cairo-contracts/blob/7684fb0ca81a718d262145be6722e6f9f9493c54/src/account/utils/secp256k1.cairo#L42-L51
+
+// definition of starknet::eth_signature::Signature : https://github.com/starkware-libs/cairo/blob/bd7cca1c3332daddc738682de0fea26da1b1973d/corelib/src/starknet/secp256_trait.cairo#L10-L18
+
 async function main() {
 
   const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only for starknet-devnet-rs
   //const provider = new RpcProvider({ nodeUrl: junoNMtestnet });
   //const provider = new SequencerProvider({ network: constants.NetworkName.SN_GOERLI });
   //resetDevnetNow();
-  // initialize existing predeployed account 0 of Devnet
+  // initialize existing pre-deployed account 0 of Devnet
   console.log("Provider connected to Starknet-devnet-rs");  
   
-  const myPrivateKey = "0x525bc68475c0955fae83869beec0996114d4bb27b28b781ed2a20ef23121b8de";
-  console.log("private key =", myPrivateKey);
+  const myEthPrivateKey = "0x525bc68475c0955fae83869beec0996114d4bb27b28b781ed2a20ef23121b8de";
+  console.log("private key =", myEthPrivateKey);
 
   const message = {
     "types": {
@@ -60,7 +65,7 @@ async function main() {
   const contractCasm = json.parse(fs.readFileSync("./compiledContracts/cairo230/PhilTest2.casm.json").toString("ascii"));
 
 
-  const myEthSigner = new EthSigner(myPrivateKey);
+  const myEthSigner = new EthSigner(myEthPrivateKey);
   console.log("pubkey=", await myEthSigner.getPubKey());
   const myEthAccount = new Account(provider, "0x65a822fbee1ae79e898688b5a4282dc79e0042cbed12f6169937fddb4c26641", myEthSigner)
 

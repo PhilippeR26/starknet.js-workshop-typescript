@@ -26,7 +26,7 @@ async function main() {
     // new Open Zeppelin ETHEREUM account v0.9.0 (Cairo 1) :
 
     //const privateKeyETH = eth.ethRandomPrivateKey();
-    const privateKeyETH = encode.sanitizeHex(num.toHex("0x45397ee6ca34cb49060f1c303c6cb7ee2d6123e617601ef3e31ccf7bf5bef1f9"));
+    const privateKeyETH = "0x45397ee6ca34cb49060f1c303c6cb7ee2d6123e617601ef3e31ccf7bf5bef1f9";
     console.log('New account :\nprivateKey=', privateKeyETH);
     const ethSigner = new EthSigner(privateKeyETH);
     const pubKeyETH = encode.addHexPrefix(encode.removeHexPrefix(await ethSigner.getPubKey()).padStart(128, "0"));
@@ -38,7 +38,7 @@ async function main() {
     console.log("pubX    =", pubKeyETHx);
     console.log("pubY    =", pubKeyETHy);
     console.log("salt    =", num.toHex(salt));
-    //process.exit(5);
+    // process.exit(5);
 
     //declare ETH account contract
     const compiledETHaccount = json.parse(
@@ -49,9 +49,10 @@ async function main() {
     );
     const { transaction_hash: declTH, class_hash: decClassHash } = await account0.declareIfNot({ contract: compiledETHaccount, casm: casmETHaccount });
     console.log('ETH account class hash =', decClassHash);
+    // class Hash = 0x23e416842ca96b1f7067693892ed00881d97a4b0d9a4c793b75cb887944d98d
     if (declTH) { await provider.waitForTransaction(declTH) } else { console.log("Already declared.") };
 
-    //process.exit(5);
+    // process.exit(5);
     // Calculate future address of the account
     const accountETHconstructorCalldata = CallData.compile([cairo.tuple(pubKeyETHx, pubKeyETHy)]);
     const contractETHaddress = hash.calculateContractAddressFromHash(salt, decClassHash, accountETHconstructorCalldata, 0);

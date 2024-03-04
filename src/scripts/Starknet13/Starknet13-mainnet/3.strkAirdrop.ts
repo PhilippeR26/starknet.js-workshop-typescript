@@ -34,7 +34,7 @@ async function main() {
     // adapt the account address to your case 👇👇👇
     // hex address, 64 lowercase characters with 0x prefix
 
-    const myStarknetAccountAddress = "0x05b520e60a961523f5c125d178dff557f7206cfc49106bd15bb68d29da907da7";
+    const myStarknetAccountAddress = "0x028168f7936deef6d4d2881be513be8974c39f997b40fb04395cf9719993def7";
     // 0x05b520e60a961523f5c125d178dff557f7206cfc49106bd15bb68d29da907da7
     // 0x004eba3c292ca3980fc9b995b05246e50bb5b90740bc6004f2e1d0dd28fa3803
     let airdropAddress: BigNumberish = "0x00";

@@ -1,11 +1,11 @@
-// Deploy a new braavos account (Cairo 1) in Goerli Testnet.
-// use Starknet.js v6.0.0, Goerli testnet
-// launch with npx ts-node src/scripts/braavos/2b.createNewBraavos1AccountGoerli.ts
+// Deploy a new braavos account (Cairo 1) in Sepolia Testnet.
+// use Starknet.js v6.0.0.
+// launch with npx ts-node src/scripts/Starknet13/Starknet13-sepolia/6.createNewBraavos1Account.ts
 
 import { Account, cairo, CallData, Contract, ec, hash, json, num, RpcProvider, shortString, stark, type BigNumberish } from "starknet";
-import { calculateAddressBraavos, deployBraavosAccount, estimateBraavosAccountDeployFee } from "./3b.deployBraavos1";
-import { account2TestnetAddress, account2TestnetPrivateKey } from "../../A1priv/A1priv";
-import { ethAddress } from "../utils/constants";
+import { calculateAddressBraavos, deployBraavosAccount, estimateBraavosAccountDeployFee } from "../../braavos/3b.deployBraavos1";
+import { account1BraavosSepoliaAddress, account1BraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
+import { ethAddress } from "../../utils/constants";
 
 import fs from "fs";
 import * as dotenv from "dotenv";
@@ -14,12 +14,12 @@ dotenv.config();
 
 async function main() {
     //initialize Provider 
-    const nodeUrl = "https://free-rpc.nethermind.io/goerli-juno/v0_6";
+    const nodeUrl = "https://starknet-sepolia.public.blastapi.io/rpc/v0_6";
     const provider = new RpcProvider({ nodeUrl }); // Goerli Testnet
     console.log("chain Id =", shortString.decodeShortString(await provider.getChainId()), ", rpc", await provider.getSpecVersion());
 
-    const account0Address = account2TestnetAddress;
-    const privateKeyAccount0 = account2TestnetPrivateKey;
+    const account0Address = account1BraavosSepoliaAddress;
+    const privateKeyAccount0 = account1BraavosSepoliaPrivateKey;
     const account0 = new Account(provider, account0Address, privateKeyAccount0);
     console.log('Deployed account connected.\n');
 

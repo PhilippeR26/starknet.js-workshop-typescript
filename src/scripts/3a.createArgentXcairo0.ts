@@ -34,8 +34,10 @@ async function main() {
 
     // declare & deploy ArgentX proxy
     const { transaction_hash: AXPth, class_hash: AXPch } = await account0.declare({ contract: ArgentXproxyCompiled });
+    console.log("proxy class hash =", AXPch);
     // declare ArgentXaccount
     const { transaction_hash: AXAth, class_hash: AXAch } = await account0.declare({ contract: ArgentXaccountCompiled });
+    console.log("account contract class hash =", AXAch);
     await provider.waitForTransaction(AXPth);
     await provider.waitForTransaction(AXAth);
 
@@ -43,10 +45,11 @@ async function main() {
     const privateKeyAX = process.env.AA_NEW_ACCOUNT_PRIVKEY ?? "";
     console.log('AX_ACCOUNT3_DEVNET_PRIVKEY=', privateKeyAX);
     const starkKeyPubAX = ec.starkCurve.getStarkKey(privateKeyAX);
-    const AXproxyConstructorCallData = CallData.compile({ 
-        implementation: AXAch, 
-        selector: hash.getSelectorFromName("initialize"), 
-        calldata: CallData.compile({ signer: starkKeyPubAX, guardian: "0" }), });
+    const AXproxyConstructorCallData = CallData.compile({
+        implementation: AXAch,
+        selector: hash.getSelectorFromName("initialize"),
+        calldata: CallData.compile({ signer: starkKeyPubAX, guardian: "0" }),
+    });
     const AXproxyAddress = hash.calculateContractAddressFromHash(starkKeyPubAX, AXPch, AXproxyConstructorCallData, 0);
     console.log('Precalculated account address=', AXproxyAddress);
 
@@ -56,11 +59,12 @@ async function main() {
 
     // deploy ArgentX account
     const accountAX = new Account(provider, AXproxyAddress, privateKeyAX);
-    const deployAccountPayload = { 
-        classHash: AXPch, 
-        constructorCalldata: AXproxyConstructorCallData, 
-        contractAddress: AXproxyAddress, 
-        addressSalt: starkKeyPubAX };
+    const deployAccountPayload = {
+        classHash: AXPch,
+        constructorCalldata: AXproxyConstructorCallData,
+        contractAddress: AXproxyAddress,
+        addressSalt: starkKeyPubAX
+    };
     const { transaction_hash: AXdAth, contract_address: AXcontractFinalAdress } = await accountAX.deployAccount(deployAccountPayload);
     console.log('Transaction hash =', AXdAth);
     await provider.waitForTransaction(AXdAth);

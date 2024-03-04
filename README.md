@@ -1,6 +1,6 @@
 # Starkware Starknet network ^0.13.0
 # Cairo Accounts and ERC20 Demo 
-# Typescript code, using Starknet.js v6.0.0 and local Starknet-devnet-rs 
+# Typescript code, using Starknet.js v6.1.4 and local Starknet-devnet-rs 
 ![Starknet.js](/src/img/starknet-js.png)
 
 If you want to implement the Starknet network in your DAPP, you can use starknet.js to interact with it.
@@ -25,7 +25,7 @@ Run `npm install` in this directory.
 
 This repo is configured to be able to perform debugging of your typescript code. Just CTRL+SHIFT+D, then click on the green arrow.
 
-This script has been written with cairo v0.13.0, Starknet-devnet-rs v0.1.0, starknet.js v6.0.0. Due to fast iterations of Starknet and Cairo, these scripts will probably be quickly out-of-date.
+This script has been written with cairo v0.13.0, Starknet-devnet-rs v0.1.0, starknet.js v6.1.4. Due to fast iterations of Starknet and Cairo, these scripts will probably be quickly out-of-date.
 
 
 
@@ -55,7 +55,7 @@ In the folder 'scripts', you can find many pedagogical codes :
     - Create OZ account [script2](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/2.createNewOZaccount.ts)
     - Create ArgentX account [script3](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/3.createNewArgentXaccount.ts)
     - Create Ethereum account [script15](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/15.createNewETHaccount.ts)
-    -  Create Braavos account (soon) [script14]
+    -  Create Braavos v1.0.0 account [script14](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/14.createNewBraavosAccount.ts)
     - Create your abstracted account [script10](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/10.createAccountAbstraction.ts)
 - Connect account
     - Connect pre-deployed account (only on devnet) [script1](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/1.openPredeployedAccount.ts)

@@ -3,7 +3,7 @@
 // launch with npx ts-node src/scripts/braavos/2a.createNewBraavos0AccountGoerli.ts
 
 import {  Account, cairo, Contract, json, num, RpcProvider, shortString, stark } from "starknet";
-import { calculateAddressBraavos, deployBraavosAccount, estimateBraavosAccountDeployFee } from "./3a.deployBraavos";
+import { calculateAddressBraavos, deployBraavosAccount, estimateBraavosAccountDeployFee } from "./3a.deployBraavos0";
 import {account2TestnetAddress , account2TestnetPrivateKey } from "../../A1priv/A1priv";
 
 import fs from "fs";

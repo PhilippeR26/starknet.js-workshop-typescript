@@ -11,6 +11,7 @@
 |v0.2.0|0x07595b4f7d50010ceb00230d8b5656e3c3dd201b6df35d805d3f2988c69a1432|
 |v0.1.0|0x02c3348ad109f7f3967df6494b3c48741d61675d9a7915b265aa7101a631dc33|
 
+Cairo 0 proxy class hash : 0x4a5cae61fa8312b0a3d0c44658b403d3e4197be80027fd5020ffcdf0c803331
 source [here](https://argenthq.notion.site/argenthq/11e1b194b0304124b05f6118e450e553?v=46e893ed521f4850ba801d1747cc84ef)
 
 Code Cairo : https://github.com/argentlabs/argent-contracts-starknet

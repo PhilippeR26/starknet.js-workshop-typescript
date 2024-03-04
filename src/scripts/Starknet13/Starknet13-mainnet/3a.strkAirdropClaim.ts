@@ -2,7 +2,7 @@
 // launch with npx ts-node src/scripts/Starknet13/Starknet13-mainnet/3.strkAirdrop.ts
 // Coded with Starknet.js v6.1.2
 
-import { Contract, shortString, RpcProvider, hash, json, type BigNumberish, type Uint256, num, type CairoCustomEnum, Account, cairo } from "starknet";
+import { Contract, shortString, RpcProvider, hash, json, type BigNumberish, type Uint256, num, type CairoCustomEnum, Account, cairo, type Invocations, TransactionType } from "starknet";
 import { account2BraavosMainnetAddress, account2BraavosMainnetPrivateKey } from "../../../A-MainPriv/mainPriv";
 import fs from "fs";
 import axios from "axios";
@@ -72,10 +72,20 @@ async function main() {
             claim_data: myClaim
         });
         console.log({ claimCallData });
-        const result1 = await myAccount.execute(claimCallData);
-        console.log("txH =", result1.transaction_hash);
-        const txR = await provider.waitForTransaction(result1.transaction_hash);
-        console.log({ txR });
+        //const result1 = await myAccount.execute(claimCallData);
+        // console.log("txH =", result1.transaction_hash);
+        // const txR = await provider.waitForTransaction(result1.transaction_hash);
+        // console.log({ txR });
+        const invocation1: Invocations = [
+            {
+                type: TransactionType.INVOKE,
+                ...claimCallData
+            },
+        ];
+        const result1 = await myAccount.simulateTransaction(invocation1)as any;
+        console.log( "result simulate =",result1 );
+        console.log("trace=",result1[0].transaction_trace)
+        console.log("trace calls =",result1[0].transaction_trace.execute_invocation)
     }
     console.log("✅ Test completed.");
 }

@@ -3,7 +3,7 @@
 // launch with npx ts-node src/scripts/braavos/2.createNewBraavosAccount.ts
 
 import { Provider, Account, num, RpcProvider } from "starknet";
-import { calculateAddressBraavos, deployBraavosAccount, estimateBraavosAccountDeployFee } from "./3a.deployBraavos";
+import { calculateAddressBraavos, deployBraavosAccount, estimateBraavosAccountDeployFee } from "./3a.deployBraavos0";
 import { account3BraavosTestnetAddress, account3BraavosTestnetPrivateKey } from "../../A1priv/A1priv";
 import axios from "axios";
 import * as dotenv from "dotenv";

@@ -1,13 +1,14 @@
 // Deploy a new Braavos wallet (Cairo1, contract v1.0.0).
 // launch with : npx src/scripts/14.createNewBraavosAccount.ts
-// Coded with Starknet.js v6.0.0, Starknet-devnet-rs v0.1.0
+// Coded with Starknet.js v6.1.4, Starknet-devnet-rs v0.1.0
 
-import { RpcProvider, Account, ec, json, stark, hash, CallData, Contract, type BigNumberish, CairoCustomEnum } from "starknet";
+import { RpcProvider, Account, ec, json, stark, hash, CallData, Contract, type BigNumberish, RPC, constants, num } from "starknet";
 
 import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";
-import { deployBraavosAccount, estimateBraavosAccountDeployFee } from "./braavos/3b.deployBraavosRpc060";
+import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature } from "./braavos/3b.deployBraavos1";
+import { account3BraavosTestnetPrivateKey } from "../A1priv/A1priv";
 dotenv.config();
 
 
@@ -26,10 +27,21 @@ async function main() {
     const account0 = new Account(provider, accountAddress0, privateKey0);
     console.log("Account 0 connected.\n");
 
+    // declare
     const accountBraavosBaseSierra = json.parse(fs.readFileSync("./compiledContracts/cairo251/braavos_account_BraavosBase100.sierra.json").toString("ascii"));
     const accountBraavosBaseCasm = json.parse(fs.readFileSync("./compiledContracts/cairo251/braavos_account_BraavosBase100.casm.json").toString("ascii"));
     const ch = hash.computeContractClassHash(accountBraavosBaseSierra);
-    console.log("Class Hash of Braavos base contract =", ch);
+    console.log("Braavos account declare in progress...");
+    const respDecl = await account0.declareIfNot({ contract: accountBraavosBaseSierra, casm: accountBraavosBaseCasm });
+    const contractBraavosClassHash = respDecl.class_hash;
+    if (respDecl.transaction_hash) { await provider.waitForTransaction(respDecl.transaction_hash) };
+    console.log("Braavos base contract class hash :", respDecl.class_hash);
+    const accountBraavosSierra = json.parse(fs.readFileSync("./compiledContracts/cairo251/braavos_account_Braavos100.sierra.json").toString("ascii"));
+    const accountBraavosCasm = json.parse(fs.readFileSync("./compiledContracts/cairo251/braavos_account_Braavos100.casm.json").toString("ascii"));
+    const respDecl2 = await account0.declareIfNot({ contract: accountBraavosSierra, casm: accountBraavosCasm });
+    const contractBraavosClassHash2 = respDecl2.class_hash;
+    console.log("Braavos contract class hash :", respDecl2.class_hash);
+    if (respDecl2.transaction_hash) { await provider.waitForTransaction(respDecl2.transaction_hash) };
 
     // Calculate future address of the Braavos account
     const privateKeyBraavosBase = stark.randomAddress();
@@ -37,60 +49,42 @@ async function main() {
     const starkKeyPubBraavosBase = ec.starkCurve.getStarkKey(privateKeyBraavosBase);
     console.log('Braavos account Public Key  =', starkKeyPubBraavosBase);
 
-    // declare
-    const respDecl = await account0.declareIfNot({ contract: accountBraavosBaseSierra, casm: accountBraavosBaseCasm });
-    //const contractAXclassHash = "0x029927c8af6bccf3f6fda035981e765a7bdbf18a2dc0d630494f8758aa908e2b";
-    const contractBraavosClassHash = respDecl.class_hash;
-    if (respDecl.transaction_hash) { await provider.waitForTransaction(respDecl.transaction_hash) };
-    console.log("Braavos base contract declared. Ch=", respDecl.class_hash)
 
     const calldataBraavos = new CallData(accountBraavosBaseSierra.abi);
     type StarkPubKey = { pub_key: BigNumberish };
     const myPubKey: StarkPubKey = { pub_key: starkKeyPubBraavosBase };
-    const ConstructorBraavosCallData = calldataBraavos.compile("constructor", {
+    const constructorBraavosCallData = calldataBraavos.compile("constructor", {
         stark_pub_key: myPubKey,
     });
-    const accountBraavosAddress = hash.calculateContractAddressFromHash(starkKeyPubBraavosBase, contractBraavosClassHash, ConstructorBraavosCallData, 0);
+    const accountBraavosAddress = hash.calculateContractAddressFromHash(starkKeyPubBraavosBase, contractBraavosClassHash, constructorBraavosCallData, 0);
     console.log('Precalculated account address=', accountBraavosAddress);
 
     // fund account address before account creation
-    const { data: answer } = await axios.post('http://127.0.0.1:5050/mint', { "address": accountBraavosAddress, "amount": 10_000_000_000_000_000_000, "lite": true }, { headers: { "Content-Type": "application/json" } });
+    const { data: answer } = await axios.post('http://127.0.0.1:5050/mint', {
+        "address": accountBraavosAddress,
+        "amount": 10_000_000_000_000_000_000
+    }, { headers: { "Content-Type": "application/json" } });
     console.log('Answer mint =', answer); // 10 ETH
+    const { data: answer2 } = await axios.post('http://127.0.0.1:5050/mint', {
+        "address": accountBraavosAddress,
+        "amount": 10_000_000_000_000_000_000,
+        "unit": "FRI"
+    }, { headers: { "Content-Type": "application/json" } });
+    console.log('Answer mint =', answer2); // 10 ETH
 
     // deploy Braavos account
-    const accountBraavosBase = new Account(provider, accountBraavosAddress, privateKeyBraavosBase);
-    const deployAccountPayload = {
-        classHash: contractBraavosClassHash,
-        constructorCalldata: ConstructorBraavosCallData,
-        contractAddress: accountBraavosAddress,
-        addressSalt: starkKeyPubBraavosBase
-    };
-    const estimatedFee = await estimateBraavosAccountDeployFee(privateKeyBraavosBase, provider);
-    console.log("calculated fee =", estimatedFee);
-    const respDeploy = deployBraavosAccount(privateKeyBraavosBase, provider, estimatedFee);
-    // console.log("Final address =", accountBraavosBaseFinalAddress);
-    // await provider.waitForTransaction(BraavosBaseCH);
+    const myMaxFee = 2 * 10 ** 15; // defined manually as estimateFee fails.
+
+    // estimateFee do not work. If you have the solution, I am interested...
+    // const estimatedFee = await estimateBraavosAccountDeployFee(privateKeyBraavosBase, provider,{skipValidate:true});
+    // console.log("calculated fee =", estimatedFee);
+
+    const respDeploy = deployBraavosAccount(privateKeyBraavosBase, provider, myMaxFee);
+    const txR = await provider.waitForTransaction((await respDeploy).transaction_hash);
+    console.log("Transaction receipt =", txR);
+    console.log("Account created.\nFinal address =", accountBraavosAddress);
 
     console.log('✅ Braavos wallet deployed.');
-
-
-    // type Secp256r1PubKey = {
-    //     pub_x: BigNumberish  //u256
-    //     pub_y: BigNumberish  //u256
-    // }
-    // const pubKey: Secp256r1PubKey = {
-    //     pub_x: "0xa9a02d48081294b9bb0d8740d70d3607feb20876964d432846d9b9100b91eefd",
-    //     pub_y: "0x18b410b5523a1431024a6ab766c89fa5d062744c75e49efb9925bf8025a7c09e"
-    // }
-    // const myEnum = new CairoCustomEnum({ Secp256r1: {} });
-    // const myCall = myContract.populate("add_secp256r1_signer", {
-    //     secp256r1_signer: pubKey,
-    //     signer_type: myEnum,
-    //     multisig_threshold: 2
-    // })
-    // const resp = myAccount.execute([myCall]);
-
-
 }
 main()
     .then(() => process.exit(0))

@@ -25,10 +25,10 @@ async function main() {
     const privateKey0 = account2BraavosTestnetPrivateKey;
     const account0 = new Account(provider, account0Address, privateKey0);
     console.log('AX account connected.\n');
-    console.log("property Cairo version before interact =",account0.cairoVersion);
-    console.log("account cairo version from getCairoVersion =",await account0.getCairoVersion());
-    console.log("property Cairo version after interact =",account0.cairoVersion);
-    console.log("nonce =",await account0.getNonce());
+    console.log("property Cairo version before interact =", account0.cairoVersion);
+    console.log("account cairo version from getCairoVersion =", await account0.getCairoVersion());
+    console.log("property Cairo version after interact =", account0.cairoVersion);
+    console.log("nonce =", await account0.getNonce());
     // process.exit(5);
     // read abi of ETH
     const ethAbiFilePath = "./src/scripts/Starknet12/Starknet12-testnet/8b.Eth.abi.json";
@@ -46,16 +46,15 @@ async function main() {
     const bal = await ethContract.balanceOf(account0.address);
     const decimals = Number(await ethContract.decimals());
     console.log("Account balance=", formatBalance(bal, decimals), "ETH");
-    const call1=ethContract.populate("transfer",{
+    const call1 = ethContract.populate("transfer", {
         recipient: account0Address,
         amount: cairo.uint256(10)
     })
     console.log(call1);
     // crash with error 'Input too long for arguments'
-    const res1=await account0.execute(call1);
-    const txR=await provider.waitForTransaction( res1.transaction_hash);
+    const res1 = await account0.execute(call1);
+    const txR = await provider.waitForTransaction(res1.transaction_hash);
     console.log(txR);
-
 
     console.log("✅ Test completed.");
 }

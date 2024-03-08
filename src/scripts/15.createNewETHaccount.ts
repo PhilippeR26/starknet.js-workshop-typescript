@@ -54,7 +54,7 @@ async function main() {
     );
     const { transaction_hash: declTH, class_hash: decClassHash } = await account0.declareIfNot({ contract: compiledETHaccount, casm: casmETHaccount });
     console.log('ETH account class hash =', decClassHash);
-    if (declTH) { await provider.waitForTransaction(declTH) } else[console.log("Already declared.")];
+    if (declTH) { await provider.waitForTransaction(declTH) } else { console.log("Already declared.") };
     console.log("✅ Declare of class made.");
 
     // Calculate future address of the account

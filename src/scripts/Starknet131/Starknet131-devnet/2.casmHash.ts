@@ -1,5 +1,5 @@
 // Test declare of Cairo 2.6.0 contract
-// launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/2.casmCompile.ts
+// launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/2.casmHash.ts
 // Coded with Starknet.js v6.2.0
 
 import { constants, Contract, Account, json, shortString, RpcProvider, types, RPC, num, ec, CallData, hash, cairo, type CompiledSierraCasm, type ByteCode, type EntryPointsByType, type PythonicHints, type ContractEntryPointFields, type Builtins } from "starknet";

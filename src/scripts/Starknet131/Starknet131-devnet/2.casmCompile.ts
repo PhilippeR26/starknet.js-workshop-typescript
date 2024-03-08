@@ -1,6 +1,6 @@
-// Test transactions V 3 in devnet-rs commit 3bf2452.
-// launch with npx ts-node src/scripts/Starknet13/Starknet13-devnet/1a.transactionV3.ts
-// Coded with Starknet.js v6.0.0 B7
+// Test declare of Cairo 2.6.0 contract
+// launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/2.casmCompile.ts
+// Coded with Starknet.js v6.2.0
 
 import { constants, Contract, Account, json, shortString, RpcProvider, types, RPC, num, ec, CallData, hash, cairo, type CompiledSierraCasm, type ByteCode, type EntryPointsByType, type PythonicHints, type ContractEntryPointFields, type Builtins } from "starknet";
 import fs from "fs";

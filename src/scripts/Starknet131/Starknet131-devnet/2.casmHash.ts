@@ -14,7 +14,7 @@ import { blastKey } from "../../../A-MainPriv/mainPriv";
 import { poseidonHashMany } from "micro-starknet";
 dotenv.config();
 
-type Leaf = {
+type BytecodeSegment = {
     len: number;
     segment: bigint[]
 }
@@ -87,12 +87,12 @@ async function main() {
     const bytecode_segment_lengths: number[] = compiled260Casm.bytecode_segment_lengths ? compiled260Casm.bytecode_segment_lengths : [];
 
     const byteCodeIterator = byteCode[Symbol.iterator]();
-    const leafs: Leaf[] = bytecode_segment_lengths.map((len: number) => {
+    const leafs: BytecodeSegment[] = bytecode_segment_lengths.map((len: number) => {
         let segment: bigint[] = [];
         for (let i = 0; i < len; i++) {
             segment.push(byteCodeIterator.next().value);
         }
-        const res: Leaf = { len, segment };
+        const res: BytecodeSegment = { len, segment };
         return res;
     });
     console.log({ leafs }, leafs[0].segment.length, leafs[1].segment.length, leafs[0].segment.length + leafs[1].segment.length, byteCode.length);
@@ -120,8 +120,8 @@ async function main() {
     ])
   );
   console.log({compiled260ClassHash});
-    //process.exit(5);
-    const deploy260Response = await account0.declare({ contract: compiled260Sierra, compiledClassHash: compiled260ClassHash});
+    // process.exit(5);
+    const deploy260Response = await account0.declare({ contract: compiled260Sierra, casm: compiled260Casm});
     console.log({ deploy260Response });
     // process.exit(5);
 

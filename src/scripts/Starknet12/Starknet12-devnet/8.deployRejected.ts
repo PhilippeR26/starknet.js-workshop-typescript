@@ -4,8 +4,6 @@
 
 import { constants, Provider, Contract, Account, json, shortString, RpcProvider } from "starknet";
 import fs from "fs";
-import { account5TestnetAddress, account5TestnetPrivateKey } from "../../../A1priv/A1priv";
-import { infuraKey, account4MainnetAddress, account4MainnetPrivateKey } from "../../../A-MainPriv/mainPriv";
 
 
 

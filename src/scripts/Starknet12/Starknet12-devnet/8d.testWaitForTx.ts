@@ -2,7 +2,7 @@
 // launch with npx ts-node src/scripts/cairo12/cairo12-devnet/8c.testTxResponse.ts
 // Coded with Starknet.js v5.24.3
 
-import { constants, Contract, Account, json, shortString, RpcProvider, TransactionFinalityStatus, TransactionExecutionStatus, SuccessfulTransactionReceiptResponse, Receipt, RejectedTransactionReceiptResponse, RevertedTransactionReceiptResponse } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, TransactionFinalityStatus, TransactionExecutionStatus, SuccessfulTransactionReceiptResponse, ReceiptTx, RejectedTransactionReceiptResponse, RevertedTransactionReceiptResponse } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { account2TestnetAddress, account2TestnetPrivateKey } from "../../../A1priv/A1priv";
@@ -62,7 +62,7 @@ async function main() {
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo210/reject.sierra.json").toString("ascii"));
 
     //          👇👇👇 Put here the result of script 8
-    const contractAddress = "0x71f666cf74b3f75d106e421495579d1c01cd547f29a123d921f66af816b3267";
+    const contractAddress = "0x69fe61bc198a70983c333e47f4ee225a195a8032dbad64a4d1e70e9a11a3423";
     //const contractAddress = "0x1073c451258ff87d4e280fb00bc556767cdd464d14823f84fcbb8ba44895a34"; 
 
     const myTestContract = new Contract(compiledSierra.abi, contractAddress, provider);

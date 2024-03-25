@@ -2,6 +2,7 @@
 // launch with : npx ts-node src/scripts/cairo12/cairo12-devnet/17b.transactionResponse.ts
 // Coded with Starknet.js v5.21.0
 
+import type { GetTransactionReceiptResponseWoHelper } from "starknet";
 import { BigNumberish, GetTransactionReceiptResponse, RejectedTransactionReceiptResponse, RevertedTransactionReceiptResponse, SuccessfulTransactionReceiptResponse, TransactionExecutionStatus, TransactionStatus } from "starknet";
 
 interface TransactionResponse {
@@ -102,7 +103,7 @@ function transactionResponse(txH: BigNumberish): TxRVariant {
     //     block_number: 0
     // }
 
-    const resp: GetTransactionReceiptResponse =  {
+    const resp: GetTransactionReceiptResponseWoHelper =  {
         type: 'INVOKE',
         transaction_hash: '0x57bb080a6f79cb7a67c4f690b84c83a06dededa82c28dbab1e514a093cea6cd',
         actual_fee: '0xe219b2b0f000',

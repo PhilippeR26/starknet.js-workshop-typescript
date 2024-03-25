@@ -18,8 +18,10 @@ async function main() {
     // const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
     // Goerli Testnet
     // const provider = new RpcProvider({ nodeUrl: 'https://starknet-testnet.blastapi.io/' + blastKey + "/rpc/v0_6" }); 
+    // Sepolia testnet
+    const provider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_7" }); // Sepolia Testnet 
     // local Sepolia Testnet node :
-    const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); 
+    // const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); 
     // local Sepolia Integration node :
     //const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9550/rpc/v0_6" }); 
     // mainnet :
@@ -67,25 +69,22 @@ async function main() {
     console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
     console.log('existing account connected.\n');
 
-    const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter2.sierra.json").toString("ascii")) as CompiledSierra;
-    //const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo240/merkle_verify_poseidon.casm.json").toString("ascii"));
+
+    const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo200/hello.sierra.json").toString("ascii"));
+    const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo200/hello.casm.json").toString("ascii"));
+
+    const constructor = CallData.compile([]);
+    const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm, constructorCalldata:constructor });
+    console.log(deployResponse);
+    const estim=await provider.estimateMessageFee({
+        from_address:"0x1122334455667788990011223344556677889900", 
+        to_address:deployResponse.deploy.address, 
+        entry_point_selector: "increase_bal", 
+        payload:["100"]});
+    console.log("estimateMessageFee =", estim);
+// process.exit(5);
 
 
-    const contract = new Contract(compiledSierra.abi, "0x3453456AC67B34E6Fa", account0);
-    const ftName = "get_balance_zarbi_unknown_jean_baptiste_zorg";
-    const call1 = contract.populate("increase_counter", [10]);
-    const call2 = contract.populate(ftName, [32]);
-    const res = transaction.fromCallsToExecuteCalldata_cairo1([call1, call2]);
-
-    console.log("res =", res.map((value) => num.toHex(value)));
-
-    const selector1 = selector.getSelector(ftName);
-    console.log("selector calculated =", selector1);
-    const selector2 = compiledSierra.entry_points_by_type.EXTERNAL[0].selector;
-    const selector3 = num.toHex(res[6]);
-    console.log("selector from sierra =", selector2);
-    console.log("getSelector identical =", selector2 == selector1);
-    console.log("fromCallsToExecuteCalldata_cairo1 identical =", selector3 == selector1);
 
     console.log("✅ Test completed.");
 }

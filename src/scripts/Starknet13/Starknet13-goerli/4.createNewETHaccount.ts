@@ -25,15 +25,15 @@ async function main() {
 
     // new Open Zeppelin ETHEREUM account v0.9.0 (Cairo 1) :
 
-    //const privateKeyETH = eth.ethRandomPrivateKey();
-    const privateKeyETH = "0x45397ee6ca34cb49060f1c303c6cb7ee2d6123e617601ef3e31ccf7bf5bef1f9";
+    const privateKeyETH = eth.ethRandomPrivateKey();
+    //const privateKeyETH = "0x45397ee6ca34cb49060f1c303c6cb7ee2d6123e617601ef3e31ccf7bf5bef1f9";
     console.log('New account :\nprivateKey=', privateKeyETH);
     const ethSigner = new EthSigner(privateKeyETH);
-    const pubKeyETH = encode.addHexPrefix(encode.removeHexPrefix(await ethSigner.getPubKey()).padStart(128, "0"));
-    console.log("eth pub =", pubKeyETH);
+    const ethFullPublicKey = await ethSigner.getPubKey();
+    console.log("eth pub =", ethFullPublicKey);
 
-    const pubKeyETHy = cairo.uint256(addAddressPadding(encode.addHexPrefix(pubKeyETH.slice(-64))));
-    const pubKeyETHx = cairo.uint256(addAddressPadding(encode.addHexPrefix(pubKeyETH.slice(4, -64))));
+    const pubKeyETHy = cairo.uint256(addAddressPadding(encode.addHexPrefix(ethFullPublicKey.slice(-64))));
+    const pubKeyETHx = cairo.uint256(addAddressPadding(encode.addHexPrefix(ethFullPublicKey.slice(4, -64))));
     const salt = pubKeyETHx.low;
     console.log("pubX    =", pubKeyETHx);
     console.log("pubY    =", pubKeyETHy);
@@ -41,20 +41,23 @@ async function main() {
     // process.exit(5);
 
     //declare ETH account contract
-    const compiledETHaccount = json.parse(
+    const compiledEthAccount = json.parse(
         fs.readFileSync("./compiledContracts/cairo253/openzeppelin_EthAccountUpgradeable090.sierra.json").toString("ascii")
     );
-    const casmETHaccount = json.parse(
+    const casmEthAccount = json.parse(
         fs.readFileSync("./compiledContracts/cairo253/openzeppelin_EthAccountUpgradeable090.casm.json").toString("ascii")
     );
-    const { transaction_hash: declTH, class_hash: decClassHash } = await account0.declareIfNot({ contract: compiledETHaccount, casm: casmETHaccount });
+    const { transaction_hash: declTH, class_hash: decClassHash } = await account0.declareIfNot({ contract: compiledEthAccount, casm: casmEthAccount });
     console.log('ETH account class hash =', decClassHash);
     // class Hash = 0x23e416842ca96b1f7067693892ed00881d97a4b0d9a4c793b75cb887944d98d
     if (declTH) { await provider.waitForTransaction(declTH) } else { console.log("Already declared.") };
 
     // process.exit(5);
     // Calculate future address of the account
-    const accountETHconstructorCalldata = CallData.compile([cairo.tuple(pubKeyETHx, pubKeyETHy)]);
+    const myCallData = new CallData(compiledEthAccount.abi);
+      const accountETHconstructorCalldata = myCallData.compile('constructor', {
+        public_key: ethFullPublicKey,
+      });
     const contractETHaddress = hash.calculateContractAddressFromHash(salt, decClassHash, accountETHconstructorCalldata, 0);
     console.log('Pre-calculated account address=', contractETHaddress);
 
@@ -79,7 +82,7 @@ async function main() {
         skipValidate: true,
         resourceBounds: {
             l2_gas: { max_amount: '0x0', max_price_per_unit: '0x0' },
-            l1_gas: { max_amount: num.toHex(BigInt(feeEstimation.resourceBounds.l1_gas.max_amount) * 2n), max_price_per_unit: num.toHex(BigInt(feeEstimation.resourceBounds.l1_gas.max_price_per_unit) * 2n) }
+            l1_gas: { max_amount: num.toHex(BigInt(feeEstimation.resourceBounds.l1_gas.max_amount) * 3n), max_price_per_unit: num.toHex(BigInt(feeEstimation.resourceBounds.l1_gas.max_price_per_unit) * 3n) }
         }
     }
     );

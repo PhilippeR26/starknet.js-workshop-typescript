@@ -1,6 +1,6 @@
 // create a new OZ ETHEREUM account in devnet-rs
 // launch with npx ts-node src/scripts/15.createNewETHaccount.ts
-// Coded with Starknet.js v6.0.0, Starknet-devnet-rs v0.1.0
+// Coded with Starknet.js v6.6.6, Starknet-devnet-rs v0.3.0
 
 
 import { Account, ec, json, Provider, hash, CallData, RpcProvider, EthSigner, eth, num, stark, addAddressPadding, encode, cairo, constants, Contract } from "starknet";
@@ -35,30 +35,33 @@ async function main() {
     const privateKeyETH = encode.sanitizeHex(num.toHex("0x45397ee6ca34cb49060f1c303c6cb7ee2d6123e617601ef3e31ccf7bf5bef1f9"));
     console.log('New account :\neth privateKey=', privateKeyETH);
     const ethSigner = new EthSigner(privateKeyETH);
-    const pubKeyETH = encode.addHexPrefix(encode.removeHexPrefix(await ethSigner.getPubKey()).padStart(128, "0"));
-    console.log("eth pub key =", pubKeyETH);
+    const ethFullPublicKey = await ethSigner.getPubKey();
+    console.log("eth pub key =", ethFullPublicKey);
 
-    const pubKeyETHy = cairo.uint256(addAddressPadding(encode.addHexPrefix(pubKeyETH.slice(-64))));
-    const pubKeyETHx = cairo.uint256(addAddressPadding(encode.addHexPrefix(pubKeyETH.slice(4, -64))));
+    const pubKeyETHy = cairo.uint256(addAddressPadding(encode.addHexPrefix(ethFullPublicKey.slice(-64))));
+    const pubKeyETHx = cairo.uint256(addAddressPadding(encode.addHexPrefix(ethFullPublicKey.slice(4, -64))));
     const salt = pubKeyETHx.low;
     console.log("pubX    =", pubKeyETHx);
     console.log("pubY    =", pubKeyETHy);
     console.log("salt    =", num.toHex(salt));
 
     //declare ETH account contract
-    const compiledETHaccount = json.parse(
+    const compiledEthAccount = json.parse(
         fs.readFileSync("./compiledContracts/cairo253/openzeppelin_EthAccountUpgradeable090.sierra.json").toString("ascii")
     );
     const casmETHaccount = json.parse(
         fs.readFileSync("./compiledContracts/cairo253/openzeppelin_EthAccountUpgradeable090.casm.json").toString("ascii")
     );
-    const { transaction_hash: declTH, class_hash: decClassHash } = await account0.declareIfNot({ contract: compiledETHaccount, casm: casmETHaccount });
+    const { transaction_hash: declTH, class_hash: decClassHash } = await account0.declareIfNot({ contract: compiledEthAccount, casm: casmETHaccount });
     console.log('ETH account class hash =', decClassHash);
     if (declTH) { await provider.waitForTransaction(declTH) } else { console.log("Already declared.") };
     console.log("✅ Declare of class made.");
 
     // Calculate future address of the account
-    const accountETHconstructorCalldata = CallData.compile([cairo.tuple(pubKeyETHx, pubKeyETHy)]);
+    const myCallData = new CallData(compiledEthAccount.abi);
+      const accountETHconstructorCalldata = myCallData.compile('constructor', {
+        public_key: ethFullPublicKey,
+      });
     const contractETHaddress = hash.calculateContractAddressFromHash(salt, decClassHash, accountETHconstructorCalldata, 0);
     console.log('Pre-calculated account address=', contractETHaddress);
 
@@ -78,15 +81,15 @@ async function main() {
     // deploy account
     const ETHaccount = new Account(provider, contractETHaddress, ethSigner, undefined, constants.TRANSACTION_VERSION.V2);
     const feeEstimation = await ETHaccount.estimateAccountDeployFee({ classHash: decClassHash, addressSalt: salt, constructorCalldata: accountETHconstructorCalldata });
-    console.log("Fee estim =", feeEstimation);
+    console.log("Fee estimation =", feeEstimation);
 
     const { transaction_hash, contract_address } = await ETHaccount.deployAccount({
         classHash: decClassHash,
         constructorCalldata: accountETHconstructorCalldata,
         addressSalt: salt
     }, {
-        maxFee: feeEstimation.suggestedMaxFee
-    }
+        maxFee: stark.estimatedFeeToMaxFee(feeEstimation.suggestedMaxFee
+    ,80)}
     );
     console.log("Real txH =", transaction_hash);
     const txR = await provider.waitForTransaction(transaction_hash);

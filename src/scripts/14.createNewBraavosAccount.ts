@@ -1,6 +1,6 @@
 // Deploy a new Braavos wallet (Cairo1, contract v1.0.0).
 // launch with : npx src/scripts/14.createNewBraavosAccount.ts
-// Coded with Starknet.js v6.1.4, Starknet-devnet-rs v0.1.0
+// Coded with Starknet.js v6.1.4, Starknet-devnet-rs v0.3.0
 
 import { RpcProvider, Account, ec, json, stark, hash, CallData, Contract, type BigNumberish, RPC, constants, num } from "starknet";
 

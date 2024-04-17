@@ -1,9 +1,9 @@
 // Test an EIP712 message. 
 // launch with npx ts-node src/scripts/Starknet12/Starknet12-sepolia/5.signEIP712Nested.ts
-// coded with Starknet.js v5.24.3 + sepolia
+// coded with Starknet.js v6.7.0 + sepolia
 
-import { Account, ec, hash, RpcProvider, json, Contract, encode, shortString, typedData, WeierstrassSignatureType, constants, Signature, stark, CallData, num } from "starknet";
-import { account0OZSepoliaAddress, account0OZSepoliaPrivateKey, account7TestnetAddress, account7TestnetPrivateKey} from "../../../A1priv/A1priv";
+import { Account, ec, hash, RpcProvider, json, Contract, encode, shortString, typedData, WeierstrassSignatureType, constants, Signature, stark, CallData, num, type TypedData } from "starknet";
+import { account0OZSepoliaAddress, account0OZSepoliaPrivateKey, account1BraavosSepoliaAddress, account1BraavosSepoliaPrivateKey, } from "../../../A1priv/A1priv";
 
 import * as dotenv from "dotenv";
 import fs from "fs";
@@ -17,12 +17,13 @@ dotenv.config();
 //    👆👆👆
 async function main() {
     //initialize Provider with local Pathfinder Sepolia
-    const provider = new RpcProvider({ nodeUrl: "http://192.168.1.44:9545/rpc/v0.5" });
+    //const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" });
+    const provider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_7"});
     console.log('STARKNET provider connected.');
 
-    // initialize existing predeployed account 0
-    const privateKey0 =  account0OZSepoliaPrivateKey;
+    // initialize existing pre-deployed account 0
     const accountAddress0 = account0OZSepoliaAddress;
+    const privateKey0 =  account0OZSepoliaPrivateKey;
     console.log('OZ_ACCOUNT_ADDRESS=', accountAddress0);
     console.log('OZ_ACCOUNT_PRIVATE_KEY=', privateKey0);
     const account0 = new Account(provider, accountAddress0, privateKey0);
@@ -36,149 +37,54 @@ async function main() {
     console.log("publicKey calculated =", starknetPublicKey, typeof (starknetPublicKey));
     console.log('fullpubKey =', fullPubKey);
 
-    const typedMessage: typedData.TypedData = {
-        domain: {
-            chainId: "Starknet Mainnet",
-            name: "Dappland",
-            version: "1.0",
-            hashing_function:"pedersen"
+    const typedMessage : TypedData = {
+        "types": {
+          "StarkNetDomain": [
+            { "name": "name", "type": "felt" },
+            { "name": "version", "type": "felt" },
+            { "name": "chainId", "type": "felt" }
+          ],
+          "Person": [
+            { "name": "name", "type": "felt" },
+            { "name": "wallet", "type": "felt" }
+          ],
+          "Mail": [
+            { "name": "from", "type": "Person" },
+            { "name": "to", "type": "Person" },
+            { "name": "contents", "type": "felt" }
+          ]
         },
-        message: {
-            MessageId: 345,
-            From: {
-                Name: "Edmund",
-                Address: "0x7e00d496e324876bbc8531f2d9a82bf154d1a04a50218ee74cdd372f75a551a",
-            },
-            To: {
-                Name: "Alice",
-                Address: "0x69b49c2cc8b16e80e86bfc5b0614a59aa8c9b601569c7b80dde04d3f3151b79",
-            },
-            Nft_to_transfer: {
-                Collection: "Stupid monkeys",
-                Address: "0x69b49c2cc8b16e80e86bfc5b0614a59aa8c9b601569c7b80dde04d3f3151b79",
-                Nft_id: 112,
-                Negociated_for: {
-                    Qty: "18.4569325643",
-                    Unit: "ETH",
-                    Token_address: "0x69b49c2cc8b16e80e86bfc5b0614a59aa8c9b601569c7b80dde04d3f3151b79",
-                    Amount: 18456932564300000000n,
-                }
-            },
-            Comment1: "Monkey with banana, sunglasses,",
-            Comment2: "and red hat.",
-            Comment3: "",
+        "primaryType": "Mail",
+        "domain": {
+          "name": "StarkNet Mail",
+          "version": "1",
+          "chainId": 1
         },
-        primaryType: "TransferERC721",
-        types: {
-            Account1: [
-                {
-                    name: "Name",
-                    type: "string",
-                },
-                {
-                    name: "Address",
-                    type: "felt",
-                },
-            ],
-            Nft: [
-                {
-                    name: "Collection",
-                    type: "string",
-                },
-                {
-                    name: "Address",
-                    type: "felt",
-                },
-                {
-                    name: "Nft_id",
-                    type: "felt",
-                },
-                {
-                    name: "Negociated_for",
-                    type: "Transaction",
-                },
-            ],
-            Transaction: [
-                {
-                    name: "Qty",
-                    type: "string",
-                },
-                {
-                    name: "Unit",
-                    type: "string",
-                },
-                {
-                    name: "Token_address",
-                    type: "felt",
-                },
-                {
-                    name: "Amount",
-                    type: "felt",
-                },
-            ],
-            TransferERC721: [
-                {
-                    name: "MessageId",
-                    type: "felt",
-                },
-                {
-                    name: "From",
-                    type: "Account1",
-                },
-                {
-                    name: "To",
-                    type: "Account1",
-                },
-                {
-                    name: "Nft_to_transfer",
-                    type: "Nft",
-                },
-                {
-                    name: "Comment1",
-                    type: "string",
-                },
-                {
-                    name: "Comment2",
-                    type: "string",
-                },
-                {
-                    name: "Comment3",
-                    type: "string",
-                },
-
-            ],
-            StarkNetDomain: [
-                {
-                    name: "name",
-                    type: "string",
-                },
-                {
-                    name: "chainId",
-                    type: "felt",
-                },
-                {
-                    name: "version",
-                    type: "string",
-                },
-                {
-                    name: "hashing_function",
-                    type: "string",
-                },
-            ],
-        },
-    };
+        "message": {
+          "from": {
+            "name": "Cow",
+            "wallet": "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
+          },
+          "to": {
+            "name": "Bob",
+            "wallet": "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"
+          },
+          "contents": "Hello, Bob!"
+        }
+      }
+      
     const msgHash=typedData.getMessageHash(typedMessage,account0.address);
-    const msgHashAcc=await account0.hashMessage(typedMessage);
     console.log("msgHash=",msgHash);
+    const msgHashAcc=await account0.hashMessage(typedMessage);
     console.log("msgHashAcc=",msgHashAcc);
 
     const signature  = await account0.signMessage(typedMessage);
     const sigArray=stark.formatSignature(signature);
-    console.log("Signature =", signature,sigArray);
-    const res = await account0.verifyMessage(typedMessage, sigArray);
-    console.log("bool response >> ", res);
-    const res2 = await account0.verifyMessageHash(msgHash, sigArray);
-    console.log("bool response >> ", res2);
+    console.log("Signature =", signature,"\n",sigArray);
+    // const res = await account0.verifyMessage(typedMessage, signature);
+    // console.log("bool response >> ", res);
+     const res2 = await account0.verifyMessageHash(msgHash, sigArray);
+     console.log("bool response >> ", res2);
    const resp=await account0.callContract({
         contractAddress: account0.address,
         entrypoint: 'isValidSignature',
@@ -187,7 +93,7 @@ async function main() {
           signature: sigArray,
         }),
       });
-      console.log("resp=", shortString.decodeShortString(resp.result[0]));
+      console.log("resp=", shortString.decodeShortString(resp[0]));
 
     const isVerified=ec.starkCurve.verify(signature as SignatureType, msgHash, fullPubKey);
     console.log("verified by Noble (boolean) =",isVerified);

@@ -3,7 +3,7 @@
 // Coded with Starknet.js v5.23.0
 
 import { constants, Contract, Account, json, shortString, RpcProvider, encode } from "starknet";
-import { account2TestnetAddress, account2TestnetPrivateKey } from "../../../A1priv/A1priv";
+//import { account2TestnetAddress, account2TestnetPrivateKey } from "../../../A1priv/A1priv";
 
 import fs from "fs";
 import { LogC } from "../../utils/logColors"
@@ -79,30 +79,6 @@ async function main() {
         'http://192.168.1.11:9545/rpc/v0_5', // my local pathfinder 
         'http://192.168.1.11:9545/rpc/v0_6', // my local pathfinder 
         'http://192.168.1.11:9545/rpc/v0_7', // my local pathfinder
-
-        // ************** Goerli testnet
-        "https://starknet-goerli.g.alchemy.com/v2/" + alchemyKey,
-        "https://starknet-goerli.g.alchemy.com/starknet/version/rpc/v0.5/" + alchemyKey,
-        "https://starknet-goerli.g.alchemy.com/starknet/version/rpc/v0_6/" + alchemyKey,
-        "https://starknet-goerli.g.alchemy.com/starknet/version/rpc/v0.6/" + alchemyKey, // 
-        "https://starknet-goerli.g.alchemy.com/starknet/version/rpc/v0_7/" + alchemyKey, // 
-        'https://starknet-goerli.infura.io/v3/' + infuraKey,
-        'https://starknet-goerli.infura.io/rpc/v0.5/' + infuraKey, //error
-        'https://starknet-goerli.infura.io/rpc/v0_6/' + infuraKey, //error
-        'https://starknet-goerli.infura.io/rpc/v0.6/' + infuraKey, //error
-        'https://starknet-goerli.infura.io/rpc/v0_7/' + infuraKey, //error
-        'https://starknet-testnet.blastapi.io/' + blastKey + "/rpc/v0.4",
-        'https://starknet-testnet.blastapi.io/' + blastKey + "/rpc/v0.5",
-        'https://starknet-testnet.blastapi.io/' + blastKey + "/rpc/v0_6",
-        'https://starknet-testnet.blastapi.io/' + blastKey + "/rpc/v0_7",
-        "https://starknet-testnet.public.blastapi.io/rpc/v0.4",
-        "https://starknet-testnet.public.blastapi.io/rpc/v0.5",
-        "https://starknet-testnet.public.blastapi.io/rpc/v0_6",
-        "https://starknet-testnet.public.blastapi.io/rpc/v0_7",
-        // "https://free-rpc.nethermind.io/goerli-juno/v0_5", // no more
-        "https://free-rpc.nethermind.io/goerli-juno/v0_6",
-        "https://free-rpc.nethermind.io/goerli-juno/v0_7",
-        "https://json-rpc.starknet-testnet.public.lavanet.xyz", // error
 
         // *************** Mainnet
         "https://starknet-mainnet.g.alchemy.com/v2/" + alchemyKey,

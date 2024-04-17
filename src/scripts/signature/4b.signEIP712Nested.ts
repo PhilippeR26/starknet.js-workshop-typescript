@@ -2,7 +2,7 @@
 // coded with Starknet.js v5.21.1
 // launch with npx ts-node src/scripts/signature/4b.signEIP712test.ts
 
-import { Account, ec, RpcProvider, encode, typedData, Signature, stark, ArraySignatureType, WeierstrassSignatureType } from "starknet";
+import { Account, ec, RpcProvider, encode, typedData, Signature, stark, ArraySignatureType, WeierstrassSignatureType, type TypedData } from "starknet";
 
 import * as dotenv from "dotenv";
 import fs from "fs";
@@ -22,7 +22,7 @@ async function main() {
     const accountAddress0 = "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691";
     console.log('OZ_ACCOUNT_ADDRESS=', accountAddress0);
     console.log('OZ_ACCOUNT_PRIVATE_KEY=', privateKey0);
-    const account0 = new Account(provider, accountAddress0, privateKey0);
+    const account0 = new Account(provider, accountAddress0, privateKey0,"1");
     console.log('✅ OZ predeployed account 0 connected.');
 
     // creation of message signature
@@ -33,7 +33,7 @@ async function main() {
     console.log("publicKey calculated =", starknetPublicKey, typeof (starknetPublicKey));
     console.log('fullpubKey =', fullPubKey);
 
-    const typedMessage: typedData.TypedData = {
+    const typedMessage: TypedData = {
         domain: {
             chainId: "Starknet Mainnet",
             name: "Dappland",

@@ -26,13 +26,13 @@ async function main() {
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo260/string.sierra.json").toString("ascii"));
     const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo260/string.casm.json").toString("ascii"));
     // ****** if not deployed
-    // const { deploy } = await account0.declareAndDeploy({
-    //     contract: compiledSierra,
-    //     casm: compiledCasm,
-    // });
-    // console.log("deployed at =",deploy.contract_address);
-    // const address=deploy.contract_address;
-    const address="0x2bb9735fe677e726cc96d2acf81aab25cca4d8d8ab23dc3faa532556fc681ab";
+    const { deploy } = await account0.declareAndDeploy({
+        contract: compiledSierra,
+        casm: compiledCasm,
+    });
+    console.log("deployed at =",deploy.contract_address);
+    const address=deploy.contract_address;
+    // const address="0x2bb9735fe677e726cc96d2acf81aab25cca4d8d8ab23dc3faa532556fc681ab";
     // **** if deployed in Sepolia :
     //const address = "0x660edd51a76b970cc8b843e5e0560e48afa2bb73e2530ab9a7425b17c1366b2";
 

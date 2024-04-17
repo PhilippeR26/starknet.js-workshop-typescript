@@ -47,6 +47,7 @@ async function main() {
     console.log("contract_address =", address);
     // address in testnet : 0x76e73ba220fcdc9b0b0b68556b9a59f36f5d124349db56e1de4879aa61a91ef
     // address in mainnet : 0x02bD907B978F58ceDf616cFf5CdA213d63Daa3AD28Dd3C1Ea17cA6CF5E1D395F
+    // address in Sepolia Testnet : 0x037BFDeB9c262566183211B89E85b871518eb0c32CBcb026dcE9A486560a03E0
     await provider.waitForTransaction(th2);
 
     console.log("✅ Test completed.");

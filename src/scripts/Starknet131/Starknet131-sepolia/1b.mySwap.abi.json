@@ -1,0 +1,1511 @@
+[
+  {
+    "type": "impl",
+    "name": "PoolContractState",
+    "interface_name": "myswapv3::contract::pool::IPoolState"
+  },
+  {
+    "type": "struct",
+    "name": "core::integer::u256",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "type": "enum",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "myswapv3::contract::pool::IPoolState",
+    "items": [
+      {
+        "type": "function",
+        "name": "positions",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "owner",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "tick_lower",
+            "type": "core::integer::u32"
+          },
+          {
+            "name": "tick_upper",
+            "type": "core::integer::u32"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u128, core::integer::u256, core::integer::u256)"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "positions_tokens_owed",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "owner",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "tick_lower",
+            "type": "core::integer::u32"
+          },
+          {
+            "name": "tick_upper",
+            "type": "core::integer::u32"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u128, core::integer::u128)"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "ticks",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "tick",
+            "type": "core::integer::u32"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u128, core::integer::u128, core::bool, core::bool)"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "ticks_fee_growth",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "tick",
+            "type": "core::integer::u32"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::integer::u256)"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "current_tick",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u32"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "current_sqrt_price",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "liquidity",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u128"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "fee_growth_global0",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "fee_growth_global1",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "balance0",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "balance1",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "token0",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "token1",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "max_liquidity_per_tick",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u128"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "PoolContract",
+    "interface_name": "myswapv3::contract::pool::IPoolActions"
+  },
+  {
+    "type": "struct",
+    "name": "myswapv3::contract::pool::SwapParams",
+    "members": [
+      {
+        "name": "zero_for_one",
+        "type": "core::bool"
+      },
+      {
+        "name": "amount",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "exact_input",
+        "type": "core::bool"
+      },
+      {
+        "name": "sqrt_price_limit_x96",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "max_steps",
+        "type": "core::felt252"
+      },
+      {
+        "name": "optimize_gaps",
+        "type": "core::bool"
+      },
+      {
+        "name": "simulate",
+        "type": "core::bool"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "myswapv3::contract::pool::IPoolActions",
+    "items": [
+      {
+        "type": "function",
+        "name": "mint",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "recipient",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "tick_lower",
+            "type": "core::integer::u32"
+          },
+          {
+            "name": "tick_upper",
+            "type": "core::integer::u32"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u128"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::integer::u256)"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "collect",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "recipient",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "tick_lower",
+            "type": "core::integer::u32"
+          },
+          {
+            "name": "tick_upper",
+            "type": "core::integer::u32"
+          },
+          {
+            "name": "amount0_requested",
+            "type": "core::integer::u128"
+          },
+          {
+            "name": "amount1_requested",
+            "type": "core::integer::u128"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u128, core::integer::u128)"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "burn",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "tick_lower",
+            "type": "core::integer::u32"
+          },
+          {
+            "name": "tick_upper",
+            "type": "core::integer::u32"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u128"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::integer::u256)"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "swap",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "zero_for_one",
+            "type": "core::bool"
+          },
+          {
+            "name": "amount",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "exact_input",
+            "type": "core::bool"
+          },
+          {
+            "name": "sqrt_price_limit_x96",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::bool, core::integer::u256, core::bool)"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "swap1",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "params",
+            "type": "myswapv3::contract::pool::SwapParams"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::bool, core::integer::u256, core::bool)"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "limited_swap",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "params",
+            "type": "myswapv3::contract::pool::SwapParams"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u256, core::integer::u256, core::felt252)"
+          }
+        ],
+        "state_mutability": "external"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "PoolOracleImpl",
+    "interface_name": "myswapv3::contract::pool::IPoolOracle"
+  },
+  {
+    "type": "interface",
+    "name": "myswapv3::contract::pool::IPoolOracle",
+    "items": [
+      {
+        "type": "function",
+        "name": "initialize_oracle",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_oracle_init_date",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u32"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "oracle_observe",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "seconds_ago",
+            "type": "core::array::Array::<core::integer::u32>"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::array::Array::<core::integer::u64>, core::array::Array::<core::integer::u256>)"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "PoolDeltasImpl",
+    "interface_name": "myswapv3::contract::pool::IPoolDeltas"
+  },
+  {
+    "type": "struct",
+    "name": "core::array::Span::<core::felt252>",
+    "members": [
+      {
+        "name": "snapshot",
+        "type": "@core::array::Array::<core::felt252>"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "myswapv3::contract::pool::IPoolDeltas",
+    "items": [
+      {
+        "type": "function",
+        "name": "set_deltas_config",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "active",
+            "type": "core::integer::u128"
+          },
+          {
+            "name": "fgg_size0",
+            "type": "core::integer::u128"
+          },
+          {
+            "name": "fgg_truncate0",
+            "type": "core::integer::u128"
+          },
+          {
+            "name": "price_truncate0",
+            "type": "core::integer::u128"
+          },
+          {
+            "name": "fgg_size1",
+            "type": "core::integer::u128"
+          },
+          {
+            "name": "fgg_truncate1",
+            "type": "core::integer::u128"
+          },
+          {
+            "name": "price_truncate1",
+            "type": "core::integer::u128"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "apply_price_fgg_deltas",
+        "inputs": [
+          {
+            "name": "key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_deltas_config",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::felt252"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_deltas",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::array::Span::<core::felt252>"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "PoolContractOwner",
+    "interface_name": "myswapv3::contract::pool::IPoolOwnerActions"
+  },
+  {
+    "type": "interface",
+    "name": "myswapv3::contract::pool::IPoolOwnerActions",
+    "items": [
+      {
+        "type": "function",
+        "name": "set_fee_protocol",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "fee_protocol0",
+            "type": "core::integer::u8"
+          },
+          {
+            "name": "fee_protocol1",
+            "type": "core::integer::u8"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "collect_protocol",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "recipient",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "amount0_requested",
+            "type": "core::integer::u128"
+          },
+          {
+            "name": "amount1_requested",
+            "type": "core::integer::u128"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "(core::integer::u128, core::integer::u128)"
+          }
+        ],
+        "state_mutability": "external"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "UpgradableImpl",
+    "interface_name": "myswapv3::contract::upgradable::IUpgradable"
+  },
+  {
+    "type": "interface",
+    "name": "myswapv3::contract::upgradable::IUpgradable",
+    "items": [
+      {
+        "type": "function",
+        "name": "upgrade",
+        "inputs": [
+          {
+            "name": "chash",
+            "type": "core::starknet::class_hash::ClassHash"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "migrate_storage",
+        "inputs": [],
+        "outputs": [],
+        "state_mutability": "external"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "PoolFactoryContract",
+    "interface_name": "myswapv3::contract::pool::IPoolFactory"
+  },
+  {
+    "type": "struct",
+    "name": "myswapv3::contract::pool::PoolParams",
+    "members": [
+      {
+        "name": "token0",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "name": "token1",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "name": "fee",
+        "type": "core::integer::u32"
+      },
+      {
+        "name": "tick_spacing",
+        "type": "core::integer::u32"
+      }
+    ]
+  },
+  {
+    "type": "interface",
+    "name": "myswapv3::contract::pool::IPoolFactory",
+    "items": [
+      {
+        "type": "function",
+        "name": "create_pool",
+        "inputs": [
+          {
+            "name": "token0",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "token1",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "fee",
+            "type": "core::integer::u32"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::felt252"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "initialize_pool_price",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          },
+          {
+            "name": "sqrt_price_x96",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "create_and_initialize_pool",
+        "inputs": [
+          {
+            "name": "token0",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "token1",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "fee",
+            "type": "core::integer::u32"
+          },
+          {
+            "name": "sqrt_price_x96",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::felt252"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "delete_pool",
+        "inputs": [
+          {
+            "name": "pkey",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "owner",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "pool_key",
+        "inputs": [
+          {
+            "name": "token0",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "token1",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "fee",
+            "type": "core::integer::u32"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::felt252"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_pool",
+        "inputs": [
+          {
+            "name": "token0",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "token1",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "fee",
+            "type": "core::integer::u32"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::felt252"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "is_initialized",
+        "inputs": [
+          {
+            "name": "token0",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "token1",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "fee",
+            "type": "core::integer::u32"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::bool"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "pool_params",
+        "inputs": [
+          {
+            "name": "pool_key",
+            "type": "core::felt252"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "myswapv3::contract::pool::PoolParams"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "fee_amount_to_tick_spacing",
+        "inputs": [
+          {
+            "name": "fee",
+            "type": "core::integer::u32"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u32"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "set_migrator",
+        "inputs": [
+          {
+            "name": "migrator",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "migrator",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "impl",
+    "name": "PoolStorageMgr",
+    "interface_name": "myswapv3::helpers::storage_mgr::IStorageMgr"
+  },
+  {
+    "type": "interface",
+    "name": "myswapv3::helpers::storage_mgr::IStorageMgr",
+    "items": [
+      {
+        "type": "function",
+        "name": "set_storage_version",
+        "inputs": [
+          {
+            "name": "version",
+            "type": "core::integer::u32"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_storage_version",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::integer::u32"
+          }
+        ],
+        "state_mutability": "view"
+      }
+    ]
+  },
+  {
+    "type": "constructor",
+    "name": "constructor",
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "core::starknet::contract_address::ContractAddress"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::Initialize",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "pool",
+        "type": "myswapv3::contract::pool::PoolParams",
+        "kind": "data"
+      },
+      {
+        "name": "sqrt_price_x96",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "tick",
+        "type": "core::integer::u32",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::Mint",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "pool",
+        "type": "myswapv3::contract::pool::PoolParams",
+        "kind": "data"
+      },
+      {
+        "name": "owner",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "tick_lower",
+        "type": "core::integer::u32",
+        "kind": "data"
+      },
+      {
+        "name": "tick_upper",
+        "type": "core::integer::u32",
+        "kind": "data"
+      },
+      {
+        "name": "liquidity_amount",
+        "type": "core::integer::u128",
+        "kind": "data"
+      },
+      {
+        "name": "amount0",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "amount1",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "sender",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::Collect",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "pool",
+        "type": "myswapv3::contract::pool::PoolParams",
+        "kind": "data"
+      },
+      {
+        "name": "owner",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "recipient",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "tick_lower",
+        "type": "core::integer::u32",
+        "kind": "data"
+      },
+      {
+        "name": "tick_upper",
+        "type": "core::integer::u32",
+        "kind": "data"
+      },
+      {
+        "name": "amount0",
+        "type": "core::integer::u128",
+        "kind": "data"
+      },
+      {
+        "name": "amount1",
+        "type": "core::integer::u128",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::Burn",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "pool",
+        "type": "myswapv3::contract::pool::PoolParams",
+        "kind": "data"
+      },
+      {
+        "name": "owner",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "tick_lower",
+        "type": "core::integer::u32",
+        "kind": "data"
+      },
+      {
+        "name": "tick_upper",
+        "type": "core::integer::u32",
+        "kind": "data"
+      },
+      {
+        "name": "liquidity_amount",
+        "type": "core::integer::u128",
+        "kind": "data"
+      },
+      {
+        "name": "amount0",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "amount1",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::Swap",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "pool",
+        "type": "myswapv3::contract::pool::PoolParams",
+        "kind": "data"
+      },
+      {
+        "name": "sender",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "recipient",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "amount0",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "amount0_sign",
+        "type": "core::bool",
+        "kind": "data"
+      },
+      {
+        "name": "amount1",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "amount1_sign",
+        "type": "core::bool",
+        "kind": "data"
+      },
+      {
+        "name": "sqrt_price_x96",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "liquidity",
+        "type": "core::integer::u128",
+        "kind": "data"
+      },
+      {
+        "name": "tick",
+        "type": "core::integer::u32",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::SetFeeProtocol",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "pool",
+        "type": "myswapv3::contract::pool::PoolParams",
+        "kind": "data"
+      },
+      {
+        "name": "protocol_fee_0_old",
+        "type": "core::integer::u8",
+        "kind": "data"
+      },
+      {
+        "name": "protocol_fee_1_old",
+        "type": "core::integer::u8",
+        "kind": "data"
+      },
+      {
+        "name": "protocol_fee_0_new",
+        "type": "core::integer::u8",
+        "kind": "data"
+      },
+      {
+        "name": "protocol_fee_1_new",
+        "type": "core::integer::u8",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::CollectProtocol",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "pool",
+        "type": "myswapv3::contract::pool::PoolParams",
+        "kind": "data"
+      },
+      {
+        "name": "sender",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "recipient",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "amount0",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "amount1",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::PoolCreated",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "pool",
+        "type": "myswapv3::contract::pool::PoolParams",
+        "kind": "data"
+      },
+      {
+        "name": "pool_key",
+        "type": "core::felt252",
+        "kind": "data"
+      },
+      {
+        "name": "tick_spacing",
+        "type": "core::integer::u32",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::DebugCalcTick",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "price",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "tick",
+        "type": "core::integer::u32",
+        "kind": "data"
+      },
+      {
+        "name": "prev_tick",
+        "type": "core::integer::u32",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::DebugCalcPrice",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "price",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "tick",
+        "type": "core::integer::u32",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::DebugSwapStep",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "amount_in",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "price",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::DebugSwap",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "amount0",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "amount1",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::DebugBlock",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "n",
+        "type": "core::integer::u64",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "myswapv3::contract::pool::PoolContract::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "Initialize",
+        "type": "myswapv3::contract::pool::PoolContract::Initialize",
+        "kind": "nested"
+      },
+      {
+        "name": "Mint",
+        "type": "myswapv3::contract::pool::PoolContract::Mint",
+        "kind": "nested"
+      },
+      {
+        "name": "Collect",
+        "type": "myswapv3::contract::pool::PoolContract::Collect",
+        "kind": "nested"
+      },
+      {
+        "name": "Burn",
+        "type": "myswapv3::contract::pool::PoolContract::Burn",
+        "kind": "nested"
+      },
+      {
+        "name": "Swap",
+        "type": "myswapv3::contract::pool::PoolContract::Swap",
+        "kind": "nested"
+      },
+      {
+        "name": "SetFeeProtocol",
+        "type": "myswapv3::contract::pool::PoolContract::SetFeeProtocol",
+        "kind": "nested"
+      },
+      {
+        "name": "CollectProtocol",
+        "type": "myswapv3::contract::pool::PoolContract::CollectProtocol",
+        "kind": "nested"
+      },
+      {
+        "name": "PoolCreated",
+        "type": "myswapv3::contract::pool::PoolContract::PoolCreated",
+        "kind": "nested"
+      },
+      {
+        "name": "DebugCalcTick",
+        "type": "myswapv3::contract::pool::PoolContract::DebugCalcTick",
+        "kind": "nested"
+      },
+      {
+        "name": "DebugCalcPrice",
+        "type": "myswapv3::contract::pool::PoolContract::DebugCalcPrice",
+        "kind": "nested"
+      },
+      {
+        "name": "DebugSwapStep",
+        "type": "myswapv3::contract::pool::PoolContract::DebugSwapStep",
+        "kind": "nested"
+      },
+      {
+        "name": "DebugSwap",
+        "type": "myswapv3::contract::pool::PoolContract::DebugSwap",
+        "kind": "nested"
+      },
+      {
+        "name": "DebugBlock",
+        "type": "myswapv3::contract::pool::PoolContract::DebugBlock",
+        "kind": "nested"
+      }
+    ]
+  }
+]

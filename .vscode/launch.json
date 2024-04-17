@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/Starknet131/Starknet131-devnet/tmp2.ts",
+            "program": "${workspaceFolder}/src/scripts/Starknet131/Starknet131-sepolia/1.swap.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

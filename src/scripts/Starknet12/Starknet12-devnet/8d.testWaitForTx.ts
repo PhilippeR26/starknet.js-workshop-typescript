@@ -62,7 +62,7 @@ async function main() {
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo210/reject.sierra.json").toString("ascii"));
 
     //          👇👇👇 Put here the result of script 8
-    const contractAddress = "0x69fe61bc198a70983c333e47f4ee225a195a8032dbad64a4d1e70e9a11a3423";
+    const contractAddress = "0x45c49742694207c8c8dca0f85a60c0e2ac6a626db9d84b106758feb0aa53727";
     //const contractAddress = "0x1073c451258ff87d4e280fb00bc556767cdd464d14823f84fcbb8ba44895a34"; 
 
     const myTestContract = new Contract(compiledSierra.abi, contractAddress, provider);
@@ -95,11 +95,14 @@ async function main() {
     });
     if (receipt1.isSuccess()) { cont = receipt1.value as SuccessfulTransactionReceiptResponse }
     // if ("type" in receipt1){console.log("type =",receipt1.type)};
-    console.log("receipt1 =", receipt1, result, cont);
+    console.log("receipt1 =", receipt1);
+    console.log("receipt1.txH =", receipt1.value);
     console.log("result =", result, cont);
+    console.log("cont =",  cont);
 
     const txR = receipt1;
-    console.log(txR.statusReceipt, txR.value);
+    console.log(".StatusReceipt =", txR.statusReceipt);
+    console.log(".value =", txR.value);
     console.log(txR.isSuccess(), txR.isRejected(), txR.isReverted(), txR.isError());
     txR.match({
         success: () => { console.log('Success') },

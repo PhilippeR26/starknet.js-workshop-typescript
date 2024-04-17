@@ -25,7 +25,8 @@
     "pako": "^2.1.0",
     "starknet1": "file:/D/starknetFork/starknet.js",
     "starknet2": "starknet-io/starknet.js#a5b628fb0248a5c8caddc985cf93b6d53a69bf04",
-    "starknet3": "^5.14.0"
+    "starknet3": "https://github.com/<user>/<project>.git#<branch>",
+    "starknet4": "^5.14.0"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.14",

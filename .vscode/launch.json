@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/Starknet131/Starknet131-sepolia/1.swap.ts",
+            "program": "${workspaceFolder}/src/scripts/shortstring/byteArrayTests.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

@@ -50,7 +50,6 @@ async function main() {
     // console.log("default =", chId, resp);
 
     const listProvider = [
-        constants.NetworkName.SN_GOERLI, // default Goerli Testnet
         constants.NetworkName.SN_SEPOLIA, // default Sepolia Testnet
         constants.NetworkName.SN_MAIN, // default Testnet
 

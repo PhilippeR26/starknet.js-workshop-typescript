@@ -23,19 +23,17 @@ type Transfer = {
 
 function extractTransfers(events: EVENT[]): Transfer[] {
     const transfer = "0x99cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9";
-    const transfers: Transfer[] = events.reduce((acc: Transfer[], myEvent: EVENT) => {
-        if (myEvent.keys[0] === transfer) {
-            return [...acc, {
+    return events.reduce((acc: Transfer[], myEvent: EVENT) => {
+        return myEvent.keys[0] === transfer ?
+            [...acc, {
                 token: myEvent.from_address,
                 from: myEvent.keys[1],
                 to: myEvent.keys[2],
-                amount: uint256.uint256ToBN({ low: myEvent.data[1], high: myEvent.data[0] })
+                amount: uint256.uint256ToBN({ low: myEvent.data[0], high: myEvent.data[1] })
             } as Transfer]
-        } else {
-            return acc
-        }
+            :
+            acc
     }, [] as Transfer[]);
-    return transfers;
 }
 
 async function main() {

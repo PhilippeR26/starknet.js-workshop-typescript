@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/shortstring/byteArrayTests.ts",
+            "program": "${workspaceFolder}/src/tmp/21.decodeCalldataencoded.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

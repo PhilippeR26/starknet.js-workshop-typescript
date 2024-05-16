@@ -24,6 +24,7 @@
     "bn.js": "^5.2.1",
     "ethers": "^5.5.0",
     "fs": "^0.0.1-security",
+    "js-sha3": "^0.9.3",
     "keccak256": "^1.0.6",
     "micro-starknet": "^0.2.3",
     "pako": "^2.1.0",
@@ -31,6 +32,7 @@
     "rsv-signature": "^1.1.0",
     "starknet": "6.8.0",
     "starknet-merkle-tree": "^1.0.2",
+    "starknet-types": "^0.7.2",
     "vm2": "^3.9.19",
     "web3-utils": "^4.2.0",
     "ws": "^8.16.0"

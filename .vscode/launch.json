@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/tmp/21.decodeCalldataencoded.ts",
+            "program": "${workspaceFolder}/src/tmp/26.testSepolia.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

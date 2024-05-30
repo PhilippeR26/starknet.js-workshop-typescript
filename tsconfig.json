@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target":"ES2022",
     "lib": [
-      "es2020",
+      "es2022",
       "dom"
     ],
     "outDir": "./out",

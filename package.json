@@ -32,7 +32,7 @@
     "rsv-signature": "^1.1.0",
     "starknet": "6.9.0",
     "starknet-merkle-tree": "^1.0.2",
-    "starknet-types": "^0.7.2",
+    "@starknet-io/types-js": "^0.7.4",
     "vm2": "^3.9.19",
     "web3-utils": "^4.2.0",
     "ws": "^8.16.0"

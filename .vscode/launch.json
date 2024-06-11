@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/tmp/26.testSepolia.ts",
+            "program": "${workspaceFolder}/src/scripts/Starknet131/Starknet131-devnet/10.testZeroable.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

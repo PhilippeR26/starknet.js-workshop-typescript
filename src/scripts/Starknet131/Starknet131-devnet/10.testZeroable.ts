@@ -4,12 +4,9 @@
 
 import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish } from "starknet";
 import { type RPC } from "starknet";
-import { account1BraavosSepoliaAddress, account1BraavosSepoliaPrivateKey, junoNMtestnet } from "../../../A1priv/A1priv";
-import { account1BraavosMainnetAddress, account1BraavosMainnetPrivateKey, alchemyKey, infuraKey } from "../../../A-MainPriv/mainPriv";
-
 import fs from "fs";
 import * as dotenv from "dotenv";
-// import { ETransactionVersion2 } from "@starknet-io/types-js";
+import { ETransactionVersion2 } from "@starknet-io/types-js";
 dotenv.config();
 
 async function main() {
@@ -41,8 +38,8 @@ async function main() {
   const account0 = new Account(myProvider, accountAddress0, privateKey0);
   console.log("Account connected.\n");
 
-  // type te=ETransactionVersion2;
-  // const rrr:te=ETransactionVersion2.V2;
+  type te=ETransactionVersion2;
+  const rrr:te=ETransactionVersion2.V2;
 
   const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo263/zeroable.sierra.json").toString("ascii"));
   const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo263/zeroable.casm.json").toString("ascii"));

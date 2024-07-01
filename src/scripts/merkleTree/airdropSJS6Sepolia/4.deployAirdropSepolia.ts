@@ -46,7 +46,7 @@ async function main() {
     const compiledCasmAirdrop = json.parse(fs.readFileSync("./compiledContracts/cairo240/airdropSJS6.casm.json").toString("ascii"));
     //         👇👇👇
     // 🚨🚨🚨 Change addresses following execution of scripts src/scripts/merkleTree/airdropSJS6Sepolia/2.deployMerkleVerifySepolia.ts 
-    const ERC20_ADDRESS = "0x998bec0c912e4257bf87719bf6af2575ccebcd00fd284b8044d1e14fc30ce9";
+    const ERC20_ADDRESS = "0x37e0251e45a968a26fa503635c031d6020612a10d35c99e3496e10cb930f0a3";
     const MERKLE_VERIF_ADDRESS = "0x14877859e56be2beca0a332e169dc6bfbbfcf6bc3ab7fe33759794114efa2ff";
     //         👆👆👆
     console.log('In progress...');

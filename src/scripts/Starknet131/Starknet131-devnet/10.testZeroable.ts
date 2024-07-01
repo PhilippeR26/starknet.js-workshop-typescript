@@ -2,12 +2,15 @@
 // launch with npx ts-node src/scripts/Starknet131/Starknet131-sepolia/2.testZeroable.ts
 // Coded with Starknet.js v6.9.0
 
-import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish } from "starknet";
+import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types } from "starknet";
 import { type RPC } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
-import { ETransactionVersion2 } from "@starknet-io/types-js";
 dotenv.config();
+import { ETransactionVersion2 } from "@starknet-io/types-js";
+
+const a=constants.StarknetChainId.SN_SEPOLIA;
+const tt : types.RPC.RPCSPEC07.ETransactionVersion2 = types.RPC.RPCSPEC07.ETransactionVersion2.F0
 
 async function main() {
   const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });

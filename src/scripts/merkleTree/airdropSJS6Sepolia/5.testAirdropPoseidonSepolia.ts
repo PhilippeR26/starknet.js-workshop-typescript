@@ -46,8 +46,8 @@ async function main() {
     // Connect the Airdrop deployed contract in devnet
     //    👇👇👇
     // modify with the Airdrop address resulting of 2 & 4 :
-    const ERC20_ADDRESS = "0x998bec0c912e4257bf87719bf6af2575ccebcd00fd284b8044d1e14fc30ce9";
-    const AIRDROP_ADDRESS = "0x57ba0443c28b38ee4be0ae1e6f5e0a63a6e8b6cc6e352c997b6d0d24fe0b22d";
+    const ERC20_ADDRESS = "0x37e0251e45a968a26fa503635c031d6020612a10d35c99e3496e10cb930f0a3";
+    const AIRDROP_ADDRESS = "0x2cd1f7e597cbe0dea22cdf8bfa54eda6779173870f2b83e777facb316d99c2a";
     //    👆👆👆
     const compiledSierraERC20 = json.parse(fs.readFileSync("compiledContracts/cairo220/erc20OZ070.sierra.json").toString("ascii"));
     const erc20Contract = new Contract(compiledSierraERC20.abi, ERC20_ADDRESS, account0);

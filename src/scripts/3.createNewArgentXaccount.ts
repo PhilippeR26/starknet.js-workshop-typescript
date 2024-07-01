@@ -2,7 +2,8 @@
 // launch with : npx ts-node ssrc/scripts/3.createNewArgentXaccount.ts
 // Coded with Starknet.js v5.19.5, Starknet-devnet-rs v0.1.0
 
-import { RpcProvider, Account, ec, json, stark, hash, CallData, Contract } from "starknet";
+import { RpcProvider, Account, ec, json, stark, hash, CallData, Contract, CairoOption, CairoOptionVariant, CairoCustomEnum } from "starknet";
+import { DevnetProvider } from "starknet-devnet";
 
 import fs from "fs";
 import axios from "axios";
@@ -15,9 +16,14 @@ dotenv.config();
 //          👆👆👆
 async function main() {
     const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only for starknet-devnet-rs
+    const devnetProvider=new DevnetProvider({url:provider.channel.nodeUrl});
+    if (!devnetProvider.isAlive()){
+        console.log("Devnet-rs is not running...");
+        process.exit(5);
+    }
     console.log("Provider connected to Starknet-devnet-rs");
 
-    // initialize existing predeployed account 0 of Devnet
+    // initialize existing pre-deployed account 0 of Devnet
     console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
     console.log('OZ_ACCOUNT_PRIVATE_KEY=', process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY);
     const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
@@ -25,8 +31,8 @@ async function main() {
     const account0 = new Account(provider, accountAddress0, privateKey0);
     console.log("Account 0 connected.\n");
 
-    const accountAXsierra = json.parse(fs.readFileSync("./compiledContracts/cairo243/ArgentXAccount031.sierra.json").toString("ascii"));
-    const accountAXcasm = json.parse(fs.readFileSync("./compiledContracts/cairo243/ArgentXAccount031.casm.json").toString("ascii"));
+    const accountAXsierra = json.parse(fs.readFileSync("./compiledContracts/cairo263/ArgentXAccount040.sierra.json").toString("ascii"));
+    const accountAXcasm = json.parse(fs.readFileSync("./compiledContracts/cairo263/ArgentXAccount040.casm.json").toString("ascii"));
     const ch = hash.computeContractClassHash(accountAXsierra);
     console.log("Class Hash of ArgentX contract =", ch);
 
@@ -37,21 +43,28 @@ async function main() {
     console.log('AX account Public Key  =', starkKeyPubAX);
 
     // declare
-    const respDecl = await account0.declare({ contract: accountAXsierra, casm: accountAXcasm });
-    const contractAXclassHash = "0x029927c8af6bccf3f6fda035981e765a7bdbf18a2dc0d630494f8758aa908e2b";
-    //const contractAXclassHash=respDecl.class_hash;
-    await provider.waitForTransaction(respDecl.transaction_hash);
-    console.log("ArgentX Cairo 1 contract declared")
+    const respDecl = await account0.declareIfNot({ contract: accountAXsierra, casm: accountAXcasm });
+    if (respDecl.transaction_hash) {
+        await provider.waitForTransaction(respDecl.transaction_hash);
+        console.log("ArgentX Cairo 1 contract declared");
+    } else { console.log("Already declared.") };
 
+    const contractAXclassHash = "0x036078334509b514626504edc9fb252328d1a240e4e948bef8d0c08dff45927f"; //v0.4.0
+    //const contractAXclassHash=respDecl.class_hash;
     const calldataAX = new CallData(accountAXsierra.abi);
-    const ConstructorAXCallData = calldataAX.compile("constructor", {
-        owner: starkKeyPubAX,
-        guardian: "0"
+    const axSigner = new CairoCustomEnum({ Starknet: { pubkey: starkKeyPubAX } });
+    const axGuardian = new CairoOption<unknown>(CairoOptionVariant.None)
+    const constructorAXCallData = calldataAX.compile("constructor", {
+        owner: axSigner,
+        guardian: axGuardian
     });
-    const accountAXAddress = hash.calculateContractAddressFromHash(starkKeyPubAX, contractAXclassHash, ConstructorAXCallData, 0);
+    console.log("constructor =", constructorAXCallData);
+    const accountAXAddress = hash.calculateContractAddressFromHash(starkKeyPubAX, contractAXclassHash, constructorAXCallData, 0);
     console.log('Precalculated account address=', accountAXAddress);
 
     // fund account address before account creation
+    // const _mint0=devnetProvider.mint(accountAXAddress,10_000_000_000_000_000_000,"WEI");
+    // const _mint1=devnetProvider.mint(accountAXAddress,100_000_000_000_000_000_000,"FRI");
     const { data: answer } = await axios.post('http://127.0.0.1:5050/mint', {
         "address": accountAXAddress,
         "amount": 10_000_000_000_000_000_000
@@ -68,13 +81,13 @@ async function main() {
     const accountAX = new Account(provider, accountAXAddress, privateKeyAX);
     const deployAccountPayload = {
         classHash: contractAXclassHash,
-        constructorCalldata: ConstructorAXCallData,
+        constructorCalldata: constructorAXCallData,
         contractAddress: accountAXAddress,
         addressSalt: starkKeyPubAX
     };
-    // const { transaction_hash: AXdAth, contract_address: accountAXFinalAdress } = await accountAX.deployAccount(deployAccountPayload);
-    // console.log("Final address =", accountAXFinalAdress);
-    // await provider.waitForTransaction(AXdAth);
+    const { transaction_hash: AXdAth, contract_address: accountAXFinalAddress } = await accountAX.deployAccount(deployAccountPayload);
+    console.log("Final address =", accountAXFinalAddress);
+    await provider.waitForTransaction(AXdAth);
     console.log('✅ ArgentX wallet deployed.');
 
 }

@@ -17,9 +17,6 @@
   "license": "ISC",
   "dependencies": {
     "@ethersproject/hdnode": "^5.7.0",
-    "@ledgerhq/hw-transport-node-hid": "^6.29.1",
-    "@ledgerhq/hw-transport-node-speculos": "^6.29.0",
-    "@ledgerhq/hw-transport-web-ble": "^6.29.0",
     "@noble/curves": "^1.3.0",
     "@scure/bip32": "^1.3.3",
     "@scure/starknet": "^1.0.0",
@@ -34,7 +31,7 @@
     "pako": "^2.1.0",
     "rpc-websockets": "^7.9.0",
     "rsv-signature": "^1.1.0",
-    "starknet": "6.11.0",
+    "starknet": "https://github.com/kfastov/starknet.js.git#develop",
     "starknet-devnet": "^0.0.4",
     "starknet-merkle-tree": "^1.0.2",
     "vm2": "^3.9.19",

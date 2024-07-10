@@ -1,10 +1,10 @@
 // create a new OpenZeppelin 0.14.0 upgradable account in Sepolia Testnet
 // launch with npx ts-node src/scripts/Starknet131/Starknet131-sepolia/2.createOZaccount.ts
-// Coded with Starknet.js v6.10.0
+// Coded with Starknet.js v6.10.2
 
 
-import { Account, ec, json,  hash, CallData, RpcProvider,  stark,  Contract, shortString,  type CompiledSierra, validateAndParseAddress } from "starknet";
-import { account1BraavosSepoliaAddress, account1BraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
+import { Account, ec, json, hash, CallData, RpcProvider, stark, Contract, shortString, type CompiledSierra, validateAndParseAddress } from "starknet";
+import { account1BraavosSepoliaAddress as account2BraavosSepoliaAddress, account1BraavosSepoliaPrivateKey as account2BraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { ethAddress, strkAddress } from "../../utils/constants";
@@ -12,7 +12,12 @@ import { formatBalance } from "../../utils/formatBalance";
 dotenv.config();
 
 async function main() {
-     const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
+    // devnet-rs 0.1.2 forked from  Sepolia testnet node of Nethermind
+    //    👇👇👇
+    // 🚨🚨🚨 launch 'cargo run --release -- --seed 0  --state-archive-capacity full --fork-network https://free-rpc.nethermind.io/sepolia-juno/v0_7' in devnet-rs directory before using this script
+    //    👆👆👆     
+    const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
+    
     //const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); // local Sepolia Testnet node
     //const provider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_7" }); // Sepolia Testnet 
     // const provider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_7" }); // Mainnet
@@ -27,8 +32,8 @@ async function main() {
     // const accountAddress0: string = process.env.OZ_ACCOUNT0_DEVNET_ADDRESS ?? "";
     // const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
     // **** Sepolia
-    const accountAddress0 = account1BraavosSepoliaAddress;
-    const privateKey0 = account1BraavosSepoliaPrivateKey;
+    const accountAddress0 = account2BraavosSepoliaAddress;
+    const privateKey0 = account2BraavosSepoliaPrivateKey;
     // **** Mainnet
     //  const accountAddress0 = account1BraavosMainnetAddress;
     //  const privateKey0 = account1BraavosMainnetPrivateKey;
@@ -62,12 +67,12 @@ async function main() {
     const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));
     const ethContract = new Contract(compiledERC20Contract.abi, ethAddress, account0);
     const strkContract = new Contract(compiledERC20Contract.abi, strkAddress, account0);
-    const respTransfer = await ethContract.transfer(contractOzAddress, 2 * 10 ** 15);
+    const respTransfer = await ethContract.transfer(contractOzAddress, 1 * 10 ** 15);
     await provider.waitForTransaction(respTransfer.transaction_hash);
 
     // deploy account
     const ozAccount = new Account(provider, contractOzAddress, privateKey);
-    
+
     const { transaction_hash, contract_address } = await ozAccount.deployAccount({
         classHash: decClassHash,
         constructorCalldata: accountOzConstructorCalldata,

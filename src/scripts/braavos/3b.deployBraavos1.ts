@@ -3,6 +3,8 @@
 
 import { ec, hash, num, constants, Provider, CallData, stark, BigNumberish, type RpcProvider, RPC, type V2InvocationsSignerDetails, } from "starknet";
 import { type RawCalldata, type DeployContractResponse, type Calldata, type DeployAccountContractPayload, type EstimateFeeDetails, type CairoVersion, type InvocationsSignerDetails, type DeployAccountContractTransaction, } from "starknet";
+import { ETransactionVersion2 } from "@starknet-io/types-js";
+
 
 const BraavosBaseClassHash: BigNumberish = "0x013bfe114fb1cf405bfc3a7f8dbe2d91db146c17521d40dcf57e16d6b59fa8e6";
 const BraavosAccountClassHash = "0x00816dd0297efc55dc1e7559020a3a825e81ef734b558f03c83325d4da7e6253";
@@ -11,7 +13,7 @@ export function getBraavosSignature(
     BraavosAddress: num.BigNumberish,
     BraavosConstructorCallData: Calldata,
     starkKeyPubBraavos: BigNumberish,
-    version: `${RPC.ETransactionVersion2}`,
+    version: ETransactionVersion2,
     max_fee: BigNumberish,
     chainId: constants.StarknetChainId,
     nonce: bigint,
@@ -165,7 +167,7 @@ export async function deployBraavosAccount(
     const BraavosConstructorCallData = BraavosConstructor(starkKeyPubBraavos);
     // console.log("constructor =", BraavosConstructorCallData);
     max_fee ??= await estimateBraavosAccountDeployFee(privateKeyBraavos, provider);
-    const version = RPC.ETransactionVersion2.V1;
+    const version = ETransactionVersion2.V1;
     const signatureBraavos = getBraavosSignature(
         BraavosAddress,
         BraavosConstructorCallData,

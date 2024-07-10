@@ -29,7 +29,7 @@ async function main() {
     // Connect l2 devnet Starknet-devnet-rs
     const l2DevnetProviderSNJS = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
     const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
-    if (!l2DevnetProvider.isAlive()) {
+    if (!(await l2DevnetProvider.isAlive())) {
         console.log("No l2 devnet.");
         process.exit(5);
     }
@@ -53,14 +53,14 @@ async function main() {
     const l1Signer = l1Signers[0];
     console.log("l1 account connected.\n");
 
-    // deploy contract in l2
+    // deploy contract in l2 (source in ./contracts/*)
     const l2Sierra = (json.parse(fs.readFileSync("./src/scripts/l1l2messaging/contracts/l1l2.sierra.json").toString("ascii"))) as CompiledSierra;
     const l2Casm = (json.parse(fs.readFileSync("./src/scripts/l1l2messaging/contracts/l1l2.casm.json").toString("ascii"))) as CompiledSierraCasm;
     const l2Resp = await l2Account.declareAndDeploy(({ contract: l2Sierra, casm: l2Casm }));
     const l2Contract = new Contract(l2Sierra.abi, l2Resp.deploy.contract_address, l2Account);
     console.log("l2 example contract deployed at :", l2Contract.address);
 
-    // deploy 2 contracts in l1
+    // deploy 2 contracts in l1 (sources in ./contracts/*)
     const mockStarknetMessagingArtifact = json.parse(fs.readFileSync("./src/scripts/l1l2messaging/contracts/MockStarknetMessaging.sol.json").toString("ascii"));
     const mockStarknetMessagingFactory = new ethers.ContractFactory(
         mockStarknetMessagingArtifact.abi,

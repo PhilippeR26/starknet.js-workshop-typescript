@@ -7,8 +7,7 @@ import { RpcProvider, Account, ec, json, stark, hash, CallData, Contract, type B
 import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";
-import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature } from "./braavos/3b.deployBraavos1";
-import { account3BraavosTestnetPrivateKey } from "../A1priv/A1priv";
+import { deployBraavosAccount} from "./braavos/3b.deployBraavos1";
 dotenv.config();
 
 
@@ -39,7 +38,6 @@ async function main() {
     const accountBraavosSierra = json.parse(fs.readFileSync("./compiledContracts/cairo251/braavos_account_Braavos100.sierra.json").toString("ascii"));
     const accountBraavosCasm = json.parse(fs.readFileSync("./compiledContracts/cairo251/braavos_account_Braavos100.casm.json").toString("ascii"));
     const respDecl2 = await account0.declareIfNot({ contract: accountBraavosSierra, casm: accountBraavosCasm });
-    const contractBraavosClassHash2 = respDecl2.class_hash;
     console.log("Braavos contract class hash :", respDecl2.class_hash);
     if (respDecl2.transaction_hash) { await provider.waitForTransaction(respDecl2.transaction_hash) };
 

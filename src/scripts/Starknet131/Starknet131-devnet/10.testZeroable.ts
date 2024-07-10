@@ -10,7 +10,7 @@ dotenv.config();
 import { ETransactionVersion2 } from "@starknet-io/types-js";
 
 const a=constants.StarknetChainId.SN_SEPOLIA;
-const tt : types.RPC.RPCSPEC07.ETransactionVersion2 = types.RPC.RPCSPEC07.ETransactionVersion2.F0
+const tt : types.RPC.RPCSPEC07.ETransactionVersion2 = types.RPC.RPCSPEC07.ETransactionVersion2.F0;
 
 async function main() {
   const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
@@ -41,8 +41,8 @@ async function main() {
   const account0 = new Account(myProvider, accountAddress0, privateKey0);
   console.log("Account connected.\n");
 
-  type te=ETransactionVersion2;
-  const rrr:te=ETransactionVersion2.V2;
+  // type te=ETransactionVersion2;
+  // const rrr:te=ETransactionVersion2.V2;
 
   const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo263/zeroable.sierra.json").toString("ascii"));
   const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo263/zeroable.casm.json").toString("ascii"));

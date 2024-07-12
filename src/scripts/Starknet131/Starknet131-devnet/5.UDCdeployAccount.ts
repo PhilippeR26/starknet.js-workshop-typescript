@@ -1,8 +1,8 @@
-// deploy in testnet a contracgt.
+// deploy in testnet a contract.
 // launch with npx ts-node src/scripts/Starknet12/Starknet-testnet/2a.deployTestERC721.ts
 // Coded with Starknet.js v6.6.6 + starknet devnet-rs 0.0.3
 
-import { constants, Provider, Contract, Account, json, shortString, RpcProvider, hash, CallData, Call, stark, InvokeFunctionResponse, Calldata, ec, type InvokeTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, parseUDCEvent, type CompiledSierra } from "starknet";
+import { constants, Provider, Contract, Account, json, shortString, RpcProvider, hash, CallData, Call, stark, InvokeFunctionResponse, Calldata, ec, type InvokeTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse,events , type CompiledSierra } from "starknet";
 import fs from "fs";
 import axios from "axios";
 import { ethAddress } from "../../utils/constants";
@@ -74,7 +74,7 @@ async function main() {
     txR.match({
         success: (txR: SuccessfulTransactionReceiptResponse) => {
             console.log('Success =', txR, "\n", txR.events);
-            const resDeploy = parseUDCEvent(txR as InvokeTransactionReceiptResponse);
+            const resDeploy = events.parseUDCEvent(txR as InvokeTransactionReceiptResponse);
             console.log(resDeploy);
             accountAddr = resDeploy.address;
             console.log("Account address =", (resDeploy.address));

@@ -1,6 +1,6 @@
-// Read STRK contract in Sepolia Testnet
-// launch with npx ts-node src/scripts/Starknet131/Starknet131-sepolia/3.readSTRK.ts
-// Coded with Starknet.js v6.10.0
+// Transfer using an ArgentX v0.4.0 account created & deployed in the wallet.
+// launch with npx ts-node src/scripts/Starknet131/Starknet131-sepolia/4.testTransferArgentX040.ts
+// Coded with Starknet.js v6.11.0
 
 
 import { Account, RpcProvider, Contract, shortString, constants, json } from "starknet";
@@ -35,7 +35,6 @@ async function main() {
 
     const account0 = new Account(myProvider, accountAddress0, privateKey0);
     console.log("ArgentX Account 3 connected.\n");
-
     // *****************************************
     // test of transfer
     const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));

@@ -54,7 +54,7 @@ export async function deployAccountNoERC165(myProvider: RpcProvider, account0: A
         contractAddress: OZcontractAddress
     });
     await myProvider.waitForTransaction(transaction_hash);
-  console.log('✅ OpenZeppelin 0.14.0 no ERC165 introspection account deployed.');
+  console.log('✅ OpenZeppelin 0.14.0 no ERC165 introspection account deployed at',contract_address);
 
   const result: DeployAccountResp = {
     account: OZaccount,

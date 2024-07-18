@@ -34,7 +34,7 @@
     "pako": "^2.1.0",
     "rpc-websockets": "^7.9.0",
     "rsv-signature": "^1.1.0",
-    "starknet": "6.11.0",
+    "starknet": "file:~/Documents/starknet/starknet.js",
     "starknet-devnet": "^0.0.4",
     "starknet-merkle-tree": "^1.0.2",
     "vm2": "^3.9.19",

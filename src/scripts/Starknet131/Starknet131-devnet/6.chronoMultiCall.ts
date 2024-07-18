@@ -1,8 +1,8 @@
-// deploy in testnet a contracgt.
+// deploy in testnet a contract.
 // launch with npx ts-node src/scripts/Starknet12/Starknet-testnet/2a.deployTestERC721.ts
 // Coded with Starknet.js v6.6.6 + starknet devnet-rs 0.0.3
 
-import { constants, Provider, Contract, Account, json, shortString, RpcProvider, hash, CallData, Call, stark, InvokeFunctionResponse, Calldata, ec, type InvokeTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, parseUDCEvent, type CompiledSierra } from "starknet";
+import {  Contract, Account, json, shortString, RpcProvider,   type CompiledSierra } from "starknet";
 import fs from "fs";
 import axios from "axios";
 import { ethAddress, strkAddress } from "../../utils/constants";

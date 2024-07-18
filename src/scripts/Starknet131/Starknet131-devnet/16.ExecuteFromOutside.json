@@ -1,0 +1,22 @@
+{
+  "accountAX4": {
+    "address": "0x144615fa730c2b1353bc9a6b94c45ee8bfd62ec229e01966949174bf6dadea2",
+    "privateK": "0x60c68fbc6cba4d9bbc15c933fd39bea8bcbc1506a6117a851398412fa973058"
+  },
+  "accountAX3": {
+    "address": "0x7062a46abc2852c3726557dfaf9f189ecd35354fb1cfa01e8adc2d9b5ea6c58",
+    "privateK": "0x5f371216d59fb4350fee1014cf7e7f009a7974bf4ca72e21dcd9571af0c9338"
+  },
+  "accountBraavos": {
+    "address": "0x4c8b144b07625707b76cae97a42b86be0ad2ec707782f0b1ad4d336f2ccf654",
+    "privateK": "0x1a600dedc863aaa256d35df2b0165d0bcb99f969b9e11a6e646511c43b0502c"
+  },
+  "accountOZ14": {
+    "address": "0x4c56e2bbf388f2deee2c7ccc829574c169ff9f9965d5633ed0e1557e5faa05c",
+    "privateK": "0x5c10a1dc1545fe0f456230d5ba473c37d424c50fc915b671d421eeb296fdba5"
+  },
+  "accountNoERC165": {
+    "address": "0x56eb96b2baab5ed23f9f352dd68dd22ffe0bdccfae36c34e192dd04ad18b1b1",
+    "privateK": "0x279c8746a43a807a19edd7c060b6fc7a392597cf954237a14001f68f30ab7e5"
+  }
+}

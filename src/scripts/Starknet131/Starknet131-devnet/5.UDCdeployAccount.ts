@@ -1,5 +1,5 @@
-// deploy in testnet a contract.
-// launch with npx ts-node src/scripts/Starknet12/Starknet-testnet/2a.deployTestERC721.ts
+// deploy in testnet an account using UDC.
+// launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/5.UDCdeployAccount.ts
 // Coded with Starknet.js v6.6.6 + starknet devnet-rs 0.0.3
 
 import { constants, Provider, Contract, Account, json, shortString, RpcProvider, hash, CallData, Call, stark, InvokeFunctionResponse, Calldata, ec, type InvokeTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse,events , type CompiledSierra } from "starknet";

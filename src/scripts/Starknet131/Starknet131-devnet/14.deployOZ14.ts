@@ -23,7 +23,7 @@ export async function deployAccountOpenzeppelin14(myProvider: RpcProvider, accou
 
     // Generate public and private key pair.
     const privateKey = stark.randomAddress();
-    console.log('New account :\nprivateKey=', privateKey);
+    console.log('New OpenZeppelin14 account :\nprivateKey=', privateKey);
     const starkKeyPub = ec.starkCurve.getStarkKey(privateKey);
     console.log('publicKey=', starkKeyPub);
     //declare OZ wallet contract

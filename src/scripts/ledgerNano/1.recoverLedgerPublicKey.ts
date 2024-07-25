@@ -1,9 +1,13 @@
-import { CallData, Signer, SignerInterface, ec, encode, hash, num, shortString, stark, transaction, typedData, validateAndParseAddress, type Call, type DeclareSignerDetails, type DeployAccountSignerDetails, type InvocationsSignerDetails, type Signature, type TypedData, type V2DeclareSignerDetails, type V2DeployAccountSignerDetails, type V2InvocationsSignerDetails, type V3DeclareSignerDetails, type V3DeployAccountSignerDetails, type V3InvocationsSignerDetails, type WeierstrassSignatureType, } from "starknet"
+
+// Recover the public key of a Ledger Nano S+/X account, from a signed hash.
+// launch with npx ts-node src/scripts/ledgerNano/1.recoverLedgerPublicKey.ts
+// Coded with Starknet.js v6.11.0 + experimental & devnet-rs v0.1.2 & starknet-devnet.js v0.0.4
+
+import { ec, encode, hash, num,  validateAndParseAddress } from "starknet"
 import TransportNodeHid from "@ledgerhq/hw-transport-node-hid";
-//import BluetoothTransport from "@ledgerhq/hw-transport-web-ble";
-import SpeculosTransport from "@ledgerhq/hw-transport-node-speculos";
+import SpeculosTransport from "@ledgerhq/hw-transport-node-speculos"; // Ledger simulator
 import { sha256 } from '@noble/hashes/sha256';
-import { ETransactionVersion2, ETransactionVersion3 } from "starknet-types-07";
+import LogC from "../utils/logColors";
 
 const MASK_31 = 2n ** 31n - 1n;
 
@@ -73,7 +77,6 @@ async function main() {
 
     // ********** get Ledger Starknet APP version
     const apduVersion = new Uint8Array([Number("0x5a"), 0, 0, 0, 0]);
-    //const resp = await transport.exchange(Buffer.from(apduVersion));
     const resp = await transport.send(Number("0x5a"), 0, 0, 0);
     const starknetAPPversion = resp[0] + "." + resp[1] + "." + resp[2];
     const versionCode = encode.addHexPrefix(encode.buf2hex(resp.subarray(3, 5)));
@@ -84,7 +87,6 @@ async function main() {
     console.log("pathBuff =", pathBuff, "\nLen =", pathBuff.length);
     const apduGetPubK = concatenateArrayBuffer([new Uint8Array([Number("0x5a"), 1, 0, 0, 24]), pathBuff]);
 
-    //const respGetPublic = Uint8Array.from(await transport.exchange(Buffer.from(apduGetPubK)));
     const respGetPublic = Uint8Array.from(await transport.send(Number("0x5a"), 1, 0, 0, Buffer.from(pathBuff)));
     const parityPubK = num.toHex(respGetPublic[0]);
     const pubX = encode.addHexPrefix(encode.buf2hex(respGetPublic.subarray(1, 33)));
@@ -101,19 +103,17 @@ async function main() {
     // ************ sign
     // sign1
     console.log("****** sign part 1 :");
-    //console.log("data sign1 =",pathBuff, "\nLen =", pathBuff.length);
-
     const respSign1 = encode.addHexPrefix(encode.buf2hex(await transport.send(Number("0x5a"), 2, 0, 0, Buffer.from(pathBuff))));
     console.log("Response code part 1 =", respSign1);
     // sign 2
     console.log("******* sign part 2 :");
     const hash0 = hash.computePedersenHashOnElements([0, 1]);
-    // const hash1 = validateAndParseAddress(hash0);
     const hash1 = "0x5111111111111111111111111111111111111111111111111111111111111120";
     const hash2 = "0x0511111111111111111111111111111111111111111111111111111111111112";
     console.log("trH =", hash1);
     const buff2 = num.hexToBytes(hash1);
     console.log("hash =", buff2, "\nLen =", buff2.length);
+    console.log(LogC.underscore+LogC.fg.yellow+"Sign in your Ledger the hash"+LogC.reset)
     const respSign2 = Uint8Array.from(await transport.send(Number("0x5a"), 2, 1, 0, Buffer.from(buff2)));
     console.log("Sign 2 =", respSign2, "\nLen =", respSign2.length);
     const r = BigInt(encode.addHexPrefix(encode.buf2hex(respSign2.subarray(1, 33))));
@@ -126,7 +126,6 @@ async function main() {
     console.log("Sign 2 =", sign1);
     console.log("Response code =", sign2Code);
     const recPubK = sign1.recoverPublicKey(encode.removeHexPrefix(hash2));
-    // console.log("recover pubk =", recPubK);
     const recX = validateAndParseAddress(num.toHex(recPubK.x));
     const recY = validateAndParseAddress(num.toHex(recPubK.y));
     const par = recPubK.hasEvenY() ? "03" : "04";

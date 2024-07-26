@@ -49,7 +49,7 @@ async function main() {
     console.log('Precalculated account address=', OZcontractAddress);
 
     // fund account address before account creation
-    const { data: answer } = await axios.post('http://127.0.0.1:5050/mint', { "address": OZcontractAddress, "amount": 10_000_000_000_000_000_000, "lite": true }, { headers: { "Content-Type": "application/json" } });
+    const { data: answer } = await axios.post('http://127.0.0.1:5050/mint', { "address": OZcontractAddress, "amount": 10*10**18, "unit": "WEI" }, { headers: { "Content-Type": "application/json" } });
     console.log('Answer mint =', answer); // 10 ETH
 
     // deploy account

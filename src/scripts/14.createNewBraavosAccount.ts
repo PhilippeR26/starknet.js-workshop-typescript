@@ -60,7 +60,8 @@ async function main() {
     // fund account address before account creation
     const { data: answer } = await axios.post('http://127.0.0.1:5050/mint', {
         "address": accountBraavosAddress,
-        "amount": 10_000_000_000_000_000_000
+        "amount": 10_000_000_000_000_000_000,
+        "unit": "WEI"
     }, { headers: { "Content-Type": "application/json" } });
     console.log('Answer mint =', answer); // 10 ETH
     const { data: answer2 } = await axios.post('http://127.0.0.1:5050/mint', {

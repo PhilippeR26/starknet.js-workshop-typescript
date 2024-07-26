@@ -54,7 +54,7 @@ async function main() {
     console.log('Precalculated account address=', AXproxyAddress);
 
     // fund account address before account creation
-    const { data: answer } = await axios.post('http://127.0.0.1:5050/mint', { "address": AXproxyAddress, "amount": 50_000_000_000_000_000_000, "lite": true }, { headers: { "Content-Type": "application/json" } });
+    const { data: answer } = await axios.post('http://127.0.0.1:5050/mint', { "address": AXproxyAddress, "amount": 50_000_000_000_000_000_000, "unit": "WEI" }, { headers: { "Content-Type": "application/json" } });
     console.log('Answer mint =', answer);
 
     // deploy ArgentX account

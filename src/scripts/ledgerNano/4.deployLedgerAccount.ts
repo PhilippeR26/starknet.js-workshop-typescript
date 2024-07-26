@@ -1,6 +1,6 @@
 // library for script 5.
 // Deploy an OpenZeppelin 0.14.0 account in devnet.
-// Coded with Starknet.js v6.11.0 & devnet-rs v0.1.1 & starknet-devnet.js v0.0.4
+// Coded with Starknet.js v6.1.0 & devnet-rs v0.1.1 & starknet-devnet.js v0.0.5
 
 import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo, CairoCustomEnum, CairoOption, CairoOptionVariant, type Call, type InvokeFunctionResponse } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
@@ -63,8 +63,8 @@ export async function deployLedgerAccount(myProvider: RpcProvider, account0: Acc
   console.log("TxH =", txHDepl);
   const txR = await myProvider.waitForTransaction(txHDepl);
   // fund account address before account creation
-  await l2DevnetProvider.mint(addressDepl, 10 * 10 ** 18, "WEI");
-  await l2DevnetProvider.mint(addressDepl, 10 * 10 ** 18, "FRI");
+  await l2DevnetProvider.mint(addressDepl, 10n * 10n ** 18n, "WEI");
+  await l2DevnetProvider.mint(addressDepl, 10n * 10n ** 18n, "FRI");
 
   console.log('✅ Ledger account deployed.');
 

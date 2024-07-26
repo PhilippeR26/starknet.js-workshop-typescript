@@ -1,6 +1,6 @@
 // Calculate hashes related to L1->L2 messages.
 // Launch with npx ts-node src/scripts/l1l2messaging/2.calculateL1toL2Hashes.ts
-// Coded with Starknet.js v6.11.0 + experimental
+// Coded with Starknet.js v6.12.0
 
 import { constants, hash } from "starknet";
 

@@ -1,6 +1,6 @@
 # Starkware Starknet network ^0.13.1
 # Cairo Accounts and ERC20 Demo 
-# Typescript code, using Starknet.js v6.11.0 and local Starknet-devnet-rs 0.1.2
+# Typescript code, using Starknet.js v6.12.0 and local Starknet-devnet-rs 0.1.2
 ![Starknet.js](/src/img/starknet-js.png)
 
 If you want to implement the Starknet network in your DAPP, you can use starknet.js to interact with it.
@@ -25,7 +25,7 @@ Run `npm install` in this directory.
 
 This repo is configured to be able to perform debugging of your typescript code. Just CTRL+SHIFT+D, then click on the green arrow.
 
-This script has been written with cairo v0.13.1, Starknet-devnet-rs v0.1.2, starknet.js v6.11.0. Due to fast iterations of Starknet and Cairo, these scripts will probably be quickly out-of-date.
+This script has been written with cairo v0.13.1, Starknet-devnet-rs v0.1.2, starknet.js v6.12.0. Due to fast iterations of Starknet and Cairo, these scripts will probably be quickly out-of-date.
 
 
 

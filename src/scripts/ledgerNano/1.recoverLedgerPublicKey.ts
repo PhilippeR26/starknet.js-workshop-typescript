@@ -1,7 +1,7 @@
 
 // Recover the public key of a Ledger Nano S+/X account, from a signed hash.
 // launch with npx ts-node src/scripts/ledgerNano/1.recoverLedgerPublicKey.ts
-// Coded with Starknet.js v6.11.0 + experimental & devnet-rs v0.1.2 & starknet-devnet.js v0.0.4
+// Coded with Starknet.js v6.12.0 & devnet-rs v0.1.2 & starknet-devnet.js v0.0.5
 
 import { ec, encode, hash, num,  validateAndParseAddress } from "starknet"
 import TransportNodeHid from "@ledgerhq/hw-transport-node-hid";

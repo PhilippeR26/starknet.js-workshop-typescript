@@ -1,6 +1,6 @@
 // Use a Ledger Nano S+/X to sign a transaction.
 // launch with npx ts-node src/scripts/ledgerNano/5.testLedgerAccount.ts
-// Coded with Starknet.js v6.11.0 + experimental & devnet-rs v0.1.2 & starknet-devnet.js v0.0.4
+// Coded with Starknet.js v6.12.0 & devnet-rs v0.1.2 & starknet-devnet.js v0.0.5
 
 import { RpcProvider, Account, Contract, json, shortString, LedgerSigner } from "starknet";
 import { DevnetProvider } from "starknet-devnet";

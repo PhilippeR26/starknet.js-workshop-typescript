@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/Starknet131/Starknet131-sepolia/3.readSTRK.ts",
+            "program": "${workspaceFolder}/src/scripts/Starknet131/Starknet131-devnet/1.transactionV3.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

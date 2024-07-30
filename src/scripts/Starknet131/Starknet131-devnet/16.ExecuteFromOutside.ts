@@ -1,6 +1,6 @@
 // SNIP-9 execute transactions from outside.
 // launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/16.ExecuteFromOutside.ts
-// Coded with Starknet.js v6.11.0 & devnet-rs v0.1.1 & starknet-devnet.js v0.0.4
+// Coded with Starknet.js v6.11.0 + experimental & devnet-rs v0.1.1 & starknet-devnet.js v0.0.4
 
 import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo, CairoCustomEnum, CairoOption, CairoOptionVariant, validateAndParseAddress } from "starknet";
 import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature } from "../../braavos/3b.deployBraavos1";

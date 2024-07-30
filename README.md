@@ -19,7 +19,6 @@ Use `cd starknet.js-workshop-typescript` to go to the root of the project.
 If necessary :
 
 - Install latest LTS version of node [here](https://kinsta.com/blog/how-to-install-node-js/#how-to-install-nodejs-on-linux)
-- Install Starknet-devnet-rs  [here](https://github.com/0xSpaceShard/starknet-devnet-rs)
   
 Run `npm install` in this directory.
 
@@ -33,17 +32,8 @@ The Account contract used in this workshop is made by [OpenZeppelin](https://git
 
 ##  🚀 Start the demo 🚀  🎆 ↘️  💩
 
-Open a console, and launch the devnet `cargo run --release -- --seed 0`
-
-Open a second console, and launch the script :  
+Open a console, and launch the script :  
 `npx ts-node src/starknet_jsNewAccount.ts`  
-
-When you see that you have to fund your new wallet, it's automatic in devnet.  
-Faucet for devnet, if necessary :  
-```bash
-curl -X POST http://127.0.0.1:5050/mint -d '{"address":"0x1234","amount":50000000000000000000,"lite":true}' -H "Content-Type:application/json"
-```
-or `source ./src/scripts/mintWallet.sh`
 
 More easy : use `npx ts-node src/starknet_jsExistingAccount.ts`, using preexisting account #0 created automatically during Devnet-rs launch.
 
@@ -74,6 +64,13 @@ In the folder 'scripts', you can find many pedagogical codes :
         - contract.nameFunction [workshop](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/starknet_jsExistingAccount.ts#L56)
         - contract.invoke [script11](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/11.CallInvokeContract.ts)
     - with a signature : account.execute [workshop](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/starknet_jsExistingAccount.ts#L69)
+
+
+### Devnet-rs :
+If you want to install an launch an instance of the local devnet-rs : https://github.com/0xSpaceShard/starknet-devnet-rs
+Open a console, and launch the devnet `cargo run --release -- --seed 0`
+
+
 ### Others :
 
 You can find in this repo tons of other scripts. Dig in and find many useful examples of code.  

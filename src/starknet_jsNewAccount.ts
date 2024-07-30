@@ -1,30 +1,26 @@
 // Deploy and use an ERC20, monetized by a new account
 // Launch with : npx ts-node src/starknet_jsNewAccount.ts
-// Coded with Starknet.js v5.21.0, Starknet-devnet-rs v0.1.0
+// Coded with Starknet.js v6.11.0, Starknet-devnet-rs v0.1.2
 
 import fs from "fs";
-import { Account, Contract, ec, json, uint256, hash, CallData, Call, Calldata, cairo, Uint256, RpcProvider, shortString } from "starknet";
+import { Account, Contract, ec, json, hash, CallData, Call, Calldata, RpcProvider, shortString } from "starknet";
+import { Devnet } from "starknet-devnet";
 import axios from "axios";
 import * as dotenv from "dotenv";
-import { resetDevnetNow } from "./scripts/utils/resetDevnetFunc";
 import { formatBalance } from "./scripts/utils/formatBalance";
 dotenv.config();
 
-//        👇👇👇
-// 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet-rs directory before using this script
-//        👆👆👆
 
 async function main() {
-    const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only for starknet-devnet-rs
-    console.log("chain Id =", shortString.decodeShortString(await provider.getChainId()), ", rpc", await provider.getSpecVersion());
+    const devnet = await Devnet.spawnVersion("v0.1.2", { stdout: "ignore" });
+    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
+    console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
 
     console.log("Provider connected to Starknet-devnet-rs");
 
     // initialize existing pre-deployed account 0 of Devnet
-    console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
-    const accountAddress: string = process.env.OZ_ACCOUNT0_DEVNET_ADDRESS ?? "";
-    const privateKey = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
-    const account0 = new Account(provider, accountAddress, privateKey);
+    const devnetAccounts = await devnet.provider.getPredeployedAccounts();
+    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
     console.log("Account 0 connected.\n");
 
     // creation of new account in Devnet
@@ -39,9 +35,11 @@ async function main() {
     const accountOZ081Casm = json.parse(
         fs.readFileSync("./compiledContracts/cairo241/accountOZ081.casm.json").toString("ascii")
     );
-    const { transaction_hash: declTH, class_hash: decCH } = await account0.declare({ contract: accountOZ081Sierra, casm: accountOZ081Casm });
+    const { transaction_hash: declTH, class_hash: decCH } = await account0.declareIfNot({ contract: accountOZ081Sierra, casm: accountOZ081Casm });
     console.log('Account class hash =', decCH);
-    await provider.waitForTransaction(declTH);
+    if (declTH) {
+        await myProvider.waitForTransaction(declTH)
+    };
 
     // Calculate future address of the account
     const accountCallData: CallData = new CallData(accountOZ081Sierra.abi);
@@ -49,13 +47,12 @@ async function main() {
     const C20contractAddress = hash.calculateContractAddressFromHash(starkKeyPubC20, decCH, accountConstructorCallData, 0);
     console.log('Precalculated account address=', C20contractAddress);
     // fund account address before account creation (50 ETH)
-    const { data: answer } = await axios.post('http://127.0.0.1:5050/mint', { "address": C20contractAddress, "amount": 50_000_000_000_000_000_000, "lite": true }, { headers: { "Content-Type": "application/json" } });
-    console.log('Answer mint =', answer);
+    await devnet.provider.mint(C20contractAddress, 50n * 10n ** 18n, "WEI");
     // deploy account
-    const accountC20 = new Account(provider, C20contractAddress, privateKeyC20); // with Starknet.js v5.21.0, automatic recognize of the Cairo version of the account
+    const accountC20 = new Account(myProvider, C20contractAddress, privateKeyC20); // with Starknet.js v5.21.0, automatic recognize of the Cairo version of the account
     const { transaction_hash, contract_address } = await accountC20.deployAccount({ classHash: decCH, constructorCalldata: accountConstructorCallData, addressSalt: starkKeyPubC20 });
     console.log('New account created.\n   final address =', contract_address);
-    await provider.waitForTransaction(transaction_hash);
+    await myProvider.waitForTransaction(transaction_hash);
 
     // Deploy an ERC20 contract 
     console.log("Deployment Tx - ERC20 Contract to StarkNet...");
@@ -96,7 +93,7 @@ async function main() {
     // Get the erc20 contract address
     const erc20Address = deployERC20Response.deploy.contract_address;
     // Create a new erc20 contract object
-    const erc20 = new Contract(erc20mintableSierra.abi, erc20Address, provider);
+    const erc20 = new Contract(erc20mintableSierra.abi, erc20Address, myProvider);
     erc20.connect(accountC20);
 
     // Check balance - should be 100
@@ -109,7 +106,7 @@ async function main() {
     const { transaction_hash: mintTxHash } = await erc20.mint(accountC20.address, 500n, { maxFee: 900_000_000_000_000 }); // maxFee optional
     // Wait for the invoke transaction to be accepted on StarkNet
     console.log(`Waiting for Tx to be Accepted on Starknet - Minting...`);
-    await provider.waitForTransaction(mintTxHash);
+    await myProvider.waitForTransaction(mintTxHash);
     // Check balance - should be 105
     console.log(`Calling StarkNet for account balance...`);
     const balanceBeforeTransfer = await erc20.balanceOf(accountC20.address) as bigint;
@@ -122,17 +119,17 @@ async function main() {
         amount: 1000
     });
     console.log("Transfer 1...");
-    const { transaction_hash: transferTxHash } = await accountC20.execute(transferCallData, undefined, { maxFee: 900_000_000_000_000 });  // maxFee optional
-    await provider.waitForTransaction(transferTxHash);
+    const { transaction_hash: transferTxHash } = await accountC20.execute(transferCallData, { maxFee: 900_000_000_000_000 });  // maxFee optional
+    await myProvider.waitForTransaction(transferTxHash);
 
     console.log("Transfer 2...");
     const { transaction_hash: transferTxHash2 } = await erc20.transfer(erc20Address, 1000n);
-    await provider.waitForTransaction(transferTxHash2);
+    await myProvider.waitForTransaction(transferTxHash2);
 
     console.log("Transfer 3...");
     const { transaction_hash: transferTxHash3 } = await erc20.transfer(...transferCallData.calldata as string[], { parseRequest: false });
     // Warning message is normal with the ParseRequest option de-activated
-    await provider.waitForTransaction(transferTxHash3);
+    await myProvider.waitForTransaction(transferTxHash3);
 
     // Check balance after transfer - should be 75
     console.log(`Calling StarkNet for account balance...`);

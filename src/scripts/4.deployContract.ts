@@ -1,28 +1,29 @@
 // Deploy an instance of an already declared contract.
 // use of OZ deployer
 // launch with npx ts-node src/scripts/4.deployContractOZ.ts
-// Coded with Starknet.js v5.16.0, Starknet-devnet-rs v0.1.0
+// Coded with Starknet.js v6.11.0
 
 import { Account, CallData, Contract, json, RpcProvider } from "starknet";
+import { DevnetProvider } from "starknet-devnet";
 import fs from "fs";
 import * as dotenv from "dotenv";
+import { DEVNET_PORT } from "../constants";
 dotenv.config();
 
 
 //          👇👇👇
-// 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet-rs directory before using this script
-//          Before execution, launch also before the script for declaration of Test contract : script 9.
+// 🚨🚨🚨 Before execution of this script, launch the script 9 to declare the Test contract.
+// 🚨🚨🚨 After execution of this script, launch the script 11 to test, and to close Devnet-rs.
 //          👆👆👆
 async function main() {
-    const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only for starknet-devnet-rs
+    // Devnet-rs has already been started in script 9
+    const devnet = new DevnetProvider({ url: "http://127.0.0.1:" + DEVNET_PORT }); // running devnet-rs
+    const myProvider = new RpcProvider({ nodeUrl: devnet.url });
     console.log("Provider connected to Starknet-devnet-rs");
 
     // initialize existing predeployed account 0 of Devnet-rs
-    console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
-    console.log('OZ_ACCOUNT_PRIVATE_KEY=', process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY);
-    const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
-    const accountAddress0: string = process.env.OZ_ACCOUNT0_DEVNET_ADDRESS ?? "";
-    const account0 = new Account(provider, accountAddress0, privateKey0);
+    const devnetAccounts = await devnet.getPredeployedAccounts();
+    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
     console.log("Account 0 connected.\n");
 
     // Deploy Test instance in devnet-rs
@@ -37,9 +38,9 @@ async function main() {
     }, { maxFee: estimatedFee1 * 11n / 10n });
 
     // Connect the new contract :
-    const myTestContract = new Contract(testSierra.abi, deployResponse.contract_address, provider);
+    const myTestContract = new Contract(testSierra.abi, deployResponse.contract_address, myProvider);
     console.log('✅ Test Contract connected at =', myTestContract.address);
-
+    // Devnet-rs will be closed in script 11
 }
 main()
     .then(() => process.exit(0))

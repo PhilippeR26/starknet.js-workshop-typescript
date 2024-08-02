@@ -1,18 +1,20 @@
 // Deploy and use an ERC20, monetized by an existing account
 // Launch with : npx ts-node src/starknet_jsExistingAccount.ts
-// Coded with Starknet.js v6.11.0, Starknet-devnet-rs v0.1.2
+// Coded with Starknet.js v6.11.0
 
 import fs from "fs";
 import { Account, Contract, json, CallData, Calldata, Call, RpcProvider, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";
 import * as dotenv from "dotenv";
 import { formatBalance } from "./scripts/utils/formatBalance";
+import { DEVNET_PORT, DEVNET_VERSION } from "./constants";
 dotenv.config();
 
 
 async function main() {
-    const devnet = await Devnet.spawnVersion("v0.1.2", { stdout: "ignore" });
+    const devnet = await Devnet.spawnVersion(DEVNET_VERSION, { stdout: "ignore", keepAlive: false, args: ["--seed", "0", "--port", DEVNET_PORT] });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
+    console.log("devnet-rs : url =", devnet.provider.url);
     console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
 
     console.log("Provider connected to Starknet-devnet-rs");
@@ -23,7 +25,7 @@ async function main() {
     console.log("Account 0 connected.\n");
 
     // Deploy an ERC20 contract 
-    console.log("Deployment Tx - ERC20 Contract to StarkNet...");
+    console.log("Deployment Tx - ERC20 Contract to Starknet...");
 
     // Constructor of the ERC20 contract :
     // fn constructor(
@@ -82,12 +84,12 @@ async function main() {
 
     // Execute tx transfer of 2x10 tokens, showing 3 ways to write data in Starknet
     console.log(`Invoke Tx - Transfer 3x10 tokens back to erc20 contract...`);
-    const transferCallData: Call = erc20.populate("transfer", {
+    const transferCall: Call = erc20.populate("transfer", {
         recipient: erc20Address,
         amount: 1000
     });
     console.log("Transfer 1...");
-    const { transaction_hash: transferTxHash } = await account0.execute(transferCallData, { maxFee: 900_000_000_000_000 });  // maxFee optional
+    const { transaction_hash: transferTxHash } = await account0.execute(transferCall, { maxFee: 900_000_000_000_000 });  // maxFee optional
     await myProvider.waitForTransaction(transferTxHash);
 
     console.log("Transfer 2...");
@@ -95,12 +97,24 @@ async function main() {
     await myProvider.waitForTransaction(transferTxHash2);
 
     console.log("Transfer 3...");
-    const { transaction_hash: transferTxHash3 } = await erc20.transfer(...transferCallData.calldata as string[], { parseRequest: false });
+    const { transaction_hash: transferTxHash3 } = await erc20.transfer(...transferCall.calldata as string[], { parseRequest: false });
     // Warning message is normal with the ParseRequest option de-activated
     await myProvider.waitForTransaction(transferTxHash3);
 
-    // Check balance after transfer - should be 75
-    console.log(`Calling StarkNet for account balance...`);
+    console.log("Transfer 4...");
+    const transferCall1: Call = erc20.populate("transfer", {
+        recipient: erc20Address,
+        amount: 200
+    });
+    const transferCall2: Call = erc20.populate("transfer", {
+        recipient: erc20Address,
+        amount: 300
+    });
+    const { transaction_hash: transferTxHash4 } = await account0.execute([transferCall1, transferCall2]);  // execute several operations in the same transaction (Only Starknet makes it possible)
+    await myProvider.waitForTransaction(transferTxHash4);
+
+    // Check balance after transfer - should be 70
+    console.log(`Calling Starknet for account balance...`);
     const balanceAfterTransfer = await erc20.balanceOf(account0.address);
     console.log("account0 has a balance of :", formatBalance(balanceAfterTransfer, DECIMALS));
     console.log("✅ Test completed.");

@@ -1,19 +1,20 @@
 // Deploy and use an ERC20, monetized by a new account
 // Launch with : npx ts-node src/starknet_jsNewAccount.ts
-// Coded with Starknet.js v6.11.0, Starknet-devnet-rs v0.1.2
+// Coded with Starknet.js v6.11.0
 
 import fs from "fs";
 import { Account, Contract, ec, json, hash, CallData, Call, Calldata, RpcProvider, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";
-import axios from "axios";
 import * as dotenv from "dotenv";
 import { formatBalance } from "./scripts/utils/formatBalance";
+import { DEVNET_PORT, DEVNET_VERSION } from "./constants";
 dotenv.config();
 
 
 async function main() {
-    const devnet = await Devnet.spawnVersion("v0.1.2", { stdout: "ignore" });
+    const devnet = await Devnet.spawnVersion(DEVNET_VERSION, { stdout: "ignore", keepAlive: false, args: ["--seed", "0", "--port", DEVNET_PORT] });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
+    console.log("devnet-rs : url =", devnet.provider.url);
     console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
 
     console.log("Provider connected to Starknet-devnet-rs");
@@ -55,7 +56,7 @@ async function main() {
     await myProvider.waitForTransaction(transaction_hash);
 
     // Deploy an ERC20 contract 
-    console.log("Deployment Tx - ERC20 Contract to StarkNet...");
+    console.log("Deployment Tx - ERC20 Contract to Starknet...");
 
     // Constructor of the ERC20 contract :
     // fn constructor(
@@ -132,7 +133,7 @@ async function main() {
     await myProvider.waitForTransaction(transferTxHash3);
 
     // Check balance after transfer - should be 75
-    console.log(`Calling StarkNet for account balance...`);
+    console.log(`Calling Starknet for account balance...`);
     const balanceAfterTransfer = await erc20.balanceOf(accountC20.address);
     console.log("account0 has a balance of :", formatBalance(balanceAfterTransfer, DECIMALS));
     console.log("✅ Test completed.");

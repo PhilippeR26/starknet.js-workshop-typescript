@@ -1,7 +1,4 @@
 // util.ts
-// import * as dotenv from 'dotenv';
-// dotenv.config();
-//import express from 'express'
 
 /**
  * Receives a hex address, converts it to bigint, converts it back to hex.
@@ -24,3 +21,4 @@ export function ensureEnvVar(varName: string): string {
     }
     return process.env[varName] as string;
 }
+ 

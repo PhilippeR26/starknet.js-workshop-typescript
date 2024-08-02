@@ -33,7 +33,8 @@ The Account contract used in this workshop is made by [OpenZeppelin](https://git
 ##  🚀 Start the demo 🚀  🎆 ↘️  💩
 
 Open a console, and launch the script :  
-`npx ts-node src/starknet_jsNewAccount.ts`  
+`npx ts-node src/starknet_jsNewAccount.ts` 
+devnet-rs is automatically launched and closed in the script.
 
 More easy : use `npx ts-node src/starknet_jsExistingAccount.ts`, using preexisting account #0 created automatically during Devnet-rs launch.
 
@@ -67,9 +68,15 @@ In the folder 'scripts', you can find many pedagogical codes :
 
 
 ### Devnet-rs :
-If you want to install an launch an instance of the local devnet-rs : https://github.com/0xSpaceShard/starknet-devnet-rs
-Open a console, and launch the devnet `cargo run --release -- --seed 0`
-
+Devnet-rs is launched and ended automatically in the scripts of this tuto.  
+If you prefer to have a devnet-rs launched permanently in its own console :
+- To install and launch an instance of the local devnet-rs : https://github.com/0xSpaceShard/starknet-devnet-rs  
+- Open a console, and launch devnet-rs `cargo run --release -- --seed 0`
+- In all scripts, replace opening of a new Devnet by : 
+```typescript
+const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
+```
+and remove `kill` commands.
 
 ### Others :
 

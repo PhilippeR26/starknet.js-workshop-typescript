@@ -4,8 +4,6 @@
 
 import { constants, Contract, Account, json, shortString, RpcProvider, types, RPC, num, ec, CallData, hash, cairo } from "starknet";
 import fs from "fs";
-import { account5TestnetAddress, account5TestnetPrivateKey } from "../../../A1priv/A1priv";
-import { infuraKey, account4MainnetAddress, account4MainnetPrivateKey, blastKey } from "../../../A-MainPriv/mainPriv";
 import { account0OZSepoliaAddress, account0OZSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZaddress, account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
 import { ethAddress, strkAddress } from "../../utils/constants";
@@ -56,7 +54,7 @@ async function main() {
     // const contractAddress = "0x01073c451258ff87d4e280fb00bc556767cdd464d14823f84fcbb8ba44895a34"; //Goerli Testnet
     // const contractAddress = "0x37bfdeb9c262566183211b89e85b871518eb0c32cbcb026dce9a486560a03e0"; //Sepolia Testnet
     // const contractAddress = "0x33852427be21d24eca46797a31363597f52afcc315763ce32e83e5218eed2e3"; //Sepolia Integration
-    const contractAddress = "0x362c175938ed6d1db7feb4559824d33bc443fdbaab0f3ab0180920a9f2b39f5"; // devnet-rs
+    const contractAddress = "0x91a3dc3889d4ba79829c0b97c04a793d038093232923405a5b34045893548d"; // devnet-rs
 
     const compiledERC20 = json.parse(fs.readFileSync("./compiledContracts/cairo220/erc20OZ070.sierra.json").toString("ascii"));
     const contractETH = new Contract(compiledERC20.abi, ethAddress, provider);
@@ -73,54 +71,51 @@ async function main() {
     const myCall = myTestContract.populate("test_fail", [100]);
     const fee = await account0.estimateInvokeFee(myCall);
     console.log("fee=", fee);
-    // const { transaction_hash: txH } = await account0.execute(myCall, undefined, {
-    //     version: 3,
-    //     maxFee: 0,
-    //     feeDataAvailabilityMode: RPC.EDataAvailabilityMode.L1,
-    //     resourceBounds: {
-    //         l1_gas: {
-    //             max_amount: num.toHex(2600),
-    //             max_price_per_unit: num.toHex(10 ** 12)
-    //         },
-    //         l2_gas: {
-    //             max_amount: num.toHex(2600),
-    //             max_price_per_unit: num.toHex(10 ** 12)
-    //         }
-    //     }
-    // });
+    const { transaction_hash: txH } = await account0.execute(myCall, undefined, {
+        version: 3,
+        //maxFee: 0,
+        //feeDataAvailabilityMode: RPC.EDataAvailabilityMode.L1,
+        resourceBounds: {
+            l1_gas: {
+                max_amount: num.toHex(2600),
+                max_price_per_unit: num.toHex(10 ** 12)
+            },
+            l2_gas: {
+                max_amount: "0x00",
+                max_price_per_unit: "0x00"
+            }
+        }
+    });
 
+    const txR = await provider.waitForTransaction(txH);
+    console.log(txR);
+    const { transaction_hash: txH1 } = await myTestContract.test_fail(100);
 
-    //const { transaction_hash: txH } = await myTestContract.test_fail(100);
-
-
-    //const txR = await provider.waitForTransaction(txH);
-    //console.log(txR);
 
     // *********** declare V3
 
     const compiledRejectSierra = json.parse(fs.readFileSync("./compiledContracts/cairo240/string.sierra.json").toString("ascii"));
     const compiledRejectCasm = json.parse(fs.readFileSync("./compiledContracts/cairo240/string.casm.json").toString("ascii"));
-    const feeD = await account0.estimateDeclareFee({ contract: compiledRejectSierra, casm: compiledRejectCasm });
+    const feeD = await account0.estimateDeclareFee({ contract: compiledRejectSierra, casm: compiledRejectCasm },{version: 3});
     console.log("declare Fee =", feeD);
-    // const resDec=await account0.declare({contract:compiledRejectSierra , casm:compiledRejectCasm },{
-    //     // version: 3,
-    //     // maxFee: 0,
-    //     // feeDataAvailabilityMode: RPC.EDataAvailabilityMode.L1,
-    //     // resourceBounds: {
-    //     //     l1_gas: {
-    //     //         max_amount: num.toHex(2600),
-    //     //         max_price_per_unit: num.toHex(10 ** 12)
-    //     //     },
-    //     //     l2_gas: {
-    //     //         max_amount: num.toHex(2600),
-    //     //         max_price_per_unit: num.toHex(10 ** 12)
-    //     //     }
-    //     // }
-    // })
-    // console.log("decl txH =",resDec.transaction_hash)
-    // const txRD=await provider.waitForTransaction(resDec.transaction_hash);
-    // console.log("txR declare =",txRD);
-
+    const resDec=await account0.declare({contract:compiledRejectSierra , casm:compiledRejectCasm },{
+        version: 3,
+        //maxFee: 0,
+        //feeDataAvailabilityMode: RPC.EDataAvailabilityMode.L1,
+        resourceBounds: {
+            l1_gas: {
+                max_amount: "0x00",
+                max_price_per_unit: "0x00"
+            },
+            l2_gas: {
+                max_amount: num.toHex(5000),
+                max_price_per_unit: num.toHex(10 ** 12)
+            }
+        }
+    })
+    console.log("decl txH =",resDec.transaction_hash)
+    const txRD=await provider.waitForTransaction(resDec.transaction_hash);
+    console.log("txR declare =",txRD);
     // *************** deploy account V3
     const compiledAccountSierra = json.parse(fs.readFileSync("./compiledContracts/cairo231/openzeppelin080Account.sierra.json").toString("ascii"));
     const compiledAccountCasm = json.parse(fs.readFileSync("./compiledContracts/cairo231/openzeppelin080Account.casm.json").toString("ascii"));
@@ -140,8 +135,8 @@ async function main() {
 
     // fund account address before account creation
 
-    // const txE=await account0.execute({contractAddress:ethAddress,entrypoint:"transfer",calldata:[contractOZaddress,cairo.uint256(10**18)]});
-    // await provider.waitForTransaction(txE.transaction_hash);
+     const txE=await account0.execute({contractAddress:ethAddress,entrypoint:"transfer",calldata:[contractOZaddress,cairo.uint256(10**18)]});
+     await provider.waitForTransaction(txE.transaction_hash);
     const txT = await account0.execute({ contractAddress: strkAddress, entrypoint: "transfer", calldata: [contractOZaddress, cairo.uint256(8 * 10 ** 15)] });
     await provider.waitForTransaction(txT.transaction_hash);
 

@@ -3,31 +3,38 @@
 // Coded with Starknet.js v6.6.6, Starknet-devnet-rs v0.0.3
 
 
-import { Account, ec, json, Provider, hash, CallData, RpcProvider, EthSigner, eth, num, stark, addAddressPadding, encode, cairo, constants, Contract } from "starknet";
-import { secp256k1 } from '@noble/curves/secp256k1';
-
-import fs from "fs";
-import axios from "axios";
-import * as dotenv from "dotenv";
+import { Account, json, hash, CallData, RpcProvider, EthSigner, num, stark, addAddressPadding, encode, cairo, constants, Contract, shortString } from "starknet";
 import { ethAddress, strkAddress } from "./utils/constants";
 import { formatBalance } from "./utils/formatBalance";
-dotenv.config();
+import { Devnet } from "starknet-devnet";
+import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
+import fs from "fs";
+import cp from "child_process";
+import events from "events";
+import kill from "cross-port-killer";
 
 
-//        👇👇👇
-// 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet-rs directory before using this script
-//        👆👆👆
 async function main() {
-    const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only for starknet-devnet-rs
+    // launch devnet-rs with a new console window
+    const outputStream = fs.createWriteStream("./src/scripts/devnet-out.txt");
+    await events.once(outputStream, "open");
+    // the following line is working in Linux. To adapt or remove for other OS
+    cp.spawn("gnome-terminal", ["--", "bash", "-c", "pwd; tail -f ./src/scripts/devnet-out.txt; read"]);
+    const devnet = await Devnet.spawnVersion(DEVNET_VERSION, {
+        stdout: outputStream,
+        stderr: outputStream,
+        keepAlive: false,
+        args: ["--seed", "0", "--port", DEVNET_PORT]
+    });
+    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
+    console.log("devnet-rs : url =", devnet.provider.url);
+    console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
     console.log("Provider connected to Starknet-devnet-rs");
 
-    // ******** Devnet-rs
-    console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
-    console.log('OZ_ACCOUNT_PRIVATE_KEY=', process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY);
-    const accountAddress0: string = process.env.OZ_ACCOUNT0_DEVNET_ADDRESS ?? "";
-    const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
-    const account0 = new Account(provider, accountAddress0, privateKey0);
-    console.log("Account 0 connected.\n");
+    // initialize existing predeployed account 0 of Devnet
+    const devnetAccounts = await devnet.provider.getPredeployedAccounts();
+    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
+    console.log("Account 0 connected.\nAddress =", account0.address, "\n");
 
     // new Open Zeppelin ETHEREUM account v0.9.0 (Cairo 1) :
 
@@ -54,33 +61,24 @@ async function main() {
     );
     const { transaction_hash: declTH, class_hash: decClassHash } = await account0.declareIfNot({ contract: compiledEthAccount, casm: casmETHaccount });
     console.log('ETH account class hash =', decClassHash);
-    if (declTH) { await provider.waitForTransaction(declTH) } else { console.log("Already declared.") };
+    if (declTH) { await myProvider.waitForTransaction(declTH) } else { console.log("Already declared.") };
     console.log("✅ Declare of class made.");
 
     // Calculate future address of the account
     const myCallData = new CallData(compiledEthAccount.abi);
-      const accountETHconstructorCalldata = myCallData.compile('constructor', {
+    const accountETHconstructorCalldata = myCallData.compile('constructor', {
         public_key: ethFullPublicKey,
-      });
+    });
     const contractETHaddress = hash.calculateContractAddressFromHash(salt, decClassHash, accountETHconstructorCalldata, 0);
     console.log('Pre-calculated account address=', contractETHaddress);
 
     // ******** Devnet- fund account address before account creation
-    const { data: answer } = await axios.post('http://127.0.0.1:5050/mint', {
-        "address": contractETHaddress,
-        "amount": 10_000_000_000_000_000_000,
-        "unit": "WEI"
-    }, { headers: { "Content-Type": "application/json" } });
-    console.log('Answer mint =', answer); // 10 ETH
-    const { data: answer2 } = await axios.post('http://127.0.0.1:5050/mint', {
-        "address": contractETHaddress,
-        "amount": 10_000_000_000_000_000_000,
-        "unit": "FRI",
-    }, { headers: { "Content-Type": "application/json" } });
-    console.log('Answer mint =', answer2); // 10 STRK
+    await devnet.provider.mint(contractETHaddress, 10n * 10n ** 18n, "WEI"); // 10 ETH
+    await devnet.provider.mint(contractETHaddress, 100n * 10n ** 18n, "WEI"); // 100 STRK
+
 
     // deploy account
-    const ETHaccount = new Account(provider, contractETHaddress, ethSigner, undefined, constants.TRANSACTION_VERSION.V2);
+    const ETHaccount = new Account(myProvider, contractETHaddress, ethSigner, undefined, constants.TRANSACTION_VERSION.V2);
     const feeEstimation = await ETHaccount.estimateAccountDeployFee({ classHash: decClassHash, addressSalt: salt, constructorCalldata: accountETHconstructorCalldata });
     console.log("Fee estimation =", feeEstimation);
 
@@ -90,10 +88,11 @@ async function main() {
         addressSalt: salt
     }, {
         maxFee: stark.estimatedFeeToMaxFee(feeEstimation.suggestedMaxFee
-    ,80)}
+            , 80)
+    }
     );
     console.log("Real txH =", transaction_hash);
-    const txR = await provider.waitForTransaction(transaction_hash);
+    const txR = await myProvider.waitForTransaction(transaction_hash);
     console.log({ txR });
     console.log('✅ New Ethereum account created.\n   final address =', contract_address);
 
@@ -106,6 +105,10 @@ async function main() {
     console.log("ETH account has a balance of :", formatBalance(balSTRK, 18), "STRK");
 
     console.log('✅ Test performed.');
+
+    outputStream.end();
+    const pid: string[] = await kill(DEVNET_PORT);
+    console.log("Devnet-rs stopped. Pid :", pid, "\nYou can close the log window.");
 }
 main()
     .then(() => process.exit(0))

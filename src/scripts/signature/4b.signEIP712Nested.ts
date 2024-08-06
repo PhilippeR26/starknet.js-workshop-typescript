@@ -22,7 +22,7 @@ async function main() {
     const accountAddress0 = "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691";
     console.log('OZ_ACCOUNT_ADDRESS=', accountAddress0);
     console.log('OZ_ACCOUNT_PRIVATE_KEY=', privateKey0);
-    const account0 = new Account(provider, accountAddress0, privateKey0,"1");
+    const account0 = new Account(provider, accountAddress0, privateKey0, "1");
     console.log('✅ OZ predeployed account 0 connected.');
 
     // creation of message signature
@@ -38,7 +38,6 @@ async function main() {
             chainId: "Starknet Mainnet",
             name: "Dappland",
             version: "1.0",
-            hashing_function: "pedersen"
         },
         message: {
             MessageId: 345,
@@ -58,7 +57,7 @@ async function main() {
                     Qty: "18.4569325643",
                     Unit: "ETH",
                     Token_address: "0x69b49c2cc8b16e80e86bfc5b0614a59aa8c9b601569c7b80dde04d3f3151b79",
-                    Amount: 18456932564300000000n,
+                    Amount: "0x100243260D270EB00",
                 }
             },
             Comment1: "Monkey with banana, sunglasses,",
@@ -157,21 +156,21 @@ async function main() {
                     name: "version",
                     type: "string",
                 },
-                {
-                    name: "hashing_function",
-                    type: "string",
-                },
             ],
         },
     };
     const msgHash = typedData.getMessageHash(typedMessage, account0.address);
     //const msgHash=await account0.hashMessage(typedMessage);
-    const signature: Signature = await account0.signMessage(typedMessage);
+    const signature: Signature = await account0.signMessage(typedMessage) as WeierstrassSignatureType;
     const arr: ArraySignatureType = stark.formatSignature(signature);
     const sig2: WeierstrassSignatureType = new ec.starkCurve.Signature(BigInt(arr[0]), BigInt(arr[1]));
     const res = await account0.verifyMessage(typedMessage, sig2);
     console.log(" :>> ", res);
     console.log("Hash =", msgHash, "\nSignature =", signature);
+
+   const signature2: Signature = await account0.signMessage(typedMessage) as WeierstrassSignatureType;
+    const verif = ec.starkCurve.verify(signature2, msgHash, fullPubKey);
+    console.log("verif outside of Starknet : result =", verif);
 
     console.log('✅ Test completed.');
 

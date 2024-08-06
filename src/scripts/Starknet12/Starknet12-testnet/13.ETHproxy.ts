@@ -1,4 +1,4 @@
-// interact with ETH ERC20.
+// interact with old ETH ERC20 (was with proxy)
 // launch with npx ts-node src/scripts/13.ETHproxy.ts
 // Coded with Starknet.js v5.17.0
 
@@ -16,7 +16,7 @@ async function main() {
     const proxyContract = new Contract(compiledProxy.abi, ETHproxyAddress, provider);
     const { address: implementationAddress } = await proxyContract.implementation();
     // specific to this proxy : Implementation() returns an address of implementation.
-    // Other proxies returns generaly a class hash of implementation
+    // Other proxies returns generally a class hash of implementation
     console.log("implementation ERC20 Address =", num.toHex(implementationAddress));
     const classHashERC20Class = await provider.getClassHashAt(num.toHex(implementationAddress)); // read the class hash related to this contract address.
     console.log("classHash of ERC20 =", classHashERC20Class);

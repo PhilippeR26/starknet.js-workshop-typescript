@@ -12,8 +12,8 @@ dotenv.config();
 
 
 //          👇👇👇
-// 🚨🚨🚨 Before execution of this script, launch the script 9 to declare the Test contract.
-// 🚨🚨🚨 After execution of this script, launch the script 11 to test, and to close Devnet-rs.
+// 🚨🚨🚨 Before execution of this script, launch the script 9 to launch devnet-rs and declare the Test contract.
+// 🚨🚨🚨 After execution of this script, launch the script 11 to test the contract, and to close Devnet-rs.
 //          👆👆👆
 async function main() {
     // Devnet-rs has already been started in script 9

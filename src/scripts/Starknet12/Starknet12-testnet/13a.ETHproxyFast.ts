@@ -1,4 +1,4 @@
-// interact with ETH ERC20.
+// interact with old ETH ERC20 (was with proxy)
 // launch with npx ts-node src/scripts/13a.ETHproxyFast.ts
 // Coded with Starknet.js v5.17.0
 

@@ -3,7 +3,7 @@
 // coded with Starknet.js v5.19.5+commit
 // launch with npx ts-node src/scripts/signature/signEIP712-V5.ts
 
-import { Account, ec, hash, json, Contract, encode, shortString, typedData, WeierstrassSignatureType, ArraySignatureType, stark, RpcProvider, Signature, num } from "starknet";
+import { Account, ec, hash, json, Contract, encode, shortString, typedData, WeierstrassSignatureType, ArraySignatureType, stark, RpcProvider, Signature, num, type TypedData } from "starknet";
 
 import * as dotenv from "dotenv";
 import fs from "fs";
@@ -40,7 +40,7 @@ async function main() {
 
 
     // EIP712
-    const typedDataValidate: typedData.TypedData = {
+    const typedDataValidate: TypedData = {
         types: {
             StarkNetDomain: [
                 { name: "name", type: "string" },

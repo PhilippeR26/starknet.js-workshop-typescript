@@ -8,11 +8,11 @@ import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey } from "../../../
 import { account1IntegrationOZaddress, account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
 import { ethAddress, strkAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
-import * as dotenv from "dotenv";
 import axios from "axios";
 import { blastKey } from "../../../A-MainPriv/mainPriv";
 import type { ResourceBounds } from "@starknet-io/types-js";
 import type { RESOURCE_BOUNDS_MAPPING } from "starknet/src/types/api/rpcspec_0_6/components";
+import * as dotenv from "dotenv";
 dotenv.config();
 
 

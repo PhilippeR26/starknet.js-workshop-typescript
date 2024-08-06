@@ -23,7 +23,6 @@ async function main() {
           chainId: constants.StarknetChainId.SN_SEPOLIA,
           version: "1.0.2",
           revision: TypedDataRevision.ACTIVE,
-          // hashing_function:"pedersen" // or "poseidon". Mandatory for Braavos
         },
         message: {
           MessageId: 345,
@@ -43,7 +42,7 @@ async function main() {
               Qty: "18.4569325643",
               Unit: "ETH",
               Token_address: "0x69b49c2cc8b16e80e86bfc5b0614a59aa8c9b601569c7b80dde04d3f3151b79",
-              Amount: 18456932564300000000n,
+              Amount: "0x100243260D270EB00", // do not use BigInt type if sent to a web browser
             }
           },
           Comment1: "Monkey with banana, sunglasses,",
@@ -142,10 +141,6 @@ async function main() {
               name: "version",
               type: "string",
             },
-            // {
-            //   name: "hashing_function",
-            //   type: "string",
-            // },
           ],
         },
       };

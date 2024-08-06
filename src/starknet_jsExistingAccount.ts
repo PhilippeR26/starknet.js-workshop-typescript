@@ -8,15 +8,27 @@ import { Devnet } from "starknet-devnet";
 import * as dotenv from "dotenv";
 import { formatBalance } from "./scripts/utils/formatBalance";
 import { DEVNET_PORT, DEVNET_VERSION } from "./constants";
+import cp from "child_process";
+import events from "events";
+import kill from "cross-port-killer";
 dotenv.config();
 
 
 async function main() {
-    const devnet = await Devnet.spawnVersion(DEVNET_VERSION, { stdout: "ignore", keepAlive: false, args: ["--seed", "0", "--port", DEVNET_PORT] });
+    // launch devnet-rs with a new console window
+    const outputStream = fs.createWriteStream("./src/scripts/devnet-out.txt");
+    await events.once(outputStream, "open");
+    // the following line is working in Linux. To adapt or remove for other OS
+    cp.spawn("gnome-terminal", ["--", "bash", "-c", "pwd; tail -f ./src/scripts/devnet-out.txt; read"]);
+    const devnet = await Devnet.spawnVersion(DEVNET_VERSION, {
+        stdout: outputStream,
+        stderr: outputStream,
+        keepAlive: false,
+        args: ["--seed", "0", "--port", DEVNET_PORT]
+    });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
     console.log("devnet-rs : url =", devnet.provider.url);
     console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-
     console.log("Provider connected to Starknet-devnet-rs");
 
     // initialize existing pre-deployed account 0 of Devnet
@@ -117,6 +129,10 @@ async function main() {
     console.log(`Calling Starknet for account balance...`);
     const balanceAfterTransfer = await erc20.balanceOf(account0.address);
     console.log("account0 has a balance of :", formatBalance(balanceAfterTransfer, DECIMALS));
+
+    outputStream.end();
+    const pid: string[] = await kill(DEVNET_PORT);
+    console.log("Devnet-rs stopped. Pid :", pid, "\nYou can close the log window.");
     console.log("✅ Test completed.");
 }
 main()

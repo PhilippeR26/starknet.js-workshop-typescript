@@ -1,4 +1,5 @@
-// Deploy a new ArgentX wallet.
+// Deploy a new ArgentX Cairo 0 account. 
+// DEPRECATED : only for archive.
 // launch with : npx ts-node src/scripts/3a.createArgentXcairo0.ts
 // Coded with Starknet.js v5.16.0, Starknet-devnet-rs v0.0.1
 

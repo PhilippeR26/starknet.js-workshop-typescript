@@ -1,28 +1,37 @@
 // declare & deploy a contract.
-// use of OZ deployer
 // launch with npx ts-node src/scripts/5.declareDeployContractOZ.ts
-// Coded with Starknet.js v5.16.0, Starknet-devnet-rs v0.1.0
+// Coded with Starknet.js v6.11.0
 
-import { Account, CallData, Contract, json, RpcProvider } from "starknet";
+import { Account, CallData, Contract, json, RpcProvider, shortString } from "starknet";
+import { Devnet } from "starknet-devnet";
+import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
-import * as dotenv from "dotenv";
-dotenv.config();
+import cp from "child_process";
+import events from "events";
+import kill from "cross-port-killer";
 
 
-//          👇👇👇
-// 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet-rs directory before using this script
-//          👆👆👆
 async function main() {
-    const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only for starknet-devnet-rs
+    // launch devnet-rs with a new console window
+    const outputStream = fs.createWriteStream("./src/scripts/devnet-out.txt");
+    await events.once(outputStream, "open");
+    // the following line is working in Linux. To adapt or remove for other OS
+    cp.spawn("gnome-terminal", ["--", "bash", "-c", "pwd; tail -f ./src/scripts/devnet-out.txt; read"]);
+    const devnet = await Devnet.spawnVersion(DEVNET_VERSION, {
+        stdout: outputStream,
+        stderr: outputStream,
+        keepAlive: true,
+        args: ["--seed", "0", "--port", DEVNET_PORT]
+    });
+    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
+    console.log("devnet-rs : url =", devnet.provider.url);
+    console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
     console.log("Provider connected to Starknet-devnet-rs");
 
     // initialize existing predeployed account 0 of Devnet
-    console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
-    console.log('OZ_ACCOUNT_PRIVATE_KEY=', process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY);
-    const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
-    const accountAddress0: string = process.env.OZ_ACCOUNT0_DEVNET_ADDRESS ?? "";
-    const account0 = new Account(provider, accountAddress0, privateKey0);
-    console.log("Account 0 connected.\n");
+    const devnetAccounts = await devnet.provider.getPredeployedAccounts();
+    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
+    console.log("Account 0 connected.\nAddress =", account0.address, "\n");
 
     // Declare & deploy Test contract in devnet
     const testSierra = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.sierra.json").toString("ascii"));
@@ -38,9 +47,12 @@ async function main() {
     // In case of constructor, add for example : ,constructorCalldata: [encodeShortString('Token'),encodeShortString('ERC20'),account.address,],
 
     // Connect the new contract instance :
-    const myTestContract = new Contract(testSierra.abi, deployResponse.deploy.contract_address, provider);
+    const myTestContract = new Contract(testSierra.abi, deployResponse.deploy.contract_address, myProvider);
     console.log('✅ Test Contract connected at =', myTestContract.address);
 
+    outputStream.end();
+    const pid: string[] = await kill(DEVNET_PORT);
+    console.log("Devnet-rs stopped. Pid :", pid, "\nYou can close the log window.");
 }
 main()
     .then(() => process.exit(0))

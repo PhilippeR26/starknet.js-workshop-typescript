@@ -34,9 +34,9 @@ The Account contract used in this workshop is made by [OpenZeppelin](https://git
 
 Open a console, and launch the script :  
 `npx ts-node src/starknet_jsNewAccount.ts` 
-devnet-rs is automatically launched and closed in the script.
+devnet-rs is automatically launched and closed in this script.
 
-More easy : use `npx ts-node src/starknet_jsExistingAccount.ts`, using preexisting account #0 created automatically during Devnet-rs launch.
+More easy : use `npx ts-node src/starknet_jsExistingAccount.ts`, using a preexisting account #0 created automatically at Devnet-rs launch.
 
 ## 📜 scripts :
 In the folder 'scripts', you can find many pedagogical codes :
@@ -68,19 +68,20 @@ In the folder 'scripts', you can find many pedagogical codes :
 
 
 ### Devnet-rs :
-Devnet-rs is launched and ended automatically in the scripts of this tuto.  
-If you prefer to have a devnet-rs launched permanently in its own console :
+Devnet-rs is launched and ended automatically in the main scripts of this tuto, using the `starknet-devnet` library : https://github.com/0xSpaceShard/starknet-devnet-js/blob/master/README.md  
+If you prefer to have a devnet-rs already launched in its own console :
 - To install and launch an instance of the local devnet-rs : https://github.com/0xSpaceShard/starknet-devnet-rs  
 - Open a console, and launch devnet-rs `cargo run --release -- --seed 0`
 - In all scripts, replace opening of a new Devnet by : 
 ```typescript
 const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
 ```
-and remove `kill` commands.
+  and remove `kill` commands.  
+Most of the scripts in the subdirectories are using an already running devnet-rs.
 
 ### Others :
 
-You can find in this repo tons of other scripts. Dig in and find many useful examples of code.  
+You can find in this repo tons of other scripts. Dig in and find many useful examples of code (exotic signatures, Ledger Nano, L1L2 messaging, events handling, STRK fees, ...).  
 To simplify the test of these scripts, take advantage to install the extension `code runner`. In the code window, right click, then `run code`.
 
 ## Demo DAPPs :

@@ -28,9 +28,11 @@ async function main() {
     console.log("Account 0 connected.\n");
 
     // Connect the deployed Test instance in devnet-rs
+
     //          👇👇👇
     // 🚨🚨🚨 modify in accordance with result of script 5
-    const testAddress = "0x2a843f4719d17b03be9fcdaa8d97e96f869e904fc68a271bf178e64ec155554";
+    const testAddress = "0x554de9bd7f8b774d41cf03a009eb35055025205635dcff565f60debab2b7b24";
+    
     const compiledTest = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.sierra.json").toString("ascii"));
     const myTestContract = new Contract(compiledTest.abi, testAddress, myProvider);
     console.log('Test Contract connected at =', myTestContract.address);
@@ -50,7 +52,7 @@ async function main() {
     console.log("Final balance =", bal2);
     
     const pid: string[] = await kill(DEVNET_PORT);
-    console.log("Devnet-rs stopped. Pid :", pid);
+    console.log("Devnet-rs stopped. Pid :", pid,"\nYou can close the log window.");
     console.log('✅ Test completed.');
 }
 main()

@@ -1,16 +1,12 @@
-// Test an EIP712 message. 
+// Test an EIP712 message (SNIP-12 old version). 
 // coded with Starknet.js v5.21.1
 // launch with npx ts-node src/scripts/signature/4b.signEIP712test.ts
 
 import { Account, ec, RpcProvider, encode, typedData, Signature, stark, ArraySignatureType, WeierstrassSignatureType, type TypedData } from "starknet";
-
 import * as dotenv from "dotenv";
 import fs from "fs";
 dotenv.config();
 
-//    👇👇👇
-// 🚨 launch in 'starknet-devnet-rs' the command 'cargo run --release -- --seed 0' before using this script
-//    👆👆👆
 async function main() {
     //initialize Provider with DEVNET
     const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
@@ -29,9 +25,9 @@ async function main() {
     // const privateKey = stark.randomAddress();
     const privateKey = privateKey0;
     const starknetPublicKey = ec.starkCurve.getStarkKey(privateKey);
-    const fullPubKey = encode.addHexPrefix(encode.buf2hex(ec.starkCurve.getPublicKey(privateKey, false))); // complete public key
+    const fullPubKey = ec.getFullPublicKey(privateKey); // complete public key
     console.log("publicKey calculated =", starknetPublicKey, typeof (starknetPublicKey));
-    console.log('fullpubKey =', fullPubKey);
+    console.log('fullPubKey =', fullPubKey);
 
     const typedMessage: TypedData = {
         domain: {
@@ -53,7 +49,7 @@ async function main() {
                 Collection: "Stupid monkeys",
                 Address: "0x69b49c2cc8b16e80e86bfc5b0614a59aa8c9b601569c7b80dde04d3f3151b79",
                 Nft_id: 112,
-                Negociated_for: {
+                Negotiated_for: {
                     Qty: "18.4569325643",
                     Unit: "ETH",
                     Token_address: "0x69b49c2cc8b16e80e86bfc5b0614a59aa8c9b601569c7b80dde04d3f3151b79",
@@ -90,7 +86,7 @@ async function main() {
                     type: "felt",
                 },
                 {
-                    name: "Negociated_for",
+                    name: "Negotiated_for",
                     type: "Transaction",
                 },
             ],
@@ -168,7 +164,7 @@ async function main() {
     console.log(" :>> ", res);
     console.log("Hash =", msgHash, "\nSignature =", signature);
 
-   const signature2: Signature = await account0.signMessage(typedMessage) as WeierstrassSignatureType;
+    const signature2: Signature = await account0.signMessage(typedMessage) as WeierstrassSignatureType;
     const verif = ec.starkCurve.verify(signature2, msgHash, fullPubKey);
     console.log("verif outside of Starknet : result =", verif);
 

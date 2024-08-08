@@ -5,8 +5,6 @@ import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256,
 import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature } from "../../braavos/3b.deployBraavos1";
 import { DevnetProvider } from "starknet-devnet";
 //import { OutsideExecution, OutsideExecutionOptions } from 'starknet';
-
-
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { formatBalance } from "../../utils/formatBalance";
@@ -43,8 +41,8 @@ export async function deployAccountNoERC165(myProvider: RpcProvider, account0: A
     console.log('Precalculated account address=', OZcontractAddress);
 
     // fund account address before account creation
-    await l2DevnetProvider.mint(OZcontractAddress, 10 * 10 ** 18, "WEI");
-  await l2DevnetProvider.mint(OZcontractAddress, 10 * 10 ** 18, "FRI");
+    await l2DevnetProvider.mint(OZcontractAddress, 10n * 10n ** 18n, "WEI");
+  await l2DevnetProvider.mint(OZcontractAddress, 10n * 10n ** 18n, "FRI");
     // deploy account
     const OZaccount = new Account(myProvider, OZcontractAddress, privateKey);
     const { transaction_hash, contract_address } = await OZaccount.deployAccount({

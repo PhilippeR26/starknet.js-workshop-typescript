@@ -51,8 +51,8 @@ export async function deployAccountArgentX3(myProvider: RpcProvider, account0: A
   console.log('Precalculated account address=', accountAXAddress);
 
   // fund account address before account creation
-  await l2DevnetProvider.mint(accountAXAddress, 10 * 10 ** 18, "WEI");
-  await l2DevnetProvider.mint(accountAXAddress, 10 * 10 ** 18, "FRI");
+  await l2DevnetProvider.mint(accountAXAddress, 10n * 10n ** 18n, "WEI");
+  await l2DevnetProvider.mint(accountAXAddress, 100n * 10n ** 18n, "FRI");
 
   // deploy ArgentX account
   const accountAX = new Account(myProvider, accountAXAddress, privateKeyAX);

@@ -1,4 +1,4 @@
-// Deploy an OpenZeppelin 0.14.0 account without Introspection in devnet.
+// Deploy an OpenZeppelin 0.14.0 account without Introspection (ERC165) in devnet.
 // Coded with Starknet.js v6.11.0 & devnet-rs v0.1.1 & starknet-devnet.js v0.0.4
 
 import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo, CairoCustomEnum, CairoOption, CairoOptionVariant } from "starknet";

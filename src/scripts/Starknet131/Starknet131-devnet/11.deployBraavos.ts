@@ -51,8 +51,8 @@ export async function deployAccountBraavos(myProvider: RpcProvider, account0: Ac
   //console.log('Precalculated account address=', accountBraavosAddress);
 
   // fund account address before account creation
-  await l2DevnetProvider.mint(accountBraavosAddress, 10 * 10 ** 18, "WEI");
-  await l2DevnetProvider.mint(accountBraavosAddress, 10 * 10 ** 18, "FRI");
+  await l2DevnetProvider.mint(accountBraavosAddress, 10n * 10n ** 18n, "WEI");
+  await l2DevnetProvider.mint(accountBraavosAddress, 100n * 10n ** 18n, "FRI");
   // deploy Braavos account
   const myMaxFee = 2 * 10 ** 15; // defined manually as estimateFee fails.
   const respDeploy = await deployBraavosAccount(privateKeyBraavosBase, myProvider, myMaxFee);

@@ -1,8 +1,8 @@
 // SNIP-9 execute transactions from outside.
-// launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/16.ExecuteFromOutside.ts
-// Coded with Starknet.js v6.11.0 + experimental & devnet-rs v0.1.1 & starknet-devnet.js v0.0.4
+// launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/16.executeFromOutside.ts
+// Coded with Starknet.js v6.11.0 + experimental & devnet-rs v0.1.2 & starknet-devnet.js v0.1.0
 
-import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo, CairoCustomEnum, CairoOption, CairoOptionVariant, validateAndParseAddress } from "starknet";
+import { RpcProvider, Account, Contract, json, cairo, shortString, EOutsideExecutionVersion, type OutsideTransaction } from "starknet";
 import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature } from "../../braavos/3b.deployBraavos1";
 import { DevnetProvider } from "starknet-devnet";
 import { outsideExecution, OutsideExecutionOptions } from 'starknet';
@@ -17,6 +17,10 @@ import { deployAccountOpenzeppelin14 } from "./14.deployOZ14";
 import { deployAccountNoERC165 } from "./15.deployNoIntrospection";
 dotenv.config();
 
+//          👇👇👇
+// 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet-rs directory before using this script.
+//          👆👆👆
+
 async function balances(accounts: Account[], provider: RpcProvider) {
   const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));
   const ethContract = new Contract(compiledERC20Contract.abi, ethAddress, provider);
@@ -28,7 +32,7 @@ async function balances(accounts: Account[], provider: RpcProvider) {
   console.log("       ArgentX3=", formatBalance(await ethContract.call("balanceOf", [accounts[4].address]) as bigint, 18));
   console.log("       Braavos1=", formatBalance(await ethContract.call("balanceOf", [accounts[5].address]) as bigint, 18));
   console.log("           OZ14=", formatBalance(await ethContract.call("balanceOf", [accounts[6].address]) as bigint, 18));
-  console.log("       noErc165=", formatBalance(await ethContract.call("balanceOf", [accounts[7].address]) as bigint, 18));
+  console.log("       noErc165=", formatBalance(await ethContract.call("balanceOf", [accounts[7].address]) as bigint, 18), "\n");
 }
 
 async function main() {
@@ -49,11 +53,10 @@ async function main() {
   console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
   console.log("Provider connected to Starknet");
 
+  const accData = await l2DevnetProvider.getPredeployedAccounts();
   // *** initialize existing predeployed account 0 of Devnet
-  console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
-  console.log('OZ_ACCOUNT_PRIVATE_KEY=', process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY);
-  const accountAddress0: string = process.env.OZ_ACCOUNT0_DEVNET_ADDRESS ?? "";
-  const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
+  const accountAddress0 = accData[0].address;
+  const privateKey0 = accData[0].private_key;
   // **** Sepolia
   // const accountAddress0 = account1BraavosSepoliaAddress;
   // const privateKey0 = account1BraavosSepoliaPrivateKey;
@@ -62,11 +65,10 @@ async function main() {
   //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
   const account0 = new Account(myProvider, accountAddress0, privateKey0);
-  const accData = await l2DevnetProvider.getPredeployedAccounts();
   const account1 = new Account(myProvider, accData[1].address, accData[1].private_key);
   const account2 = new Account(myProvider, accData[2].address, accData[2].private_key);
   console.log("Accounts connected.\n");
-  //
+
   // *********** Deploy accounts if needed *************
   //
 
@@ -130,7 +132,6 @@ async function main() {
   console.log({ accountsData });
   const accounts: Account[] = [account0, account1, account2, accountAX4, accountAX3, accountBraavos, accountOZ14, accountNoERC165];
 
-
   // 
   // ******************** Create outside executions
   //
@@ -140,56 +141,65 @@ async function main() {
   console.log("ArgentX4 version =", await accountAX4.getSnip9Version());
   console.log("ArgentX3 version =", await accountAX3.getSnip9Version());
   console.log("Braavos1 version =", await accountBraavos.getSnip9Version());
+  const version = await accountOZ14.getSnip9Version();
+  console.log(version, EOutsideExecutionVersion.UNSUPPORTED);
   console.log("    OZ14 version =", await accountOZ14.getSnip9Version());
-  // console.log("noERC165 version =",await accountNoERC165.getSnip9Version()); // fails!!!
-  console.log("noERC165 version = crash"); // fails!!!
+  console.log("noERC165 version =", await accountNoERC165.getSnip9Version());
 
-  const s9version = await accountAX3.getSnip9Version();
-  const calls = [
-    {
-      contractAddress: ethAddress,
-      entrypoint: 'transfer',
-      calldata: {
-        recipient: account1.address,
-        amount: cairo.uint256(10n ** 15n),
-      },
-    },
-  ];
 
-  const options: OutsideExecutionOptions = {
-    // const options = {
+  const callOptions: OutsideExecutionOptions = {
     // caller: "ANY_CALLER",
-    caller: outsideExecution.OutsideExecutionCallerAny,
-
-    nonce: await accountAX3.getSnip9Nonce(accountAX3),
+    caller: account0.address,
     execute_after: Math.floor(Date.now() / 1000) - 3600, // 1 hour ago
     execute_before: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
   };
-
-  const myOutsideExecution = new outsideExecution.OutsideExecution(calls, options);
-
-  const chainId = await accountAX3.getChainId();
-  const data = myOutsideExecution.getTypedData(chainId, s9version);
-  console.log("data=", data, "\ndata Calls =", data.message.Calls);
-  const signature = await accountAX3.signMessage(data);
-
+  const call1 = {
+    contractAddress: ethAddress,
+    entrypoint: 'transfer',
+    calldata: {
+      recipient: account1.address,
+      amount: cairo.uint256(1n * 10n ** 15n),
+    },
+  };
+  const call2 = {
+    contractAddress: ethAddress,
+    entrypoint: 'transfer',
+    calldata: {
+      recipient: account2.address,
+      amount: cairo.uint256(2n * 10n ** 15n),
+    },
+  };
+  const call3 = {
+    contractAddress: ethAddress,
+    entrypoint: 'transfer',
+    calldata: {
+      recipient: account1.address,
+      amount: cairo.uint256(3n * 10n ** 15n),
+    },
+  };
+  const call4 = {
+    contractAddress: ethAddress,
+    entrypoint: 'transfer',
+    calldata: {
+      recipient: account2.address,
+      amount: cairo.uint256(4n * 10n ** 15n),
+    },
+  };
+  // account A is compatible with SNIP-9
+  const outsideTransaction1: OutsideTransaction = await accountAX3.getOutsideTransaction(callOptions, [call1, call2]);
+  console.log("O1 =", outsideTransaction1);
+  const outsideTransaction2: OutsideTransaction = await accountBraavos.getOutsideTransaction(callOptions, call3);
+  console.log("O2 =", outsideTransaction2);
+  const outsideTransaction3: OutsideTransaction = await accountAX3.getOutsideTransaction(callOptions, call4);
+  // accountB can be not compatible with SNIP-9
+  // no mandatory order to proceed
   await balances(accounts, myProvider);
-
-  const res = await account0.executeFromOutside(
-    myOutsideExecution,
-    signature,
-    accountAX3.address,
-    {},
-    s9version
-  );
-  console.log("Account0 outsideExecution on behalf of ArgentX3 (v1).");
-  await myProvider.waitForTransaction(res.transaction_hash);
+  const res0 = await account0.executeFromOutside(outsideTransaction2);
+  await myProvider.waitForTransaction(res0.transaction_hash);
   await balances(accounts, myProvider);
-
-  const freeOutNonceAX3 = await accountAX3.isValidSnip9Nonce(options.nonce);
-  console.log({ freeOutNonceAX3 })
-
-
+  const res1 = await account0.executeFromOutside([outsideTransaction1, outsideTransaction3]);
+  await myProvider.waitForTransaction(res1.transaction_hash);
+  await balances(accounts, myProvider);
   console.log("✅ Test performed.");
 }
 main()

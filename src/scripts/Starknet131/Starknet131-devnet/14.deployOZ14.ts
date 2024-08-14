@@ -43,8 +43,8 @@ export async function deployAccountOpenzeppelin14(myProvider: RpcProvider, accou
     console.log('Precalculated account address=', OZcontractAddress);
 
     // fund account address before account creation
-    await l2DevnetProvider.mint(OZcontractAddress, 10 * 10 ** 18, "WEI");
-  await l2DevnetProvider.mint(OZcontractAddress, 10 * 10 ** 18, "FRI");
+    await l2DevnetProvider.mint(OZcontractAddress, 10n * 10n ** 18n, "WEI");
+  await l2DevnetProvider.mint(OZcontractAddress, 100n * 10n ** 18n, "FRI");
     // deploy account
     const OZaccount = new Account(myProvider, OZcontractAddress, privateKey);
     const { transaction_hash, contract_address } = await OZaccount.deployAccount({

@@ -136,28 +136,28 @@ async function main() {
   console.log("O3 =", outsideTransaction3);
 
   // **** execution ****
-  console.log( "Imagine we are 5 hours later, in a backend that knows the 3 `OutsideTransaction` objects.");
+  console.log( "Imagine we are 5 hours later in the middle of the night, in a backend that knows the 3 `OutsideTransaction` objects.");
   await wait(5000);
   console.log(" Ledger Account balance =",await balance(ledgerAccount, myProvider));
   console.log("Backend executorAccount balance =",await balance(executorAccount, myProvider));
-  console.log("Backend Account1 balance =",await balance(account1, myProvider));
-  console.log("Backend Account2 balance =",await balance(account2, myProvider));
+  console.log("               Account1 balance =",await balance(account1, myProvider));
+  console.log("               Account2 balance =",await balance(account2, myProvider));
 
   console.log("The backend has detected a situation that execute Transaction 2.");
   const res0 = await executorAccount.executeFromOutside(outsideTransaction2);
   await myProvider.waitForTransaction(res0.transaction_hash);
   console.log(" Ledger Account balance =",await balance(ledgerAccount, myProvider));
   console.log("Backend executorAccount balance =",await balance(executorAccount, myProvider));
-  console.log("Backend Account1 balance =",await balance(account1, myProvider));
-  console.log("Backend Account2 balance =",await balance(account2, myProvider));
+  console.log("               Account1 balance =",await balance(account1, myProvider));
+  console.log("               Account2 balance =",await balance(account2, myProvider));
 
-  console.log("The backend has detected a situation that execute simultaneously Transactions 1 & 3.");
+  console.log("2 hours later, the backend has detected a situation that execute simultaneously Transactions 1 & 3.");
  const res1 = await executorAccount.executeFromOutside([outsideTransaction1, outsideTransaction3]);
   await myProvider.waitForTransaction(res1.transaction_hash);
   console.log(" Ledger Account balance =",await balance(ledgerAccount, myProvider));
   console.log("Backend executorAccount balance =",await balance(executorAccount, myProvider));
-  console.log("Backend Account1 balance =",await balance(account1, myProvider));
-  console.log("Backend Account2 balance =",await balance(account2, myProvider));
+  console.log("               Account1 balance =",await balance(account1, myProvider));
+  console.log("               Account2 balance =",await balance(account2, myProvider));
 
   console.log("✅ Test performed.");
 }

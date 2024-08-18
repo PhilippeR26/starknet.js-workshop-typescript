@@ -5,7 +5,7 @@
 
 import { Account, ec, json, Provider, hash, CallData, RpcProvider, EthSigner, eth, num, stark, addAddressPadding, encode, cairo, constants ,Contract} from "starknet";
 import { secp256k1 } from '@noble/curves/secp256k1';
-import { account1TestnetAddress, account1TestnetPrivateKey, account1BraavosSepoliaAddress, account1BraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
+import { account1BraavosSepoliaAddress, account1BraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";

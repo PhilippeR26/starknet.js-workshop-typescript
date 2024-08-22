@@ -40,7 +40,7 @@
     "prompt-sync": "^4.2.0",
     "rpc-websockets": "^7.11.2",
     "rsv-signature": "^1.1.0",
-    "starknet": "^6.12.0",
+    "starknet": "file:~/Documents/starknet/starknet.js",
     "starknet-devnet": "^0.1.1",
     "starknet-merkle-tree": "^1.0.2",
     "vm2": "^3.9.19",

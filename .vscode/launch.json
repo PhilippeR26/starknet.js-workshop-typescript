@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/Starknet131/Starknet131-devnet/16.ExecuteFromOutside.ts",
+            "program": "${workspaceFolder}/src/scripts/signature/4d.signSnip12simple.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

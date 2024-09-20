@@ -68,10 +68,10 @@ async function main() {
         console.log("Status of your Starknet account =", result.activeVariant());
         const myAccount = new Account(provider, account2BraavosMainnetAddress, account2BraavosMainnetPrivateKey);
         airdropContract.connect(myAccount);
-        const claimCallData = airdropContract.populate("claim", {
+        const claimCall = airdropContract.populate("claim", {
             claim_data: myClaim
         });
-        console.log({ claimCallData });
+        console.log({ claimCallData: claimCall });
         //const result1 = await myAccount.execute(claimCallData);
         // console.log("txH =", result1.transaction_hash);
         // const txR = await provider.waitForTransaction(result1.transaction_hash);
@@ -79,7 +79,7 @@ async function main() {
         const invocation1: Invocations = [
             {
                 type: TransactionType.INVOKE,
-                ...claimCallData
+                ...claimCall
             },
         ];
         const result1 = await myAccount.simulateTransaction(invocation1)as any;

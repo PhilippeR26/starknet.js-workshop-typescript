@@ -2,7 +2,7 @@
 // use Starknet.js v5.17.0, starknet-devnet 0.5.5
 // launch with npx ts-node src/scripts/cairo13-devnet/2.callTestOptionResult.ts
 
-import { Provider, Account, Contract, json, Result, BigNumberish, Calldata, CallData, constants, Call, RawArgsObject, cairo, CairoEnum, CairoOption, CairoResult } from "starknet";
+import { Provider, Account, Contract, json, Result, BigNumberish, Calldata, CallData, constants, Call, RawArgsObject, cairo, CairoEnum, CairoOption, CairoResult, RpcProvider } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { CairoCustomEnum } from "starknet";
@@ -127,7 +127,7 @@ async function main() {
     // console.log("option2  =", myOption2);
 
     //initialize Provider 
-    const provider = new Provider({ sequencer: { baseUrl: "http://127.0.0.1:5050" } });
+    const provider = new RpcProvider({nodeUrl: "http://127.0.0.1:5050"  });
     // const provider = new Provider({ sequencer: { network: constants.NetworkName.SN_GOERLI } });
 
     console.log('✅ Connected to devnet.');
@@ -142,7 +142,7 @@ async function main() {
 
     // Connect the  contract instance :
     //          👇👇👇 update address in accordance with result of script 1
-    const address = "0x6834da67a0aa8b123a1e071b81084ebe125c4b75b72833a76ae2d197ed3f774";
+    const address = "0x76532889836d2c971d942c602e0cf6d5d969be30e6767533606526fe2f48ce";
     const compiledTest = json.parse(fs.readFileSync("./compiledContracts/cairo210/PhilTest2.sierra.json").toString("ascii"));
     const myTestContract = new Contract(compiledTest.abi, address, provider);
     myTestContract.connect(account0);
@@ -159,7 +159,7 @@ async function main() {
     const res3a = await myTestContract.call("test2", [100]) as CairoCustomEnum;
     console.log("Result3a =", res3a);
     const res3b = await myTestContract.call("test2", [160]) as CairoCustomEnum;;
-    console.log("Result3b =", res3b);
+    console.log("Result3b =", res3b, res3b.unwrap());
 
 
     // return an option<litteral>

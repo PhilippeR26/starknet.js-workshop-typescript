@@ -2,7 +2,7 @@
 // launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/16.executeFromOutside.ts
 // Coded with Starknet.js v6.11.0 + experimental & devnet-rs v0.1.2 & starknet-devnet.js v0.1.0
 
-import { RpcProvider, Account, Contract, json, cairo, shortString, EOutsideExecutionVersion, type OutsideTransaction } from "starknet";
+import { RpcProvider, Account, Contract, json, cairo, shortString, OutsideExecutionVersion, type OutsideTransaction } from "starknet";
 import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature } from "../../braavos/3b.deployBraavos1";
 import { DevnetProvider } from "starknet-devnet";
 import { outsideExecution, OutsideExecutionOptions } from 'starknet';
@@ -142,7 +142,7 @@ async function main() {
   console.log("ArgentX3 version =", await accountAX3.getSnip9Version());
   console.log("Braavos1 version =", await accountBraavos.getSnip9Version());
   const version = await accountOZ14.getSnip9Version();
-  console.log(version, EOutsideExecutionVersion.UNSUPPORTED);
+  console.log(version, OutsideExecutionVersion.UNSUPPORTED);
   console.log("    OZ14 version =", await accountOZ14.getSnip9Version());
   console.log("noERC165 version =", await accountNoERC165.getSnip9Version());
 

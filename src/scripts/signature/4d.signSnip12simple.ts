@@ -101,6 +101,7 @@ async function main() {
   const isValid3 = await myProvider.verifyMessageInStarknet(myTypedData, signature2, account0.address);
   const isValid4 = await myProvider.verifyMessageInStarknet(msgHash, signature2, account0.address);
   console.log({ isValid, isValid1, isValid2, isValid3, isValid4 });
+  const a=constants.StarknetChainId.SN_MAIN;
   console.log("deployment of contract in progress...");
 
   const snip12Sierra = json.parse(fs.readFileSync("./compiledContracts/cairo270/snip12message_checkMessageGift.sierra.json").toString("ascii"));

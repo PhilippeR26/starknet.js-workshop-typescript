@@ -2,7 +2,7 @@
 // launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/17.outsideExecuteLedger.ts
 // Coded with Starknet.js v6.11.0 + experimental & devnet-rs v0.1.2 & starknet-devnet.js v0.1.0
 
-import { RpcProvider, Account, Contract, json, cairo, shortString, EOutsideExecutionVersion, type OutsideTransaction, num, LedgerSigner } from "starknet";
+import { RpcProvider, Account, Contract, json, cairo, shortString, OutsideExecutionVersion, type OutsideTransaction, num, LedgerSigner } from "starknet";
 import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature } from "../../braavos/3b.deployBraavos1";
 import { DevnetProvider } from "starknet-devnet";
 import { outsideExecution, OutsideExecutionOptions } from 'starknet';

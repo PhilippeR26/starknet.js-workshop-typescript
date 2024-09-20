@@ -15,11 +15,11 @@ import { formatBalance } from "../../utils/formatBalance";
 async function main() {
     // initialize Provider 
     // Starknet-devnet-rs
-    // const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
+     const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
     // Goerli Testnet
     // const provider = new RpcProvider({ nodeUrl: 'https://starknet-testnet.blastapi.io/' + blastKey + "/rpc/v0_6" }); 
     // local Sepolia Testnet node :
-    const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); 
+    // const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); 
     // local Sepolia Integration node :
     //const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9550/rpc/v0_6" }); 
     // mainnet :

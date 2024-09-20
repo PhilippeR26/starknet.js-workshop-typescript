@@ -34,20 +34,14 @@ async function main() {
       to_authorize:
         [
           {
-            execute_after: 100, 
-            execute_before: 200, 
-            sub: {
-              gift_type: { axle: [] },
-              test: 10
-            },
+            execute_after: 100,
+            execute_before: 200,
+            gift_type: { axle: [] },
           },
           {
-            execute_after: 100, 
-            execute_before: 200, 
-            sub: {
-              gift_type: { axle: [] },
-              test: 10
-            },
+            execute_after: 100,
+            execute_before: 200,
+            gift_type: { axle: [] },
           },
         ],
       nonce: 345,
@@ -59,7 +53,6 @@ async function main() {
           name: "to_authorize",
           type: "Transaction*",
         },
-
         {
           name: "nonce",
           type: "felt",
@@ -75,16 +68,13 @@ async function main() {
           type: "u128",
         },
         {
-          name: "sub",
-          type: "Example",
-        },
-      ],
-      Example: [
-        {
           name: "gift_type",
           type: "enum",
           contains: "Reward"
-        },
+        }
+      ],
+      Example: [
+
         {
           "name": "test",
           "type": "u128"

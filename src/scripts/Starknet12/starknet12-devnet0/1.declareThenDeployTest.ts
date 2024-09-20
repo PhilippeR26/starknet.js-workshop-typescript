@@ -1,29 +1,33 @@
-// declare & deploy a Cairov2.1.0 contract.
-// use Starknet.js v5.16+branch Calldata-result-in-populate, starknet-devnet 0.5.5
+// declare & deploy a Cairo v2.1.0 contract.
+// use Starknet.js v6.11.0 + starknet-devnet 0.5.5
 // launch with npx ts-node src/scripts/cairo13-devnet/1.declareThenDeployTest.ts
 
-import { Provider, Account, Contract, json ,constants, GetTransactionReceiptResponse, InvokeFunctionResponse} from "starknet";
+import { Provider, Account, Contract, json ,constants, GetTransactionReceiptResponse, InvokeFunctionResponse, RpcProvider} from "starknet";
+import { DevnetProvider } from "starknet-devnet";
+
 import fs from "fs";
-import {accountTestnet4privateKey, accountTestnet4Address} from "../../A1priv/A1priv"
+//import {accountTestnet4privateKey, accountTestnet4Address} from "../../A1priv/A1priv"
 import * as dotenv from "dotenv";
-import { resetDevnetNow } from "../resetDevnetFunc";
+//import { resetDevnetNow } from "../resetDevnetFunc";
 dotenv.config();
 
 //          👇👇👇
-// 🚨🚨🚨   Launch 'starknet-devnet --seed 0 --cairo-compiler-manifest /D/Cairo1-dev/cairo/Cargo.toml' before using this script. cairo directory fetched to v2.1.0 rc0, then cargo build --release.
+// 🚨🚨🚨   Launch first devnet-rs
 //          👆👆👆
 
 
 async function main() {
     //initialize Provider 
-    const provider = new Provider({ sequencer: { baseUrl: "http://127.0.0.1:5050" } });
+    const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050" } );
+  const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
     console.log('✅ Connected to devnet.');
     // const provider = new Provider({ sequencer: { network: constants.NetworkName.SN_GOERLI } });
 
-    resetDevnetNow();
+    //resetDevnetNow();
     // initialize existing predeployed account 0 of Devnet
-    const privateKey = "0xe3e70682c2094cac629f6fbed82c07cd";
-    const accountAddress: string = "0x7e00d496e324876bbc8531f2d9a82bf154d1a04a50218ee74cdd372f75a551a";
+    const preDepl=await l2DevnetProvider.getPredeployedAccounts();
+    const privateKey = preDepl[0].private_key;
+    const accountAddress: string = preDepl[0].address;
     // const privateKey=accountTestnet4privateKey;
     // const accountAddress=accountTestnet4Address;
     const account0 = new Account(provider, accountAddress, privateKey);

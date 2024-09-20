@@ -25,6 +25,7 @@
     "@ledgerhq/react-native-hid": "^6.32.2",
     "@ledgerhq/react-native-hw-transport-ble": "^6.33.2",
     "@noble/curves": "^1.5.0",
+    "@noble/hashes": "^1.4.0",
     "@scure/bip32": "^1.4.0",
     "@scure/starknet": "^1.0.0",
     "@starknet-io/types-js": "^0.7.7",

@@ -1,0 +1,1 @@
+{"version":1,"contracts":[{"id":"sobbq11ip62k2","package_name":"snip12message","contract_name":"checkMessageGift","module_path":"snip12message::checkMessageGift","artifacts":{"sierra":"snip12message_checkMessageGift.contract_class.json","casm":"snip12message_checkMessageGift.compiled_contract_class.json"}}]}

@@ -24,14 +24,15 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/tmp/29.testSim.ts",
+            "program": "${workspaceFolder}/src/scripts/ledgerNano/6.testLedgerAccount210.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,
             "internalConsoleOptions": "openOnSessionStart",
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"
-            ]
+            ],
+            "runtimeArgs": ["--preserve-symlinks"]
         }
     ]
 }

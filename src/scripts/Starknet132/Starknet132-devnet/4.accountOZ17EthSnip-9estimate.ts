@@ -1,24 +1,17 @@
-// Deploy an account : OpenZeppelin v0.17.0,ETH signature, upgradable & compatible SNIP-9.
-// Launch with npx ts-node src/scripts/Starknet132/Starknet132-devnet/3.accountOZ17EthSnip-9.ts
+// Estimate fees of an OpenZeppelin v0.17.0,ETH signature account, upgradable & compatible SNIP-9.
+// Launch with npx ts-node src/scripts/Starknet132/Starknet132-devnet/4.accountOZ17EthSnip-9estimate.ts
 // Coded with Starknet.js v6.14.1 & devnet-rs v0.2.0 & starknet-devnet.js v0.2.0
 
-import { RpcProvider, Account, shortString, hash, CallData, json, stark, ec, OutsideExecutionVersion, type OutsideExecutionOptions, cairo, type OutsideTransaction, Contract, eth, EthSigner, addAddressPadding, encode } from "starknet";
+import { RpcProvider, Account, shortString, hash, CallData, json, stark, ec, OutsideExecutionVersion, type OutsideExecutionOptions, cairo, type OutsideTransaction, Contract, eth, EthSigner, addAddressPadding, encode, num } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { ethAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
 import assert from "assert";
+import type { SPEC } from "@starknet-io/types-js";
 dotenv.config();
 
-
-async function balances(accounts: Account[], provider: RpcProvider) {
-  const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));
-  const ethContract = new Contract(compiledERC20Contract.abi, ethAddress, provider);
-  console.log("devnet account0   =", formatBalance(await ethContract.call("balanceOf", [accounts[0].address]) as bigint, 18));
-  console.log("devnet account1   =", formatBalance(await ethContract.call("balanceOf", [accounts[1].address]) as bigint, 18));
-  console.log("devnet accountOZ17=", formatBalance(await ethContract.call("balanceOf", [accounts[2].address]) as bigint, 18), "\n");
-}
 
 //          👇👇👇
 // 🚨🚨🚨 launch 'cargo run --release -- --seed 0  --state-archive-capacity full --lite-mode' in devnet-rs directory before using this script.
@@ -91,46 +84,47 @@ async function main() {
   console.log('Precalculated account address=', accountAddress);
 
   // fund account address before account creation
-  await l2DevnetProvider.mint(accountAddress, 10n * 10n ** 18n, "WEI");
-  await l2DevnetProvider.mint(accountAddress, 100n * 10n ** 18n, "FRI");
+  const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));
+  const ethContract = new Contract(compiledERC20Contract.abi, ethAddress, account0);
+  const mintCall=ethContract.populate("transfer",{
+    recipient: accountAddress,
+    amount: 1n * 10n ** 16n,
+  });
+  const respTransfer = await account0.execute(mintCall);
+  await myProvider.waitForTransaction(respTransfer.transaction_hash);
+  console.log("initBalance of ETH account =",formatBalance((await ethContract.call("balanceOf", [accountAddress])) as bigint,18),"ETH");
+  // await l2DevnetProvider.mint(accountAddress, 10n * 10n ** 18n, "WEI");
+  // await l2DevnetProvider.mint(accountAddress, 100n * 10n ** 18n, "FRI");
   console.log("account funded.");
 
   // deploy account
-  const accountOZ17 = new Account(myProvider, accountAddress, ethSigner);
+  const accountEthOZ17 = new Account(myProvider, accountAddress, ethSigner);
   const deployAccountPayload = {
     classHash: contractClassHash,
     constructorCalldata: constructorCallData,
     contractAddress: accountAddress,
     addressSalt: salt
   };
-  const { transaction_hash: th, contract_address: accountAXFinalAddress } = await accountOZ17.deployAccount(deployAccountPayload, { maxFee: 1n * 10n ** 17n });
+  const { transaction_hash: th, contract_address: accountAXFinalAddress } = await accountEthOZ17.deployAccount(deployAccountPayload, { maxFee: 5n * 10n ** 15n });
   console.log("Final address =", accountAXFinalAddress);
   console.log("Account deployed.");
   await myProvider.waitForTransaction(th);
+  console.log("after ETH account deployed Balance =",formatBalance((await ethContract.call("balanceOf", [accountAddress])) as bigint,18),"ETH");
 
-  // test of outside Execution.
-  const version = await accountOZ17.getSnip9Version();
-  if (version === OutsideExecutionVersion.UNSUPPORTED) {
-    throw new Error('This account is not SNIP-9 compatible.');
-  }
-  const callOptions: OutsideExecutionOptions = {
-    caller: account0.address,
-    execute_after: Math.floor(Date.now() / 1000) - 3600, // 1 hour ago
-    execute_before: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
-  };
-  const call1 = {
-    contractAddress: ethAddress,
-    entrypoint: 'transfer',
-    calldata: {
-      recipient: account1.address,
-      amount: cairo.uint256(1n * 10n ** 15n),
-    },
-  };
-  await balances([account0, account1, accountOZ17], myProvider);
-  const outsideTransaction1: OutsideTransaction = await accountOZ17.getOutsideTransaction(callOptions, call1);
-  const res0 = await account0.executeFromOutside(outsideTransaction1, { maxFee: 1n * 10n ** 17n });
-  await myProvider.waitForTransaction(res0.transaction_hash);
-  await balances([account0, account1, accountOZ17], myProvider);
+  // test fees V2
+  const myCall = ethContract.populate("transfer", {
+    recipient: account0.address,
+    amount: 1n * 10n ** 15n,
+  });
+  const res0 = await accountEthOZ17.estimateInvokeFee(myCall, { skipValidate: true });
+  console.log("skip Validate =", res0);
+  const res1 = await accountEthOZ17.estimateInvokeFee(myCall, { skipValidate: false });
+  console.log("including Validate =", res1);
+  const res2 = accountEthOZ17.execute(myCall, { maxFee: 5n * 10n ** 15n });
+  const txR = await myProvider.waitForTransaction((await res2).transaction_hash);
+  console.log("after execution ETH account balance =", formatBalance(await ethContract.call("balanceOf", [accountEthOZ17.address]) as bigint, 18),"ETH");
+
+  console.log("really spent =",formatBalance (num.toBigInt((txR.value as SPEC.INVOKE_TXN_RECEIPT).actual_fee.amount),18),"ETH");
 
   console.log("✅ Test performed.");
 }
@@ -140,3 +134,4 @@ main()
     console.error(error);
     process.exit(1);
   });
+  

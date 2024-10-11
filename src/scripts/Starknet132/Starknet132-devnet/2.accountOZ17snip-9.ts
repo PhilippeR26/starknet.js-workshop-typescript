@@ -20,7 +20,7 @@ async function balances(accounts: Account[], provider: RpcProvider) {
 }
 
 //          👇👇👇
-// 🚨🚨🚨 launch 'cargo run --release -- --seed 0  --state-archive-capacity full --fork-network https://free-rpc.nethermind.io/sepolia-juno/v0_7' in devnet-rs directory before using this script.
+// 🚨🚨🚨 launch 'cargo run --release -- --seed 0  --state-archive-capacity full --lite-mode' in devnet-rs directory before using this script.
 //          👆👆👆
 
 async function main() {

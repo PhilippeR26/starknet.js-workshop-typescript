@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/Starknet132/Starknet132-Sepolia/2.getBlock.ts",
+            "program": "${workspaceFolder}/src/scripts/Starknet132/Starknet132-Sepolia/5.sendBytes.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

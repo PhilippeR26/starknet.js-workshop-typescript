@@ -1,5 +1,5 @@
 // test encoding/decoding of Buffer to send a binary ByteArray
-// launch with npx ts-node src/scripts/Starknet132/Starknet132-Sepolia/5.sendBytes.ts
+// launch with npx ts-node src/scripts/Starknet132/Starknet132-Sepolia/2.sendBytes.ts
 // Coded with Starknet.js v6.14.1
 
 import { BigNumberish, shortString, num, byteArray, RpcProvider, Account, json, Contract, CallData, parseCalldataField, type ByteArray, encode } from "starknet";

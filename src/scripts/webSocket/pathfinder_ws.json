@@ -1,0 +1,313 @@
+{
+    "openrpc": "1.2.6",
+    "info": {
+        "title": "Pathfinder websocket RPC API",
+        "version": "0.1",
+        "description": "Provides additional (pathfinder specific) methods over and above the Starknet RPC API"
+    },
+    "methods": [
+        {
+            "name": "pathfinder_subscribe",
+            "summary": "Open a new websocket subscription",
+            "description": "Creates a websocket stream which will fire events of the requested subscription type. Only available for websocket connections.",
+            "params": {
+                "oneOf": [
+                    [
+                        {
+                            "name": "kind",
+                            "summary": "The type of subscription",
+                            "required": true,
+                            "schema": {
+                                "type": "string",
+                                "enum": [
+                                    "newHeads"
+                                ]
+                            }
+                        }
+                    ],
+                    [
+                        {
+                            "name": "kind",
+                            "summary": "The type of subscription",
+                            "required": true,
+                            "schema": {
+                                "type": "string",
+                                "enum": [
+                                    "events"
+                                ]
+                            }
+                        },
+                        {
+                            "name": "address",
+                            "summary": "The from_address to filter events by",
+                            "required": false,
+                            "schema": {
+                                "$ref": "#/components/schemas/FELT"
+                            }
+                        },
+                        {
+                            "name": "keys",
+                            "summary": "The keys to filter events by",
+                            "required": false,
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/FELT"
+                                }
+                            }
+                        }
+                    ],
+                    [
+                        {
+                            "name": "kind",
+                            "summary": "The type of subscription",
+                            "required": true,
+                            "schema": {
+                                "type": "string",
+                                "enum": [
+                                    "transactionStatus"
+                                ]
+                            }
+                        },
+                        {
+                            "name": "transaction_hash",
+                            "summary": "The transaction hash to fetch status updates for",
+                            "required": true,
+                            "schema": {
+                                "$ref": "#/components/schemas/FELT"
+                            }
+                        }
+                    ]
+                ]
+            },
+            "result": {
+                "name": "subscription ID",
+                "description": "An identifier for this subscription stream used to associate events with this subscription.",
+                "schema": {
+                    "type": "integer"
+                }
+            }
+        },
+        {
+            "name": "pathfinder_unsubscribe",
+            "summary": "Closes a websocket subscription",
+            "description": "Creates a websocket stream which will fire events of the requested subscription type. Only available for websocket connections.",
+            "params": [
+                {
+                    "name": "subscription ID",
+                    "summary": "The subscription to close",
+                    "required": true,
+                    "schema": {
+                        "type": "integer"
+                    }
+                }
+            ],
+            "result": {
+                "name": "Unsubscription result",
+                "description": "True if the unsubscription was successful",
+                "schema": {
+                    "type": "boolean"
+                }
+            }
+        },
+        {
+            "name": "pathfinder_subscription",
+            "summary": "A subscription event notification sent by the node.",
+            "params": [],
+            "result": {
+                "name": "Subscription event",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "subscription": {
+                            "name": "Subscription ID",
+                            "summary": "The subscription this event is for",
+                            "type": "integer"
+                        },
+                        "event": {
+                            "$ref": "#/components/schemas/SUBSCRIPTION_EVENT"
+                        }
+                    },
+                    "required": [
+                        "subscription",
+                        "event"
+                    ]
+                }
+            },
+            "errors": [
+                {
+                    "$ref": "#/components/errors/WEBSOCKET_SUBSCRIPTION_CLOSED"
+                }
+            ]
+        }
+    ],
+    "components": {
+        "contentDescriptors": {},
+        "schemas": {
+            "SUBSCRIPTION_EVENT": {
+                "title": "Subscription event",
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/BLOCK_HEADER"
+                    },
+                    {
+                        "$ref": "#/components/schemas/EMITTED_EVENT"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TRANSACTION_STATUS"
+                    }
+                ]
+            },
+            "BLOCK_HEADER": {
+                "type": "object",
+                "properties": {
+                    "hash": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "parent_hash": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "number": {
+                        "type": "integer"
+                    },
+                    "timestamp": {
+                        "type": "integer"
+                    },
+                    "eth_l1_gas_price": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "strk_l1_gas_price": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "eth_l1_data_gas_price": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "strk_l1_data_gas_price": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "sequencer_address": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "starknet_version": {
+                        "ref": "string"
+                    },
+                    "class_commitment": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "event_commitment": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "state_commitment": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "storage_commitment": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "transaction_commitment": {
+                        "ref": "#/components/schemas/FELT"
+                    },
+                    "transaction_count": {
+                        "type": "integer"
+                    },
+                    "event_count": {
+                        "type": "integer"
+                    },
+                    "l1_da_mode": {
+                        "type": "string",
+                        "enum": [
+                            "BLOB",
+                            "CALLDATA"
+                        ]
+                    }
+                },
+                "required": [
+                    "hash",
+                    "parent_hash",
+                    "number",
+                    "timestamp",
+                    "eth_l1_gas_price",
+                    "strk_l1_gas_price",
+                    "sequencer_address",
+                    "starknet_version",
+                    "class_commitment",
+                    "event_commitment",
+                    "state_commitment",
+                    "storage_commitment",
+                    "transaction_commitment",
+                    "transaction_count",
+                    "event_count"
+                ]
+            },
+            "EMITTED_EVENT": {
+                "title": "Emitted event",
+                "description": "Event information decorated with metadata on where it was emitted / An event emitted as a result of transaction execution",
+                "allOf": [
+                    {
+                        "title": "Event",
+                        "description": "The event information",
+                        "$ref": "./v07/starknet_api_openrpc.json#/components/schemas/EVENT"
+                    },
+                    {
+                        "title": "Event context",
+                        "description": "The event emission information, without block hash",
+                        "type": "object",
+                        "properties": {
+                            "block_number": {
+                                "title": "Block number",
+                                "description": "The number of the block in which the event was emitted",
+                                "$ref": "#/components/schemas/BLOCK_NUMBER"
+                            },
+                            "transaction_hash": {
+                                "title": "Transaction hash",
+                                "description": "The transaction that emitted the event",
+                                "$ref": "#/components/schemas/TXN_HASH"
+                            }
+                        },
+                        "required": [
+                            "block_number",
+                            "transaction_hash"
+                        ]
+                    }
+                ]
+            },
+            "TRANSACTION_STATUS": {
+                "type": "string",
+                "enum": [
+                    "RECEIVED",
+                    "REJECTED",
+                    "SUCCEEDED",
+                    "REVERTED"
+                ]
+            },
+            "FELT": {
+                "$ref": "./pathfinder_rpc_api.json#/components/schemas/FELT"
+            }
+        },
+        "errors": {
+            "WEBSOCKET_SUBSCRIPTION_CLOSED": {
+                "code": -32099,
+                "message": "Websocket subscription closed",
+                "data": {
+                    "type": "object",
+                    "description": "More data about the execution failure",
+                    "properties": {
+                        "id": {
+                            "title": "Subscription ID",
+                            "description": "The ID of the closed subscription",
+                            "type": "integer"
+                        },
+                        "reason": {
+                            "title": "Closing reason",
+                            "description": "The reason why the subscription was closed",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "id",
+                        "reason"
+                    ]
+                }
+            }
+        }
+    }
+}

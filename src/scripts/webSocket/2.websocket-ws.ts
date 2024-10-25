@@ -2,12 +2,10 @@
 // launch with npx ts-node 
 // Coded with Starknet.js v5.20.0
 
-import { constants, Provider, Contract, Account, json, shortString, RpcProvider, SequencerProvider } from "starknet";
+import { constants, Provider, Contract, Account, json, shortString, RpcProvider } from "starknet";
 import { WebSocket } from "ws";
 import fs from "fs";
 import { account1Testnet2ArgentXAddress, account1Testnet2ArgentXprivateKey, TonyNode } from "../../A2priv/A2priv";
-import { account2TestnetAddress, account2TestnetPrivateKey, junoNMtestnet } from "../../A1priv/A1priv";
-import { account4MainnetAddress, account4MainnetPrivateKey, infuraKey, alchemyKey, blastKey, lavaMainnetKey, junoNMmainnet } from "../../A-MainPriv/mainPriv";
 import { junoNMtestnet2 } from "../../A2priv/A2priv";
 
 function wait(delay: number) {
@@ -32,18 +30,13 @@ async function main() {
     // mainnet sequencer (soon deprecated) :
     //const provider = new SequencerProvider({ network: constants.NetworkName.SN_MAIN });
     // my personal local Pathfinder node
-    const provider = new RpcProvider({ nodeUrl: 'http://192.168.1.99:9545/rpc/v0.4' });
+    // const provider = new RpcProvider({ nodeUrl: 'http://192.168.1.99:9545/rpc/v0.4' });
 
-    const wsClient = new WebSocket("ws://192.168.1.99:6080");
+    const wsClient = new WebSocket("ws://192.168.1.11:6061");
 
     // initialize existing Argent X account
 
-    const account0Address = account4MainnetAddress;
-    const account0PrivKey = account4MainnetPrivateKey;
-
-    console.log('existing_ACCOUNT_ADDRESS=', account0Address);
-    const account0 = new Account(provider, account0Address, account0PrivKey);
-    console.log('existing account connected.\n');
+    
 
     // Mainnet 
     // console.log(await wsClient.listMethods());

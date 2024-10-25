@@ -40,14 +40,14 @@ async function main() {
     let wsOpen: boolean = false;
     const start0 = new Date().getTime();
     let end0: number=0;
-    const ws = new WebSocket("ws://192.168.1.44:6061"); //nethermind juno node
+    const ws = new WebSocket("ws://192.168.1.11:6061"); //nethermind juno node
     console.log("A");
     ws.on('open', function open() { end0 = new Date().getTime();wsOpen = true; });
     await waitFor(() => wsOpen);
     console.log("ws opened in",end0-start0,"ms.");
     const start = new Date().getTime();
     let end: number;
-    ws.send('{"jsonrpc" : "2.0", "method" : "starknet_chainId","params" : [],  "id" : 1}');
+    ws.send('{"jsonrpc" : "2.0", "method" : "starknet_chainId","params" : [],  "id" : 8}');
     console.log("B");
 
     ws.on('message', function message(data) {
@@ -56,6 +56,7 @@ async function main() {
     });
     console.log("C");
     await wait(10 * 1000); // 10 sec
+    console.log("press a key to stop the scan.");
     await keypress();
     ws.close();
     console.log("D");

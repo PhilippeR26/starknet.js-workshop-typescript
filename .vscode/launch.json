@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/Starknet132/Starknet132-Sepolia/5.sendBytes.ts",
+            "program": "${workspaceFolder}/src/scripts/Starknet132/Starknet132-Sepolia/3.testRpc8.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,
@@ -32,7 +32,10 @@
             "outFiles": [
                 "${workspaceFolder}/out/**/*.js"
             ],
-            "runtimeArgs": ["--preserve-symlinks"]
+            "runtimeArgs": ["--preserve-symlinks"],
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
         }
     ]
 }

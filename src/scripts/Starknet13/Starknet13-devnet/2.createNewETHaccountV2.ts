@@ -98,7 +98,7 @@ async function main() {
             salt: salt,
             version: "0x1",
             maxFee: "0xa9e5202b42800",
-            chainId: constants.StarknetChainId.SN_GOERLI,
+            chainId: constants.StarknetChainId.SN_SEPOLIA,
             nonce: 0,
         }
     );
@@ -125,10 +125,10 @@ async function main() {
     console.log("ETH account has a balance of :", formatBalance(balSTRK, 18), "STRK");
 
     // ********** test transaction
-    const ethContract2 = new Contract(compiledERC20Contract.abi, ethAddress, ETHaccount);
-    const respTransfer = await ethContract2.transfer(account0.address, 1 * 10 ** 15);
-    console.log("✅ Transfer performed");
-    await provider.waitForTransaction(respTransfer.transaction_hash);
+    // const ethContract2 = new Contract(compiledERC20Contract.abi, ethAddress, ETHaccount);
+    // const respTransfer = await ethContract2.transfer(account0.address, 1 * 10 ** 15);
+    // console.log("✅ Transfer performed");
+    // await provider.waitForTransaction(respTransfer.transaction_hash);
 
     // ********* test declare
     const accountTestSierra = json.parse(fs.readFileSync("./compiledContracts/cairo241/name.sierra.json").toString("ascii"));
@@ -144,7 +144,7 @@ async function main() {
 
     // ********** test deploy contract
     const feeEstimationDeploy = await ETHaccount.estimateDeployFee({ classHash: decClassHash2 });
-    const { contract_address: deployAddress, transaction_hash: txHDepl } = await ETHaccount.deployContract({ classHash: decClassHash2 }, { maxFee: feeEstimationDeploy.suggestedMaxFee * 2n });
+    const { contract_address: deployAddress, transaction_hash: txHDepl } = await ETHaccount.deployContract({ classHash: decClassHash2 }, { skipValidate:false });
     console.log("deploy address =", deployAddress);
     console.log("✅ Deploy contract performed");
     if (txHDepl) { await provider.waitForTransaction(txHDepl) } else { console.log("Already declared.") };

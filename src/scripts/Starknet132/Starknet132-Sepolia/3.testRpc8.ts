@@ -80,10 +80,11 @@ async function main() {
   let wsOpen: boolean = false;
   const start0 = new Date().getTime();
   let end0: number = 0;
-  const ws = new WebSocket("ws://192.168.1.11:9545/ws");
+  const ws_pathfinder = new WebSocket("ws://192.168.1.11:9545/ws");
+  const ws_starknetRpc = new WebSocket("ws://192.168.1.11:9545/rpc/v0_8");
   console.log("A");
-  ws.on("error", console.error);
-  ws.on('open', function open() {
+  ws_starknetRpc.on("error", console.error);
+  ws_starknetRpc.on('open', function open() {
     end0 = new Date().getTime();
     wsOpen = true;
   });
@@ -92,33 +93,46 @@ async function main() {
 
   const start = new Date().getTime();
   let end: number;
-  ws.send('{"jsonrpc" : "2.0", "method" : "starknet_chainId","params" : [],  "id" : 2}');
-  ws.send('{"jsonrpc" : "2.0", "method" : "pathfinder_subscribe","params" : ["newHeads"],  "id" : 3}');
-  ws.send('{"jsonrpc" : "2.0", "method" : "pathfinder_subscribe","params" : ["events","0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"],  "id" : 4}');
-  console.log("B");
-  ws.send('{"jsonrpc" : "2.0", "method" : "pathfinder_subscribe","params" : ["transactionStatus","0x1a6efb583c3fa89421ea34547d47fb863f5758a4720ea3f99a2fd9e508c4f21"],  "id" : 5}');
-  ws.send('{"jsonrpc" : "2.0", "method" : "starknet_subscribeNewHeads","params" : [],  "id" : 6}');
-  ws.send('{"jsonrpc" : "2.0", "method" : "starknet_subscribeEvents","params" : ["0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"],  "id" : 7}');
-  ws.send('{"jsonrpc" : "2.0", "method" : "starknet_subscribeTransactionStatus","params" : ["0x1a6efb583c3fa89421ea34547d47fb863f5758a4720ea3f99a2fd9e508c4f21"],  "id" : 8}');
-  ws.send('{"jsonrpc" : "2.0", "method" : "starknet_subscribePendingTransactions","params" : [],  "id" : 9}');
-  ws.send('{"jsonrpc" : "2.0", "method" : "starknet_subscriptionReorg","params" : [],  "id" : 10}');
+  ws_starknetRpc.send('{"jsonrpc" : "2.0", "method" : "starknet_getCompiledCasm","params" : ["0x3940bc18abf1df6bc540cabadb1cad9486c6803b95801e57b6153ae21abfe06"],  "id" : 0}');
+  
+  ws_starknetRpc.send('{"jsonrpc" : "2.0", "method" : "starknet_chainId","params" : [],  "id" : 1}');
+  ws_pathfinder.send('{"jsonrpc" : "2.0", "method" : "starknet_chainId","params" : [],  "id" : 2}');
 
-  ws.on('message', function message(data) {
+  ws_pathfinder.send('{"jsonrpc" : "2.0", "method" : "pathfinder_subscribe","params" : ["newHeads"],  "id" : 3}');
+  ws_pathfinder.send('{"jsonrpc" : "2.0", "method" : "pathfinder_subscribe","params" : ["events","0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"],  "id" : 4}');
+  console.log("B");
+  ws_pathfinder.send('{"jsonrpc" : "2.0", "method" : "pathfinder_subscribe","params" : ["transactionStatus","0x1a6efb583c3fa89421ea34547d47fb863f5758a4720ea3f99a2fd9e508c4f21"],  "id" : 5}');
+
+  ws_starknetRpc.send('{"jsonrpc" : "2.0", "method" : "starknet_subscribeNewHeads","params" : [],  "id" : 6}');
+  ws_starknetRpc.send('{"jsonrpc" : "2.0", "method" : "starknet_subscribeEvents","params" : ["0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"],  "id" : 7}');
+  ws_starknetRpc.send('{"jsonrpc" : "2.0", "method" : "starknet_subscribeTransactionStatus","params" : ["0x1a6efb583c3fa89421ea34547d47fb863f5758a4720ea3f99a2fd9e508c4f21"],  "id" : 8}');
+  ws_starknetRpc.send('{"jsonrpc" : "2.0", "method" : "starknet_subscribePendingTransactions","params" : [],  "id" : 9}');
+  
+  function message(data:any) {
     end = new Date().getTime();
-    console.log("Message received. Duration =", end - start, "ms:");
+    console.log("Message received. After", end - start, "ms:");
     const newMessage = json.parse(data.toString("ascii"));
     console.log(newMessage);
+  }
 
-  });
+  ws_starknetRpc.on('message', message );
+  ws_pathfinder.on('message', message );
+
   console.log("C");
   await wait(10 * 1000); // 10 sec
   console.log("press a key to stop the subscription.");
   await keypress();
-  ws.send('{"jsonrpc" : "2.0", "method" : "pathfinder_unsubscribe","params" : 0,  "id" : 20}');
-  ws.send('{"jsonrpc" : "2.0", "method" : "pathfinder_unsubscribe","params" : 1,  "id" : 21}');
-  ws.send('{"jsonrpc" : "2.0", "method" : "pathfinder_unsubscribe","params" : 2,  "id" : 22}');
+  ws_pathfinder.send('{"jsonrpc" : "2.0", "method" : "pathfinder_unsubscribe","params" : 0,  "id" : 20}');
+  ws_pathfinder.send('{"jsonrpc" : "2.0", "method" : "pathfinder_unsubscribe","params" : 1,  "id" : 21}');
+  ws_pathfinder.send('{"jsonrpc" : "2.0", "method" : "pathfinder_unsubscribe","params" : 2,  "id" : 22}');
   console.log("Cbis");
-  ws.close();
+  ws_pathfinder.close();
+  ws_starknetRpc.send('{"jsonrpc" : "2.0", "method" : "pathfinder_unsubscribe","params" : 0,  "id" : 30}');
+  ws_starknetRpc.send('{"jsonrpc" : "2.0", "method" : "pathfinder_unsubscribe","params" : 1,  "id" : 31}');
+  ws_starknetRpc.send('{"jsonrpc" : "2.0", "method" : "pathfinder_unsubscribe","params" : 2,  "id" : 32}');
+  ws_starknetRpc.send('{"jsonrpc" : "2.0", "method" : "pathfinder_unsubscribe","params" : 3,  "id" : 33}');
+  ws_starknetRpc.close();
+
   console.log("D");
 
   console.log("✅ end of script.");

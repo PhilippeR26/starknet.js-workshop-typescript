@@ -1,4 +1,4 @@
-// create a very complex a nested calldata
+// create a very complex nested calldata
 // launch with npx src/scripts/Starknet132/Starknet132-Sepolia/4.callComplexTypes.ts
 // Coded with Starknet.js v6.17.0
 
@@ -47,15 +47,16 @@ async function main() {
     certification: string,
   }
 
-  enum AssetType {
-    Cash = "Cash",
-    Commodity = "Commodity",
-    Stock = "Stock",
-    Bond = "Bond",
-    Credit = "Credit",
-    Art = "Art",
-    IntellectualProperty = "IntellectualProperty",
+  enum AT {
+    Cash,
+    Commodity,
+    Stock,
+    Bond,
+    Credit,
+    Art,
+    IntellectualProperty,
   }
+  type AssetType = keyof typeof AT;
 
   type Valuation = {
     currency: string,
@@ -111,7 +112,8 @@ async function main() {
     contact: "contact1",
     certification: "certification1",
   };
-  const myAssetType = new CairoCustomEnum({ [AssetType.Art]: {} });
+  const assetChoice: AssetType = "Bond";
+  const myAssetType = new CairoCustomEnum({ [assetChoice]: {} });
   const myValuation: Valuation = {
     currency: "Stark of course",
     amount: 2345n,
@@ -142,7 +144,7 @@ async function main() {
     recipient: "Phil26",
     percentage: 95,
   }
-  const myRWA:RWAMetadata = {
+  const myRWA: RWAMetadata = {
     name: "birds magnificence",
     description: "beautiful colored birds",
     image: "img23",
@@ -157,10 +159,10 @@ async function main() {
     disclaimer: "Miraculous if it works!!!!",
   }
 
-  const myCall=nftContract.populate("mint", {metadata: myRWA});
+  const myCall = nftContract.populate("mint", { metadata: myRWA });
   console.log(myCall);
-  const resp=await account0.execute(myCall);
-  const txR=await myProvider.waitForTransaction(resp.transaction_hash);
+  const resp = await account0.execute(myCall);
+  const txR = await myProvider.waitForTransaction(resp.transaction_hash);
   console.log(txR);
 
   console.log("✅ end of script.");

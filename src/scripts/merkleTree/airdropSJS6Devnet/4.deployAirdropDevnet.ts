@@ -1,12 +1,13 @@
 // Declare/Deploy a demo  of Airdrop contract
-// Coded with Starknet.js v6.0.0-beta.11 and Starknet-devnet-rs (compatible rpc 0.6.0)
-// launch with npx ts-node src/scripts/merkleTree/airdropSJS6Devnet/4.deployAirdropDevnet.ts
+// Coded with Starknet.js v6.17.0 and Starknet-devnet-rs v0.2.0
+// Launch with npx ts-node src/scripts/merkleTree/airdropSJS6Devnet/4.deployAirdropDevnet.ts
 
 import { Account, json, Contract, RpcProvider, RPC, Call, Calldata, CallData, shortString, constants } from "starknet";
 import { account0OZSepoliaAddress, account0OZSepoliaPrivateKey } from "../../../A1priv/A1priv";
 
 import * as dotenv from "dotenv";
 import fs from "fs";
+import type { SPEC } from "@starknet-io/types-js";
 dotenv.config();
 
 //         👇👇👇
@@ -57,9 +58,9 @@ async function main() {
     const compiledSierraAirdrop = json.parse(fs.readFileSync("./compiledContracts/cairo240/airdropSJS6.sierra.json").toString("ascii"));
     const compiledCasmAirdrop = json.parse(fs.readFileSync("./compiledContracts/cairo240/airdropSJS6.casm.json").toString("ascii"));
     //         👇👇👇
-    // 🚨🚨🚨 Change addresses following execution of scripts src/scripts/merkleTree/2a.deployMerkleVerifPoseidonDevnet.ts 
-    const ERC20_ADDRESS = "0x15fb5348e915377e9d3e6fa428ddf5b3ea23e63e9f6fef7320000ef28cc2efd";
-    const MERKLE_VERIF_ADDRESS = "0x41432748d215431fdaf4442752ecce87491dbb12e794d7cd600db4dc9b033e8";
+    // 🚨🚨🚨 Change addresses following execution of scripts src/scripts/merkleTree/airdropSJS6Devnet/2.deployMerkleVerifPoseidonDevnet.ts
+    const ERC20_ADDRESS = "0x88f54faddae6d0401ff9cc9a8842e56be7a470a5472a36f3b55c4ea93d24ed";
+    const MERKLE_VERIF_ADDRESS = "0x7133a615607b6566e9658edf40b4e2daeb7c8f8fdeffee4285cbceb8b3d3360";
     //         👆👆👆
     console.log('In progress...');
     const myCallAirdrop = new CallData(compiledSierraAirdrop.abi);
@@ -91,7 +92,7 @@ async function main() {
     });
     const tx = await account0.execute(authorize);
     const txR = await provider.waitForTransaction(tx.transaction_hash);
-    console.log("authorize =",txR.execution_status);
+    console.log("authorize =",(txR.value as SPEC.INVOKE_TXN_RECEIPT).execution_status);
 
     console.log("✅ test completed.");
 }

@@ -2,7 +2,7 @@
 // Coded with Starknet.js v6.0.0-beta.11 and Starknet-devnet-rs (compatible rpc 0.6.0)
 // launch with npx ts-node src/scripts/merkleTree/airdropSJS6/1.createTree.ts
 
-import { Account, ec, hash, Provider, num, json, Contract, encode, Signature, typedData, uint256, RpcProvider, RPC } from "starknet";
+import {  json } from "starknet";
 import * as Merkle from "starknet-merkle-tree";
 import * as dotenv from "dotenv";
 import fs from "fs";

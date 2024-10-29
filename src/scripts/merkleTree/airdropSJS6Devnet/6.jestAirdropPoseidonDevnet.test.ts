@@ -1,6 +1,6 @@
 // Test a Merkle tree hashed with Poseidon.
-// Coded with Starknet.js v6.0.0-beta.13 and Starknet-devnet-rs (compatible rpc 0.6.0)
-// launch with npx jest src/scripts/merkleTree/airdropSJS6Devnet/6.jestAirdropPoseidonDevnet.test.ts
+// Coded with Starknet.js v6.17.0 and Starknet-devnet-rs v0.2.0
+// Launch with npx jest src/scripts/merkleTree/airdropSJS6Devnet/6.jestAirdropPoseidonDevnet.test.ts
 
 import { Account, json, Contract, RpcProvider, RPC, num, uint256, Uint256, Calldata, CallData, Call, encode, addAddressPadding } from "starknet";
 import * as Merkle from "starknet-merkle-tree";
@@ -128,7 +128,7 @@ describe('Airdrop contract tests', () => {
         });
         const tx = await account0.execute(authorize);
         const txR = await provider.waitForTransaction(tx.transaction_hash);
-        console.log("authorize =", txR.execution_status);
+        console.log("authorize success =", txR.isSuccess());
 
     });
 
@@ -173,7 +173,7 @@ describe('Airdrop contract tests', () => {
         const txResp = await account1.execute(myCall);
 
         const txR = await provider.waitForTransaction(txResp.transaction_hash);
-        expect(txR.execution_status).toBe("SUCCEEDED");
+        expect(txR.isSuccess()).toBe(true);
 
         const balance = await erc20Contract.call("balanceOf", [account1.address]);
         expect(balance).toBe(900n);
@@ -249,7 +249,7 @@ describe('Airdrop contract tests', () => {
         const txResp = await account9.execute(myCall);
 
         const txR = await provider.waitForTransaction(txResp.transaction_hash);
-        expect(txR.execution_status).toBe("SUCCEEDED");
+        expect(txR.isSuccess()).toBe(true);
 
         const balance = await erc20Contract.call("balanceOf", [account9.address]);
         expect(balance).toBe(1n);

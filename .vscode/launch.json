@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/Starknet132/Starknet132-Sepolia/3.testRpc8.ts",
+            "program": "${workspaceFolder}/src/scripts/ledgerNano/6.testLedgerAccount220.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

@@ -19,7 +19,7 @@ async function main() {
     const accountAddress0 = account2TestnetAddress;
     const privateKey0 = account2TestnetPrivateKey;
 
-    const newImplementationClass = "0x029927c8af6bccf3f6fda035981e765a7bdbf18a2dc0d630494f8758aa908e2b";
+    const newImplementationClass = "0x036078334509b514626504edc9fb252328d1a240e4e948bef8d0c08dff45927f";
     const contractClass = await provider.getClassAt(accountAddress0);
     const contractArgentX = new Contract(contractClass.abi, accountAddress0, provider);
      const call1 = contractArgentX.populate("upgrade", {

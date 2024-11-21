@@ -24,7 +24,9 @@ import { sha256 } from '@noble/hashes/sha256';
 dotenv.config();
 
 async function main() {
+  console.log("A");
   const myLedgerTransport = await TransportNodeHid.create();
+  console.log("B");
 
   // *** transfer ***
   const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));

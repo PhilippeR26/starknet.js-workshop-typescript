@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/merkleTree/7.createTree.ts",
+            "program": "${workspaceFolder}/src/scripts/Starknet133/1.providerSimulate.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

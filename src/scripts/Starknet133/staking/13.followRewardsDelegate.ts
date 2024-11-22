@@ -1,5 +1,5 @@
-// Create & use a validator staker with a pool created from start
-// launch with npx src/scripts/Starknet133/2.stakingWPool.ts
+// track rewards in a pool
+// launch with npx src/scripts/Starknet133/staking/13.followRewardsDelegate.ts
 // Coded with Starknet.js v6.17.0
 
 import { BigNumberish, shortString, RpcProvider, Account, json, hash, Contract, CairoOption, num } from "starknet";
@@ -46,16 +46,16 @@ async function main() {
   const account0 = new Account(myProvider, accountAddress0, privateKey0);
   const account2 = new Account(myProvider, accountAddress2, privateKey2);
 
-    const strkContract = new Contract(strkSierra.abi, strkAddress, myProvider);
+  const strkContract = new Contract(strkSierra.abi, strkAddress, myProvider);
 
-    const stakingContract = new Contract(compiledSierraStake.abi, STAKING_ADDRESS, myProvider);
+  const stakingContract = new Contract(compiledSierraStake.abi, STAKING_ADDRESS, myProvider);
 
-  
+
 
   const info6: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
   if (info6.isSome()) {
-      console.log("staker already exists");
-      process.exit()
+    console.log("staker already exists");
+    process.exit()
   }
   else { console.log("No staker. OK."); }
 
@@ -84,22 +84,23 @@ async function main() {
   let poolAddress: string = "";
   if (info0.isSome()) {
     const info = info0.unwrap() as StakerInfo;
-      console.log("Staked =", formatBalance(BigInt(info.amount_own), 18), "STRK");
-      if (info.pool_info.isSome()) {
-        const poolInfo = info.pool_info.unwrap() as StakerPoolInfo;
-          console.log("pool_info =", poolInfo);
-          poolAddress = num.toHex(poolInfo.pool_contract);
-          console.log(LogC.fg.green,"pool_address =", poolAddress, LogC.reset);
-      }
-      else { console.log("No pool"); process.exit(); }
+    console.log("Staked =", formatBalance(BigInt(info.amount_own), 18), "STRK");
+    if (info.pool_info.isSome()) {
+      const poolInfo = info.pool_info.unwrap() as StakerPoolInfo;
+      console.log("pool_info =", poolInfo);
+      poolAddress = num.toHex(poolInfo.pool_contract);
+      console.log(LogC.fg.green, "pool_address =", poolAddress, LogC.reset);
+      console.log("initial rewards staker =", formatBalance(BigInt(info.unclaimed_rewards_own), 18), "STRK");
+      console.log("initial rewards delegator =", formatBalance(BigInt(poolInfo.unclaimed_rewards), 18), "STRK");
+    }
+    else { console.log("No pool"); process.exit(); }
   }
   else { console.log("No staker"); process.exit() }
 
 
   console.log("🔜 Delegate 2 STRK...");
   // const poolAddress="0x1b9b0a1e5d7c5a8b9813d575977804270e94c07bed2fb8bae2357dbc4ec5ed";
-   const poolContract = new Contract(compiledSierraPool.abi, poolAddress, myProvider);
-
+  const poolContract = new Contract(compiledSierraPool.abi, poolAddress, myProvider);
   const bal5 = await strkContract.balanceOf(account2.address);
   console.log("Initial balance account2 =", formatBalance(bal5, 18));
   const approvePoolCall2 = strkContract.populate("approve", {
@@ -116,171 +117,123 @@ async function main() {
   const info9: CairoOption<StakerInfo> = await stakingContract.get_staker_info(account0.address);
   if (info9.isSome()) {
     const info = info9.unwrap() as StakerInfo;
-      console.log("get_staker_info =", info);
+    console.log("get_staker_info =", info);
   }
   else { console.log("No staker"); process.exit() }
   const info12: CairoOption<PoolMemberInfo> = await poolContract.get_pool_member_info(BigInt(account2.address));
   if (info12.isSome()) {
     const info = info12.unwrap() as PoolMemberInfo;
-      console.log("get_pool_member_info =", info);
-  }
-  else { console.log("No pool"); process.exit() }
-
-  console.log("🔜 update pool commission...");
-  const updateCommissionCall = stakingContract.populate("update_commission", {
-    commission: 500 // 10%
-  });
-  const resp20 = await account0.execute(updateCommissionCall);
-  const txR20 = await account0.waitForTransaction(resp20.transaction_hash);
-  if (txR20.isSuccess()) { console.log("Success.") } else { console.log("Error20", txR20); process.exit(); }
-  const info32: CairoOption<StakerInfo> = await stakingContract.get_staker_info(account0.address);
-  if (info32.isSome()) {
-    const info = info32.unwrap() as StakerInfo;
-      console.log("get_staker_info =", info);
-  }
-  else { console.log("No staker"); process.exit() }
-
-  console.log("🔜 Increase 1 STRK in pool..");
-  const bal6 = await strkContract.balanceOf(account2.address);
-  console.log("balance account2 =", formatBalance(bal6, 18));
-  const approvePoolCall1 = strkContract.populate("approve", {
-    spender: poolAddress,
-    amount: 1n * 10n ** 18n
-  });
-  const IncreasePollCall = poolContract.populate("add_to_delegation_pool", {
-    pool_member: account2.address,
-    amount: 1n * 10n ** 18n,
-  });
-  const resp9 = await account2.execute([approvePoolCall1, IncreasePollCall]);
-  const txR9 = await account2.waitForTransaction(resp9.transaction_hash);
-  if (txR9.isSuccess()) { console.log("Success.") } else { console.log("Error9", txR9); process.exit(); }
-  const info15: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
-  if (info15.isSome()) {
-    const info = info15.unwrap() as StakerInfo;
-      console.log("get_staker_info =", info);
-  }
-  else { console.log("No staker"); process.exit() }
-  const info16: CairoOption<PoolMemberInfo> = await poolContract.get_pool_member_info(BigInt(account2.address));
-  if (info16.isSome()) {
-    const info = info16.unwrap() as PoolMemberInfo;
-      console.log("get_pool_member_info =", info);
-  }
-  else { console.log("No pool"); process.exit() }
-
-  console.log("🔜 claim pool...");
-  const bal8 = await strkContract.balanceOf(account2.address);
-  console.log("Balance account2 =", formatBalance(bal8, 18));
-  console.log("Wait 2' to have some rewards");
-  await wait(2 * 60 * 1000);
-  const info20: CairoOption<PoolMemberInfo> = await poolContract.get_pool_member_info(BigInt(account2.address));
-  if (info20.isSome()) {
-    const info = info20.unwrap() as PoolMemberInfo;
     console.log("get_pool_member_info =", info);
   }
   else { console.log("No pool"); process.exit() }
+
+  const bal8 = await strkContract.balanceOf(account2.address);
+  console.log("Balance account2 =", formatBalance(bal8, 18));
+  console.log("Wait 4' to have some rewards");
+  await wait(4 * 60 * 1000);
+
+  console.log("🔜 claim pool...");
+
+  const info39: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
+  if (info0.isSome()) {
+    const info = info0.unwrap() as StakerInfo;
+    console.log(info);
+    console.log("Staked =", formatBalance(BigInt(info.amount_own), 18), "STRK");
+    if (info.pool_info.isSome()) {
+      const poolInfo = info.pool_info.unwrap() as StakerPoolInfo;
+      console.log("rewards staker =", formatBalance(BigInt(info.unclaimed_rewards_own), 18), "STRK");
+      console.log("rewards delegator =", formatBalance(BigInt(poolInfo.unclaimed_rewards), 18), "STRK");
+    }
+    else { console.log("No pool"); process.exit(); }
+  }
+  else { console.log("No staker"); process.exit() }
+
   const claimPoolCall = poolContract.populate("claim_rewards", {
     pool_member: account2.address,
   });
   const resp12 = await account2.execute(claimPoolCall);
   const txR12 = await account2.waitForTransaction(resp12.transaction_hash);
   if (txR12.isSuccess()) { console.log("Success.") } else { console.log("Error12", txR12); process.exit() }
-  const info21: CairoOption<PoolMemberInfo> = await poolContract.get_pool_member_info(BigInt(account2.address));
-  if (info21.isSome()) {
-    const info = info21.unwrap() as PoolMemberInfo;
-    console.log("get_pool_member_info =", info);
-  }
-  else { console.log("No pool"); process.exit() }
-  const bal9 = await strkContract.balanceOf(account2.address);
-  console.log("Balance account2 =", formatBalance(bal9, 18));
-
-  console.log("🔜 partial withdraw 1 STRK...");
-  console.log("Init...");
-  const partialWithdrawInitCall = poolContract.populate("exit_delegation_pool_intent", {
-    amount: 1n * 10n ** 18n,
-  });
-  const resp10 = await account2.execute(partialWithdrawInitCall);
-  const txR10 = await account2.waitForTransaction(resp10.transaction_hash);
-  if (txR10.isSuccess()) { console.log("Success.") } else { console.log("Error10",txR10); process.exit() }
-
-  const info17: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
-  if (info17.isSome()) {
-    const info = info17.unwrap() as StakerInfo;
-      console.log("get_staker_info =", info);
+  const info40: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
+  if (info40.isSome()) {
+    const info = info40.unwrap() as StakerInfo;
+    console.log(info);
+    console.log("Staked =", formatBalance(BigInt(info.amount_own), 18), "STRK");
+    if (info.pool_info.isSome()) {
+      const poolInfo = info.pool_info.unwrap() as StakerPoolInfo;
+      console.log("rewards staker =", formatBalance(BigInt(info.unclaimed_rewards_own), 18), "STRK");
+      console.log("rewards delegator =", formatBalance(BigInt(poolInfo.unclaimed_rewards), 18), "STRK");
+    }
+    else { console.log("No pool"); process.exit(); }
   }
   else { console.log("No staker"); process.exit() }
-  const info18: CairoOption<PoolMemberInfo> = await poolContract.get_pool_member_info(BigInt(account2.address));
-  if (info18.isSome()) {
-    const info = info18.unwrap() as PoolMemberInfo;
-    console.log("get_pool_member_info =", info);
-    const pool_time = info.unpool_time.unwrap()?.seconds as BigNumberish;
-    console.log({ pool_time });
-    const durationSec = Number(BigInt(pool_time)) - new Date().getTime() / 1000 + 60;
-    console.log("wait", durationSec + "s (", durationSec / 60 + "')");
-    await wait(durationSec * 1000);
-  }
-  else { console.log("No pool"); process.exit() }
 
-  console.log("Action...");
-  const undelegateAction1Call = poolContract.populate("exit_delegation_pool_action", {
-    pool_member: account2.address
-  });
-  const resp11 = await account2.execute(undelegateAction1Call);
-  const txR11 = await account2.waitForTransaction(resp11.transaction_hash);
-  if (txR11.isSuccess()) { console.log("Success.") } else { console.log("Error11"); process.exit() }
-  const info19: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
-  if (info19.isSome()) {
-    const info = info19.unwrap() as StakerInfo;
-    console.log("get_staker_info =", info);
-  }
-  else { console.log("No staker"); }
-
-  const bal7 = await strkContract.balanceOf(account2.address);
-  console.log("Balance account2 =", formatBalance(bal7, 18));
+  const bal9 = await strkContract.balanceOf(account2.address);
+  console.log("Balance account2 =", formatBalance(bal9, 18));
+  console.log("Wait 4' to have some rewards");
+  await wait(4 * 60 * 1000);
 
 
-
-  console.log("🔜 Total withdraw 2 STRK...");
+  console.log("🔜 Total undelegate 2 STRK...");
+  console.log("Init...");
   const totalWithdrawInitCall = poolContract.populate("exit_delegation_pool_intent", {
     amount: 2n * 10n ** 18n,
   });
   const resp7 = await account2.execute(totalWithdrawInitCall);
   const txR7 = await account2.waitForTransaction(resp7.transaction_hash);
-  if (txR7.isSuccess()) { console.log("Success.") } else { console.log("Error7",txR7); process.exit() }
+  if (txR7.isSuccess()) { console.log("Success.") } else { console.log("Error7", txR7); process.exit() }
 
-  const info10: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
-  if (info10.isSome()) {
-    const info = info10.unwrap() as StakerInfo;
-      console.log("get_staker_info =", info);
-  }
-  else { console.log("No staker"); process.exit() }
-  const info13: CairoOption<PoolMemberInfo> = await poolContract.get_pool_member_info(account2.address);
-  if (info13.isSome()) {
-    const info = info13.unwrap() as PoolMemberInfo;
-      console.log("get_pool_member_info =", info);
-      const pool_time = info.unpool_time.unwrap()?.seconds as BigNumberish;
+  const info41: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
+  if (info41.isSome()) {
+    const info = info41.unwrap() as StakerInfo;
+    console.log("Staked =", formatBalance(BigInt(info.amount_own), 18), "STRK");
+    if (info.pool_info.isSome()) {
+      const poolInfo = info.pool_info.unwrap() as StakerPoolInfo;
+      console.log("rewards staker =", formatBalance(BigInt(info.unclaimed_rewards_own), 18), "STRK");
+      console.log("rewards delegator =", formatBalance(BigInt(poolInfo.unclaimed_rewards), 18), "STRK");
+    }
+    else { console.log("No pool"); process.exit(); }
+    const info13: CairoOption<PoolMemberInfo> = await poolContract.get_pool_member_info(account2.address);
+    if (info13.isSome()) {
+      const infoP = info13.unwrap() as PoolMemberInfo;
+      console.log("get_pool_member_info =", infoP);
+      console.log("rewards delegator =", formatBalance(BigInt(infoP.unclaimed_rewards), 18), "STRK");
+      const pool_time = infoP.unpool_time.unwrap()?.seconds as BigNumberish;
       console.log({ pool_time });
       const durationSec = Number(BigInt(pool_time)) - new Date().getTime() / 1000 + 60;
       console.log("wait", durationSec + "s (", durationSec / 60 + "')");
       await wait(durationSec * 1000);
+    }
+    else { console.log("No pool"); process.exit() }
   }
-  else { console.log("No pool"); process.exit() }
+  else { console.log("No staker"); process.exit() }
 
+  const bal12 = await strkContract.balanceOf(account2.address);
+  console.log("Balance account2 =", formatBalance(bal12, 18));
+
+
+
+  console.log("Action...");
   const undelegateActionCall = poolContract.populate("exit_delegation_pool_action", {
     pool_member: account2.address
   });
   const resp8 = await account2.execute(undelegateActionCall);
   const txR8 = await account2.waitForTransaction(resp8.transaction_hash);
-  if (txR8.isSuccess()) { console.log("Success.") } else { console.log("Error8",txR8);process.exit(); }
-  const info11: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
-  if (info11.isSome()) {
-    const info = info11.unwrap() as StakerInfo;
-      console.log("get_staker_info =", info);
+  if (txR8.isSuccess()) { console.log("Success.") } else { console.log("Error8", txR8); process.exit(); }
+  const info42: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
+  if (info42.isSome()) {
+    const info = info42.unwrap() as StakerInfo;
+    console.log("Staked =", formatBalance(BigInt(info.amount_own), 18), "STRK");
+    if (info.pool_info.isSome()) {
+      const poolInfo = info.pool_info.unwrap() as StakerPoolInfo;
+      console.log("rewards staker =", formatBalance(BigInt(info.unclaimed_rewards_own), 18), "STRK");
+      console.log("rewards delegator =", formatBalance(BigInt(poolInfo.unclaimed_rewards), 18), "STRK");
+    }
+    else { console.log("No pool"); process.exit(); }
   }
-  else { console.log("No staker"); }
-
+  else { console.log("No staker"); process.exit() }
   const bal4 = await strkContract.balanceOf(account2.address);
   console.log("Final balance account2 =", formatBalance(bal4, 18));
-
 
 
   console.log("🔜 Unstake 1 STRK...")
@@ -295,12 +248,12 @@ async function main() {
   const info4: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
   if (info4.isSome()) {
     const info = info4.unwrap() as StakerInfo;
-      console.log("get_staker_info =", info);
-      const pool_time = info.unstake_time.unwrap()?.seconds as BigNumberish;
-      console.log({ pool_time });
-      const durationSec = Number(BigInt(pool_time)) - new Date().getTime() / 1000 + 60;
-      console.log("wait", durationSec + "s (", durationSec / 60 + "')");
-      await wait(durationSec * 1000);
+    console.log("get_staker_info =", info);
+    const pool_time = info.unstake_time.unwrap()?.seconds as BigNumberish;
+    console.log({ pool_time });
+    const durationSec = Number(BigInt(pool_time)) - new Date().getTime() / 1000 + 60;
+    console.log("wait", durationSec + "s (", durationSec / 60 + "')");
+    await wait(durationSec * 1000);
   }
   else { console.log("No staker"); process.exit() }
 
@@ -310,11 +263,11 @@ async function main() {
   });
   const resp4 = await account0.execute(unstakeActionCall);
   const txR4 = await account0.waitForTransaction(resp4.transaction_hash);
-  if (txR4.isSuccess()) { console.log("Success.") } else { console.log("Error4",txR4);process.exit(); }
+  if (txR4.isSuccess()) { console.log("Success.") } else { console.log("Error4", txR4); process.exit(); }
   const info5: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
   if (info5.isSome()) {
     const info = info5.unwrap() as StakerInfo;
-      console.log("get_staker_info =", info);
+    console.log("get_staker_info =", info);
   }
   else { console.log("No staker. OK."); }
   const bal1 = await strkContract.balanceOf(account0.address);

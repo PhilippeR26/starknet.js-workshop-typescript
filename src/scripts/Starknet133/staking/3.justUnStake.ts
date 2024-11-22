@@ -5,7 +5,7 @@
 import { BigNumberish, shortString, RpcProvider, Account, json, hash, Contract, CairoOption, num } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
-import { account1TestBraavosSepoliaAddress, account1TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey } from "../../../A1priv/A1priv";
+import { account1TestBraavosSepoliaAddress, account1TestBraavosSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { strkAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
 import { wait } from "../../utils/utils";
@@ -35,7 +35,9 @@ async function main() {
   // **** Sepolia
   const accountAddress0 = account1TestBraavosSepoliaAddress;
   const privateKey0 = account1TestBraavosSepoliaPrivateKey;
-  const accountAddress2 = account3ArgentXSepoliaAddress;
+  const accountAddress1 = account2BraavosSepoliaAddress;
+  const privateKey1 = account2BraavosSepoliaPrivateKey;
+const accountAddress2 = account3ArgentXSepoliaAddress;
   const privateKey2 = account3ArgentXSepoliaPrivateKey;
 
   // **** Mainnet
@@ -43,7 +45,8 @@ async function main() {
   //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
   const account0 = new Account(myProvider, accountAddress0, privateKey0);
-  const account2 = new Account(myProvider, accountAddress2, privateKey2);
+  // const account0 = new Account(myProvider, accountAddress1, privateKey1);
+  // const account0 = new Account(myProvider, accountAddress2, privateKey2);
 
   const stakingContract = new Contract(compiledSierraStake.abi, STAKING_ADDRESS, myProvider);
   const strkContract = new Contract(strkSierra.abi, strkAddress, myProvider);

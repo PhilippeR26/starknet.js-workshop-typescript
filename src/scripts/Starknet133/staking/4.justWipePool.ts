@@ -51,7 +51,7 @@ async function main() {
 
 
   // *********** 👇👇👇 adapt this address to your case :
-  const poolAddress = "0x15400220e6f5949c67c3fdae95c6dece4e9a657d37917eec24bbce8a9045121";
+  const poolAddress = "0xbe3e164b795d14765a172354d712060997f5935934b86be05d32111e6dab3d";
 // *****************
   const poolContract = new Contract(compiledSierraPool.abi, poolAddress, myProvider);
 

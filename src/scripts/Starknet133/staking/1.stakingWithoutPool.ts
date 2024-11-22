@@ -10,6 +10,7 @@ import { strkAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
 import { wait } from "../../utils/utils";
 import type { StakerInfo } from "./type";
+import { strkSierra, compiledSierraStake, STAKING_ADDRESS } from "./constants";
 dotenv.config();
 
 
@@ -40,14 +41,9 @@ async function main() {
 
   const account0 = new Account(myProvider, accountAddress0, privateKey0);
 
-  const compiledSierraStake = json.parse(fs.readFileSync("./compiledContracts/cairo284/contracts_Staking.contract_class_361.json").toString("ascii"));
-  const compiledSierraPool = json.parse(fs.readFileSync("./compiledContracts/cairo284/contracts_Pool.contract_class_361.json").toString("ascii"));
-  const strkSierra = json.parse(fs.readFileSync("./compiledContracts/cairo264/openZeppelin14/openzeppelin_ERC20.sierra.json").toString("ascii"));
-  const strkContract = new Contract(strkSierra.abi, strkAddress, myProvider);
+    const strkContract = new Contract(strkSierra.abi, strkAddress, myProvider);
 
-  const STAKING_CLASS_HASH = "0x006aeaaecc0ca479d787d9a110e7c7edb2fff2911eaf2ec754fc2c0fb4b83389";
-  const STAKING_ADDRESS = "0x03745ab04a431fc02871a139be6b93d9260b0ff3e779ad9c8b377183b23109f1";
-  const stakingContract = new Contract(compiledSierraStake.abi, STAKING_ADDRESS, myProvider);
+    const stakingContract = new Contract(compiledSierraStake.abi, STAKING_ADDRESS, myProvider);
 
     const info6: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
   if (info6.isSome()) {
@@ -73,7 +69,7 @@ async function main() {
     pool_enabled: false,
     commission: 0,
   });
-  console.log("🔜 stake...");
+  console.log("🔜 Stake 1 STRK...");
   const resp0 = await account0.execute([approveCall1, stakeCall]);
   const txR0 = await account0.waitForTransaction(resp0.transaction_hash);
   if (txR0.isSuccess()) { console.log("Success.") } else { console.log("Error", txR0);process.exit() }
@@ -82,14 +78,12 @@ async function main() {
   // console.log("staker_info =", await stakingContract.staker_info(account0.address));
 
 
-  const info: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
-  if (info.isSome()) {
-    const info0 = info.unwrap()
-    if (!!info0) {
-      console.log("get_staker_info =", formatBalance(BigInt(info0.amount_own), 18), "STRK");
-    }
+  const info0: CairoOption<StakerInfo> = await stakingContract.get_staker_info(account0.address);
+  if (info0.isSome()) {
+    const info = info0.unwrap() as StakerInfo;
+      console.log("get_staker_info =", formatBalance(BigInt(info.amount_own), 18), "STRK");
   }
-  if (info.isNone()) { console.log("No staker"); }
+  else { console.log("No staker"); }
 
   console.log("🔜 Increase staking...");
   const increaseCall1 = stakingContract.populate("increase_stake", {

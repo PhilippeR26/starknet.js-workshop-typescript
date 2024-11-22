@@ -246,6 +246,7 @@ async function main() {
 
 
   console.log("🔜 Total withdraw 2 STRK...");
+  console.log("Init...");
   const totalWithdrawInitCall = poolContract.populate("exit_delegation_pool_intent", {
     amount: 2n * 10n ** 18n,
   });
@@ -268,13 +269,14 @@ async function main() {
       console.log("get_pool_member_info =", info13b);
       const pool_time = info13b.unpool_time.unwrap()?.seconds as BigNumberish;
       console.log({ pool_time });
-      const durationSec = Number(BigInt(pool_time)) - new Date().getTime() / 1000 + 30;
+      const durationSec = Number(BigInt(pool_time)) - new Date().getTime() / 1000 + 60;
       console.log("wait", durationSec + "s (", durationSec / 60 + "')");
       await wait(durationSec * 1000);
     }
   }
   else { console.log("No pool"); process.exit() }
 
+  console.log("Action...");
   const undelegateActionCall = poolContract.populate("exit_delegation_pool_action", {
     pool_member: account2.address
   });

@@ -20,8 +20,8 @@ async function main() {
   // const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   // ****  Sepolia Testnet 
   // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" });
-  // const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_7" });
-  const myProvider = new RpcProvider({ nodeUrl: chainStackTestnet });
+   const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_7" });
+  // const myProvider = new RpcProvider({ nodeUrl: chainStackTestnet });
   // const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); // local pathfinder testnet node
   // const provider = new RpcProvider({ nodeUrl: junoNMtestnet }); // local pathfinder testnet node
   // if (!(await l2DevnetProvider.isAlive())) {
@@ -59,11 +59,8 @@ async function main() {
 
   const info6: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
   if (info6.isSome()) {
-    const info6b = info6.unwrap()
-    if (!!info6b) {
       console.log("staker already exists");
       process.exit();
-    }
   }
   else { console.log("No staker. OK."); }
 
@@ -307,6 +304,7 @@ async function main() {
   const bal3 = await strkContract.balanceOf(account1.address);
   console.log("Initial balance account0 =", formatBalance(bal0, 18));
   console.log("Initial balance account1 =", formatBalance(bal3, 18));
+  
   const unstakeInitCall = stakingContract.populate("unstake_intent", {});
   const resp3 = await account0.execute(unstakeInitCall);
   const txR3 = await account0.waitForTransaction(resp3.transaction_hash);
@@ -321,7 +319,7 @@ async function main() {
 
   const resp19 = await account1.execute(unstakeInitCall);
   const txR19 = await account1.waitForTransaction(resp19.transaction_hash);
-  if (txR19.isSuccess()) { console.log("Success.") } else { console.log("Error", txR19); process.exit() }
+  if (txR19.isSuccess()) { console.log("Success.") } else { console.log("Error19", txR19); process.exit() }
   const info28: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account1.address));
   if (info28.isSome()) {
     const info = info28.unwrap() as StakerInfo;
@@ -344,7 +342,7 @@ async function main() {
   const resp4 = await account0.execute(unstakeAction0Call);
   console.log({ resp4 });
   const txR4 = await account0.waitForTransaction(resp4.transaction_hash);
-  if (txR4.isSuccess()) { console.log("Success.") } else { console.log("Error"); process.exit(); }
+  if (txR4.isSuccess()) { console.log("Success.") } else { console.log("Error4"); process.exit(); }
   const info5: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
   if (info5.isSome()) {
     const info = info5.unwrap() as StakerInfo;
@@ -356,7 +354,7 @@ async function main() {
 
   const resp20 = await account1.execute(unstakeAction1Call);
   const txR20 = await account1.waitForTransaction(resp20.transaction_hash);
-  if (txR20.isSuccess()) { console.log("Success.") } else { console.log("Error"); process.exit(); }
+  if (txR20.isSuccess()) { console.log("Success.") } else { console.log("Error20"); process.exit(); }
   const info29: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account1.address));
   if (info29.isSome()) {
     const info = info29.unwrap() as StakerInfo;

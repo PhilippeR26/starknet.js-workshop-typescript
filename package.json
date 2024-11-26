@@ -29,7 +29,7 @@
     "@noble/hashes": "^1.5.0",
     "@scure/bip32": "^1.5.0",
     "@scure/starknet": "^1.0.0",
-    "@starknet-io/types-js": "^0.7.7",
+    "@starknet-io/types-js": "^0.7.8-alpha.1",
     "axios": "^1.7.7",
     "bn.js": "^5.2.1",
     "cross-port-killer": "^1.4.0",

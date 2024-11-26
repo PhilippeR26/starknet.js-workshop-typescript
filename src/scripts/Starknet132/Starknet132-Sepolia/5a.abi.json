@@ -1,0 +1,3116 @@
+[
+    {
+      "type": "impl",
+      "name": "colonizHubImpl",
+      "interface_name": "coloniz::hub::hub::IColonizHub"
+    },
+    {
+      "type": "struct",
+      "name": "core::integer::u256",
+      "members": [
+        {
+          "name": "low",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "high",
+          "type": "core::integer::u128"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "core::bool",
+      "variants": [
+        {
+          "name": "False",
+          "type": "()"
+        },
+        {
+          "name": "True",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::byte_array::ByteArray",
+      "members": [
+        {
+          "name": "data",
+          "type": "core::array::Array::<core::bytes_31::bytes31>"
+        },
+        {
+          "name": "pending_word",
+          "type": "core::felt252"
+        },
+        {
+          "name": "pending_word_len",
+          "type": "core::integer::u32"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "coloniz::hub::hub::IColonizHub",
+      "items": [
+        {
+          "type": "function",
+          "name": "follow",
+          "inputs": [
+            {
+              "name": "address_of_profiles_to_follow",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::array::Array::<core::integer::u256>"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "unfollow",
+          "inputs": [
+            {
+              "name": "address_of_profiles_to_unfollow",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_block_status",
+          "inputs": [
+            {
+              "name": "address_of_profiles_to_block",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "block_status",
+              "type": "core::bool"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "is_following",
+          "inputs": [
+            {
+              "name": "followed_profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "follower_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_blocked",
+          "inputs": [
+            {
+              "name": "followed_profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "follower_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_handle_id",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_handle",
+          "inputs": [
+            {
+              "name": "handle_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "impl",
+      "name": "ProfileImpl",
+      "interface_name": "coloniz::interfaces::IProfile::IProfile"
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::Profile",
+      "members": [
+        {
+          "name": "profile_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "profile_owner",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "pub_count",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "metadata_URI",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "follow_nft",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "coloniz::interfaces::IProfile::IProfile",
+      "items": [
+        {
+          "type": "function",
+          "name": "create_profile",
+          "inputs": [
+            {
+              "name": "coloniznft_contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "registry_hash",
+              "type": "core::felt252"
+            },
+            {
+              "name": "implementation_hash",
+              "type": "core::felt252"
+            },
+            {
+              "name": "salt",
+              "type": "core::felt252"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_profile_metadata_uri",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "metadata_uri",
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "get_profile_metadata",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_profile",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "coloniz::base::constants::types::Profile"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_user_publication_count",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "impl",
+      "name": "PublicationImpl",
+      "interface_name": "coloniz::interfaces::IPublication::IColonizPublications"
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::PostParams",
+      "members": [
+        {
+          "name": "content_URI",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "profile_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "community_id",
+          "type": "core::integer::u256"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "coloniz::base::constants::types::PublicationType",
+      "variants": [
+        {
+          "name": "Nonexistent",
+          "type": "()"
+        },
+        {
+          "name": "Post",
+          "type": "()"
+        },
+        {
+          "name": "Comment",
+          "type": "()"
+        },
+        {
+          "name": "Repost",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::CommentParams",
+      "members": [
+        {
+          "name": "profile_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "content_URI",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "pointed_profile_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "pointed_pub_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "reference_pub_type",
+          "type": "coloniz::base::constants::types::PublicationType"
+        },
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "community_id",
+          "type": "core::integer::u256"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::RepostParams",
+      "members": [
+        {
+          "name": "profile_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "pointed_profile_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "pointed_pub_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "community_id",
+          "type": "core::integer::u256"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::Publication",
+      "members": [
+        {
+          "name": "pointed_profile_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "pointed_pub_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "content_URI",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "pub_Type",
+          "type": "coloniz::base::constants::types::PublicationType"
+        },
+        {
+          "name": "root_profile_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "root_pub_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "upvote",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "downvote",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "collect_nft",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "tipped_amount",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "community_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "approved",
+          "type": "core::bool"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "coloniz::interfaces::IPublication::IColonizPublications",
+      "items": [
+        {
+          "type": "function",
+          "name": "post",
+          "inputs": [
+            {
+              "name": "post_params",
+              "type": "coloniz::base::constants::types::PostParams"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "comment",
+          "inputs": [
+            {
+              "name": "comment_params",
+              "type": "coloniz::base::constants::types::CommentParams"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "repost",
+          "inputs": [
+            {
+              "name": "repost_params",
+              "type": "coloniz::base::constants::types::RepostParams"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "upvote",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "pub_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "downvote",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "pub_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "tip",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "pub_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "amount",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "erc20_contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "collect",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "pub_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "get_publication",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "pub_id_assigned",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "coloniz::base::constants::types::Publication"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_publication_type",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "pub_id_assigned",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "coloniz::base::constants::types::PublicationType"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_publication_content_uri",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "pub_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_upvote_count",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "pub_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_downvote_count",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "pub_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_tipped_amount",
+          "inputs": [
+            {
+              "name": "profile_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "pub_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "impl",
+      "name": "communityImpl",
+      "interface_name": "coloniz::interfaces::ICommunity::ICommunity"
+    },
+    {
+      "type": "enum",
+      "name": "coloniz::base::constants::types::CommunityType",
+      "variants": [
+        {
+          "name": "Free",
+          "type": "()"
+        },
+        {
+          "name": "Standard",
+          "type": "()"
+        },
+        {
+          "name": "Business",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "coloniz::base::constants::types::GateKeepType",
+      "variants": [
+        {
+          "name": "None",
+          "type": "()"
+        },
+        {
+          "name": "NFTGating",
+          "type": "()"
+        },
+        {
+          "name": "PermissionedGating",
+          "type": "()"
+        },
+        {
+          "name": "PaidGating",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::CommunityDetails",
+      "members": [
+        {
+          "name": "community_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "community_owner",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "community_metadata_uri",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "community_nft_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "community_total_members",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "community_censorship",
+          "type": "core::bool"
+        },
+        {
+          "name": "community_premium_status",
+          "type": "core::bool"
+        },
+        {
+          "name": "community_type",
+          "type": "coloniz::base::constants::types::CommunityType"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::CommunityMember",
+      "members": [
+        {
+          "name": "profile_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "community_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "total_publications",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "community_token_id",
+          "type": "core::integer::u256"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::CommunityGateKeepDetails",
+      "members": [
+        {
+          "name": "community_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "gate_keep_type",
+          "type": "coloniz::base::constants::types::GateKeepType"
+        },
+        {
+          "name": "gatekeep_nft_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "paid_gating_details",
+          "type": "(core::integer::u256, core::starknet::contract_address::ContractAddress, core::integer::u256)"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "coloniz::interfaces::ICommunity::ICommunity",
+      "items": [
+        {
+          "type": "function",
+          "name": "create_community",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "join_community",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "leave_community",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_community_metadata_uri",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "metadata_uri",
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "add_community_mods",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "moderators",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "remove_community_mods",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "moderators",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_ban_status",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "profiles",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "ban_statuses",
+              "type": "core::array::Array::<core::bool>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_community_fee_address",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "_fee_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_community_censorship_status",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "censorship_status",
+              "type": "core::bool"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "upgrade_community",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "upgrade_type",
+              "type": "coloniz::base::constants::types::CommunityType"
+            },
+            {
+              "name": "subscription_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "renewal_status",
+              "type": "core::bool"
+            },
+            {
+              "name": "renewal_iterations",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "gatekeep",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "gate_keep_type",
+              "type": "coloniz::base::constants::types::GateKeepType"
+            },
+            {
+              "name": "nft_contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "permissioned_addresses",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "paid_gating_details",
+              "type": "(core::starknet::contract_address::ContractAddress, core::integer::u256)"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "get_community",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "coloniz::base::constants::types::CommunityDetails"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_community_metadata_uri",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_community_member",
+          "inputs": [
+            {
+              "name": "profile",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "(core::bool, coloniz::base::constants::types::CommunityMember)"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_total_members",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_community_mod",
+          "inputs": [
+            {
+              "name": "profile",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_community_censorship_status",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_ban_status",
+          "inputs": [
+            {
+              "name": "profile",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_community_fee_address",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_premium_community",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "(core::bool, coloniz::base::constants::types::CommunityType)"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_gatekeeped",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "(core::bool, coloniz::base::constants::types::CommunityGateKeepDetails)"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "impl",
+      "name": "channelImpl",
+      "interface_name": "coloniz::interfaces::IChannel::IChannel"
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::ChannelDetails",
+      "members": [
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "community_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "channel_owner",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "channel_metadata_uri",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "channel_nft_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "channel_total_members",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "channel_censorship",
+          "type": "core::bool"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::ChannelMember",
+      "members": [
+        {
+          "name": "profile",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "total_publications",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "channel_token_id",
+          "type": "core::integer::u256"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "coloniz::interfaces::IChannel::IChannel",
+      "items": [
+        {
+          "type": "function",
+          "name": "create_channel",
+          "inputs": [
+            {
+              "name": "community_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "join_channel",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "leave_channel",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_channel_metadata_uri",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "metadata_uri",
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "add_channel_mods",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "moderators",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "remove_channel_mods",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "moderators",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_channel_censorship_status",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "censorship_status",
+              "type": "core::bool"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_channel_ban_status",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "profiles",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            },
+            {
+              "name": "ban_statuses",
+              "type": "core::array::Array::<core::bool>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "get_channel",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "coloniz::base::constants::types::ChannelDetails"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_channel_metadata_uri",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_channel_member",
+          "inputs": [
+            {
+              "name": "profile",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "(core::bool, coloniz::base::constants::types::ChannelMember)"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_channel_community",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_total_channel_members",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_channel_mod",
+          "inputs": [
+            {
+              "name": "profile",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_channel_censorship_status",
+          "inputs": [
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_channel_ban_status",
+          "inputs": [
+            {
+              "name": "profile",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "channel_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "impl",
+      "name": "joltImpl",
+      "interface_name": "coloniz::interfaces::IJolt::IJolt"
+    },
+    {
+      "type": "enum",
+      "name": "coloniz::base::constants::types::JoltType",
+      "variants": [
+        {
+          "name": "Tip",
+          "type": "()"
+        },
+        {
+          "name": "Transfer",
+          "type": "()"
+        },
+        {
+          "name": "Subscription",
+          "type": "()"
+        },
+        {
+          "name": "Request",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::JoltParams",
+      "members": [
+        {
+          "name": "jolt_type",
+          "type": "coloniz::base::constants::types::JoltType"
+        },
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "memo",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "amount",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "expiration_stamp",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "subscription_details",
+          "type": "(core::integer::u256, core::bool, core::integer::u256)"
+        },
+        {
+          "name": "erc20_contract_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "coloniz::base::constants::types::JoltStatus",
+      "variants": [
+        {
+          "name": "PENDING",
+          "type": "()"
+        },
+        {
+          "name": "SUCCESSFUL",
+          "type": "()"
+        },
+        {
+          "name": "EXPIRED",
+          "type": "()"
+        },
+        {
+          "name": "REJECTED",
+          "type": "()"
+        },
+        {
+          "name": "FAILED",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::JoltData",
+      "members": [
+        {
+          "name": "jolt_id",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "jolt_type",
+          "type": "coloniz::base::constants::types::JoltType"
+        },
+        {
+          "name": "sender",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "memo",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "amount",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "status",
+          "type": "coloniz::base::constants::types::JoltStatus"
+        },
+        {
+          "name": "expiration_stamp",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "erc20_contract_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "coloniz::base::constants::types::SubscriptionData",
+      "members": [
+        {
+          "name": "creator",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "fee_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "amount",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "erc20_contract_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "coloniz::interfaces::IJolt::IJolt",
+      "items": [
+        {
+          "type": "function",
+          "name": "jolt",
+          "inputs": [
+            {
+              "name": "jolt_params",
+              "type": "coloniz::base::constants::types::JoltParams"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "auto_renew",
+          "inputs": [
+            {
+              "name": "profile",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "sub_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "fulfill_request",
+          "inputs": [
+            {
+              "name": "jolt_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "create_subscription",
+          "inputs": [
+            {
+              "name": "fee_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "amount",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "erc20_contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "update_subscription",
+          "inputs": [
+            {
+              "name": "sub_id",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "fee_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "amount",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "erc20_contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_fee_address",
+          "inputs": [
+            {
+              "name": "_fee_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "set_whitelisted_renewers",
+          "inputs": [
+            {
+              "name": "renewers",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "remove_whitelisted_renewers",
+          "inputs": [
+            {
+              "name": "renewers",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "cancel_auto_renewal",
+          "inputs": [
+            {
+              "name": "sub_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "get_jolt",
+          "inputs": [
+            {
+              "name": "jolt_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "coloniz::base::constants::types::JoltData"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_subscription_data",
+          "inputs": [
+            {
+              "name": "subscription_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "coloniz::base::constants::types::SubscriptionData"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_renewal_iterations",
+          "inputs": [
+            {
+              "name": "profile",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "subscription_id",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "get_fee_address",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "is_whitelisted_renewer",
+          "inputs": [
+            {
+              "name": "renewer",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::bool"
+            }
+          ],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "constructor",
+      "name": "constructor",
+      "inputs": [
+        {
+          "name": "coloniznft_contract_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "handle_contract_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "handle_registry_contract_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        },
+        {
+          "name": "follow_nft_classhash",
+          "type": "core::felt252"
+        },
+        {
+          "name": "channel_nft_classhash",
+          "type": "core::felt252"
+        },
+        {
+          "name": "community_nft_classhash",
+          "type": "core::felt252"
+        },
+        {
+          "name": "collect_nft_classhash",
+          "type": "core::felt252"
+        },
+        {
+          "name": "owner",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::profile::profile::ProfileComponent::CreatedProfile",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "owner",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "profile_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "token_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::profile::profile::ProfileComponent::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "CreatedProfile",
+          "type": "coloniz::profile::profile::ProfileComponent::CreatedProfile",
+          "kind": "nested"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::publication::publication::PublicationComponent::Post",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "post",
+          "type": "coloniz::base::constants::types::PostParams",
+          "kind": "data"
+        },
+        {
+          "name": "publication_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::publication::publication::PublicationComponent::CommentCreated",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "commentParams",
+          "type": "coloniz::base::constants::types::CommentParams",
+          "kind": "data"
+        },
+        {
+          "name": "publication_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::publication::publication::PublicationComponent::RepostCreated",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "repostParams",
+          "type": "coloniz::base::constants::types::RepostParams",
+          "kind": "data"
+        },
+        {
+          "name": "publication_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::publication::publication::PublicationComponent::Upvoted",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "publication_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::publication::publication::PublicationComponent::Downvoted",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "publication_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::publication::publication::PublicationComponent::CollectedNFT",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "publication_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "token_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::publication::publication::PublicationComponent::DeployedCollectNFT",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "publication_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "profile_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "collect_nft",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::publication::publication::PublicationComponent::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "Post",
+          "type": "coloniz::publication::publication::PublicationComponent::Post",
+          "kind": "nested"
+        },
+        {
+          "name": "CommentCreated",
+          "type": "coloniz::publication::publication::PublicationComponent::CommentCreated",
+          "kind": "nested"
+        },
+        {
+          "name": "RepostCreated",
+          "type": "coloniz::publication::publication::PublicationComponent::RepostCreated",
+          "kind": "nested"
+        },
+        {
+          "name": "Upvoted",
+          "type": "coloniz::publication::publication::PublicationComponent::Upvoted",
+          "kind": "nested"
+        },
+        {
+          "name": "Downvoted",
+          "type": "coloniz::publication::publication::PublicationComponent::Downvoted",
+          "kind": "nested"
+        },
+        {
+          "name": "CollectedNFT",
+          "type": "coloniz::publication::publication::PublicationComponent::CollectedNFT",
+          "kind": "nested"
+        },
+        {
+          "name": "DeployedCollectNFT",
+          "type": "coloniz::publication::publication::PublicationComponent::DeployedCollectNFT",
+          "kind": "nested"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::jolt::jolt::JoltComponent::Jolted",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "jolt_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "jolt_type",
+          "type": "core::felt252",
+          "kind": "data"
+        },
+        {
+          "name": "sender",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::jolt::jolt::JoltComponent::JoltRequested",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "jolt_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "jolt_type",
+          "type": "core::felt252",
+          "kind": "data"
+        },
+        {
+          "name": "sender",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "expiration_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::jolt::jolt::JoltComponent::JoltRequestFullfilled",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "jolt_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "jolt_type",
+          "type": "core::felt252",
+          "kind": "data"
+        },
+        {
+          "name": "sender",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "recipient",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "expiration_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::jolt::jolt::JoltComponent::SubscriptionCreated",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "sub_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "creator",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "fee_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "amount",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "erc20_contract_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::jolt::jolt::JoltComponent::SubscriptionUpdated",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "sub_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "creator",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "fee_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "amount",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "erc20_contract_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::jolt::jolt::JoltComponent::AutoRenewalCancelled",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "sub_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "subscriber",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::jolt::jolt::JoltComponent::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "Jolted",
+          "type": "coloniz::jolt::jolt::JoltComponent::Jolted",
+          "kind": "nested"
+        },
+        {
+          "name": "JoltRequested",
+          "type": "coloniz::jolt::jolt::JoltComponent::JoltRequested",
+          "kind": "nested"
+        },
+        {
+          "name": "JoltRequestFullfilled",
+          "type": "coloniz::jolt::jolt::JoltComponent::JoltRequestFullfilled",
+          "kind": "nested"
+        },
+        {
+          "name": "SubscriptionCreated",
+          "type": "coloniz::jolt::jolt::JoltComponent::SubscriptionCreated",
+          "kind": "nested"
+        },
+        {
+          "name": "SubscriptionUpdated",
+          "type": "coloniz::jolt::jolt::JoltComponent::SubscriptionUpdated",
+          "kind": "nested"
+        },
+        {
+          "name": "AutoRenewalCancelled",
+          "type": "coloniz::jolt::jolt::JoltComponent::AutoRenewalCancelled",
+          "kind": "nested"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "previous_owner",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "new_owner",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "previous_owner",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        },
+        {
+          "name": "new_owner",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "key"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "OwnershipTransferred",
+          "type": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+          "kind": "nested"
+        },
+        {
+          "name": "OwnershipTransferStarted",
+          "type": "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+          "kind": "nested"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::community::community::CommunityComponent::CommunityCreated",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "community_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "community_owner",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "community_nft_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::community::community::CommunityComponent::JoinedCommunity",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "community_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "token_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "profile",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::community::community::CommunityComponent::LeftCommunity",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "community_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "token_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "profile",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::community::community::CommunityComponent::CommunityModAdded",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "community_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "mod_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::community::community::CommunityComponent::CommunityBanStatusUpdated",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "community_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "profile",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "ban_status",
+          "type": "core::bool",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::community::community::CommunityComponent::CommunityModRemoved",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "community_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "mod_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::community::community::CommunityComponent::CommunityUpgraded",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "community_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "premiumType",
+          "type": "coloniz::base::constants::types::CommunityType",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::community::community::CommunityComponent::CommunityGatekeeped",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "community_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "gatekeepType",
+          "type": "coloniz::base::constants::types::GateKeepType",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::community::community::CommunityComponent::DeployedCommunityNFT",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "community_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "community_nft",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::community::community::CommunityComponent::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "CommunityCreated",
+          "type": "coloniz::community::community::CommunityComponent::CommunityCreated",
+          "kind": "nested"
+        },
+        {
+          "name": "JoinedCommunity",
+          "type": "coloniz::community::community::CommunityComponent::JoinedCommunity",
+          "kind": "nested"
+        },
+        {
+          "name": "LeftCommunity",
+          "type": "coloniz::community::community::CommunityComponent::LeftCommunity",
+          "kind": "nested"
+        },
+        {
+          "name": "CommunityModAdded",
+          "type": "coloniz::community::community::CommunityComponent::CommunityModAdded",
+          "kind": "nested"
+        },
+        {
+          "name": "CommunityBanStatusUpdated",
+          "type": "coloniz::community::community::CommunityComponent::CommunityBanStatusUpdated",
+          "kind": "nested"
+        },
+        {
+          "name": "CommunityModRemoved",
+          "type": "coloniz::community::community::CommunityComponent::CommunityModRemoved",
+          "kind": "nested"
+        },
+        {
+          "name": "CommunityUpgraded",
+          "type": "coloniz::community::community::CommunityComponent::CommunityUpgraded",
+          "kind": "nested"
+        },
+        {
+          "name": "CommunityGatekeeped",
+          "type": "coloniz::community::community::CommunityComponent::CommunityGatekeeped",
+          "kind": "nested"
+        },
+        {
+          "name": "DeployedCommunityNFT",
+          "type": "coloniz::community::community::CommunityComponent::DeployedCommunityNFT",
+          "kind": "nested"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::channel::channel::ChannelComponent::ChannelCreated",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "community_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "channel_owner",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "channel_nft_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::channel::channel::ChannelComponent::JoinedChannel",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "profile",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "token_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::channel::channel::ChannelComponent::LeftChannel",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "profile",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "token_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::channel::channel::ChannelComponent::ChannelModAdded",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "mod_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::channel::channel::ChannelComponent::ChannelModRemoved",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "mod_address",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::channel::channel::ChannelComponent::ChannelBanStatusUpdated",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "transaction_executor",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "profile",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "ban_status",
+          "type": "core::bool",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::channel::channel::ChannelComponent::DeployedChannelNFT",
+      "kind": "struct",
+      "members": [
+        {
+          "name": "channel_id",
+          "type": "core::integer::u256",
+          "kind": "data"
+        },
+        {
+          "name": "channel_nft",
+          "type": "core::starknet::contract_address::ContractAddress",
+          "kind": "data"
+        },
+        {
+          "name": "block_timestamp",
+          "type": "core::integer::u64",
+          "kind": "data"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::channel::channel::ChannelComponent::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "ChannelCreated",
+          "type": "coloniz::channel::channel::ChannelComponent::ChannelCreated",
+          "kind": "nested"
+        },
+        {
+          "name": "JoinedChannel",
+          "type": "coloniz::channel::channel::ChannelComponent::JoinedChannel",
+          "kind": "nested"
+        },
+        {
+          "name": "LeftChannel",
+          "type": "coloniz::channel::channel::ChannelComponent::LeftChannel",
+          "kind": "nested"
+        },
+        {
+          "name": "ChannelModAdded",
+          "type": "coloniz::channel::channel::ChannelComponent::ChannelModAdded",
+          "kind": "nested"
+        },
+        {
+          "name": "ChannelModRemoved",
+          "type": "coloniz::channel::channel::ChannelComponent::ChannelModRemoved",
+          "kind": "nested"
+        },
+        {
+          "name": "ChannelBanStatusUpdated",
+          "type": "coloniz::channel::channel::ChannelComponent::ChannelBanStatusUpdated",
+          "kind": "nested"
+        },
+        {
+          "name": "DeployedChannelNFT",
+          "type": "coloniz::channel::channel::ChannelComponent::DeployedChannelNFT",
+          "kind": "nested"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "coloniz::hub::hub::ColonizHub::Event",
+      "kind": "enum",
+      "variants": [
+        {
+          "name": "ProfileEvent",
+          "type": "coloniz::profile::profile::ProfileComponent::Event",
+          "kind": "nested"
+        },
+        {
+          "name": "PublicationEvent",
+          "type": "coloniz::publication::publication::PublicationComponent::Event",
+          "kind": "nested"
+        },
+        {
+          "name": "JoltEvent",
+          "type": "coloniz::jolt::jolt::JoltComponent::Event",
+          "kind": "flat"
+        },
+        {
+          "name": "OwnableEvent",
+          "type": "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+          "kind": "flat"
+        },
+        {
+          "name": "CommunityEvent",
+          "type": "coloniz::community::community::CommunityComponent::Event",
+          "kind": "flat"
+        },
+        {
+          "name": "ChannelEvent",
+          "type": "coloniz::channel::channel::ChannelComponent::Event",
+          "kind": "flat"
+        }
+      ]
+    }
+  ]

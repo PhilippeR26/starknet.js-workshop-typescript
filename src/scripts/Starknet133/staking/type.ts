@@ -28,3 +28,10 @@ export type PoolMemberInfo = {
     unpool_amount: BigNumberish,
     unpool_time: CairoOption<TimeStamp>,
   };
+
+  export type NewStakerEvent={
+    staker_address: BigNumberish,
+    reward_address: BigNumberish,
+    operational_address: BigNumberish,
+    self_stake: BigNumberish,
+  }

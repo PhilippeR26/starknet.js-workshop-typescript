@@ -7,3 +7,5 @@ export const DAIv2address = "0x05574eb6b8789a91466f902c380d978e472db68170ff82a5b
 export const DAIaddressGoerli = "0x03e85bfbb8e2a42b7bead9e88e9a1b19dbccf661471061807292120462396ec9"; // Goerli
 
 export const USDCaddress = "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8";
+
+export const stakingAddressMainnet = "0x00ca1702e64c81d9a07b86bd2c540188d92a2c73cf5cc0e508d949015e7e84a7";

@@ -1,14 +1,14 @@
 // Verify the status of your account for the STRK airdrop.
-// launch with npx ts-node src/scripts/Starknet13/Starknet13-mainnet/3.strkAirdrop.ts
+// launch with npx ts-node src/scripts/Starknet133/Starknet133-sepolia/1.providerSimulate.ts
 // Coded with Starknet.js v6.17.0
 
 import { Contract, shortString, RpcProvider,  Account, type Invocations, TransactionType, AccountInvocations, AccountInvocationItem } from "starknet";
-import { account2BraavosMainnetAddress, account2BraavosMainnetPrivateKey } from "../../A-MainPriv/mainPriv";
+import { account2BraavosMainnetAddress, account2BraavosMainnetPrivateKey } from "../../../A-MainPriv/mainPriv";
 import fs from "fs";
 import axios from "axios";
-import { strkSierra } from "./staking/constants";
-import { strkAddress } from "../utils/constants";
-import { account1TestBraavosSepoliaAddress, account1TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress } from "../../A1priv/A1priv";
+import { strkSierra } from "../staking/constants";
+import { strkAddress } from "../../utils/constants";
+import { account1TestBraavosSepoliaAddress, account1TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress } from "../../../A1priv/A1priv";
 
 
 async function main() {

@@ -13,40 +13,6 @@ import { ETransactionVersion, ETransactionVersion2, ETransactionVersion3 } from 
 import { DevnetProvider } from "starknet-devnet";
 
 
-export class SpecialSigner extends Signer {
-    public async getTxHash(
-        transactions: Call[],
-        details: InvocationsSignerDetails
-    ): Promise<string> {
-        const compiledCalldata = transaction.getExecuteCalldata(transactions, details.cairoVersion);
-        let msgHash;
-        // TODO: How to do generic union discriminator for all like this
-        if (Object.values(ETransactionVersion2).includes(details.version as any)) {
-            const det = details as V2InvocationsSignerDetails;
-            return hash.calculateInvokeTransactionHash({
-                ...det,
-                senderAddress: det.walletAddress,
-                compiledCalldata,
-                version: det.version,
-            });
-        } else if (Object.values(ETransactionVersion3).includes(details.version as any)) {
-            const det = details as V3InvocationsSignerDetails;
-            return hash.calculateInvokeTransactionHash({
-                ...det,
-                senderAddress: det.walletAddress,
-                compiledCalldata,
-                version: det.version,
-                nonceDataAvailabilityMode: stark.intDAM(det.nonceDataAvailabilityMode),
-                feeDataAvailabilityMode: stark.intDAM(det.feeDataAvailabilityMode),
-            });
-        } else {
-            throw Error('unsupported signTransaction version');
-        }
-
-    }
-}
-
-
 class SpecialAccount extends Account {
     public async calculateTxH(
         transactions: AllowArray<Call>,
@@ -78,8 +44,28 @@ class SpecialAccount extends Account {
             chainId,
             cairoVersion: await this.getCairoVersion(),
         };
-        const sign: SpecialSigner = this.signer as unknown as SpecialSigner;
-        return await sign.getTxHash(calls, signerDetails);
+        const compiledCalldata = transaction.getExecuteCalldata(calls, signerDetails.cairoVersion);
+        if (Object.values(ETransactionVersion2).includes(signerDetails.version as any)) {
+            const det = signerDetails as V2InvocationsSignerDetails;
+            return hash.calculateInvokeTransactionHash({
+                ...det,
+                senderAddress: det.walletAddress,
+                compiledCalldata,
+                version: det.version,
+            });
+        } else if (Object.values(ETransactionVersion3).includes(signerDetails.version as any)) {
+            const det = signerDetails as V3InvocationsSignerDetails;
+            return hash.calculateInvokeTransactionHash({
+                ...det,
+                senderAddress: det.walletAddress,
+                compiledCalldata,
+                version: det.version,
+                nonceDataAvailabilityMode: stark.intDAM(det.nonceDataAvailabilityMode),
+                feeDataAvailabilityMode: stark.intDAM(det.feeDataAvailabilityMode),
+            });
+        } else {
+            throw Error('unsupported signTransaction version');
+        }
     }
 }
 
@@ -89,7 +75,7 @@ async function main() {
     if (!(await l2DevnetProvider.isAlive())) {
         console.log("No l2 devnet.");
         process.exit();
-      }
+    }
     // ****  Sepolia Testnet 
     // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" });
     // const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); // local pathfinder testnet node
@@ -109,8 +95,8 @@ async function main() {
     //  const accountAddress0 = account1BraavosMainnetAddress;
     //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
-    const account0 = new Account(myProvider, accountAddress0, privateKey0); 
-    const accountAddress2=accData[2].address;
+    const account0 = new Account(myProvider, accountAddress0, privateKey0);
+    const accountAddress2 = accData[2].address;
 
     const strkContract = new Contract(strkSierra.abi, strkAddress, myProvider);
 
@@ -122,10 +108,9 @@ async function main() {
     });
     console.log({ myCall });
 
-    const specialSigner=new SpecialSigner(privateKey0);
-    const specialAccount=new SpecialAccount(myProvider,accountAddress0,specialSigner);
-    const txH:string=await specialAccount.calculateTxH(myCall);
-    console.log( {txH});
+    const specialAccount = new SpecialAccount(myProvider, accountAddress0, privateKey0);
+    const txH: string = await specialAccount.calculateTxH(myCall);
+    console.log({ txH });
 
     console.log("✅ Test completed.");
 }

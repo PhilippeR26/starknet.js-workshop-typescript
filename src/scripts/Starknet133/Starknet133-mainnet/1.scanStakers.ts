@@ -21,9 +21,9 @@ async function main() {
     // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); // local
 
     // ***** mainnet
-     const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_7" });
+    // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_7" });
     // mainnet :
-    // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:6060/v0_7" }); //v0.7.0 local juno node mainnet
+     const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:6060/v0_7" }); //v0.7.0 local juno node mainnet
     console.log('✅ Connected.');
 
     // Connect the  contract  :

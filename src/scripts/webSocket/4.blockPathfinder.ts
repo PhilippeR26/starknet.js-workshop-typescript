@@ -6,6 +6,7 @@
 import { json } from "starknet";
 import { formatBalance } from "../utils/formatBalance";
 import WebSocket from 'ws';
+import { keypress } from "../utils/utils";
 // import * as dotenv from "dotenv";
 // dotenv.config();
 function wait(delay: number) {
@@ -19,19 +20,6 @@ async function waitFor(f: Function) {
     return f();
 }
 
-async function keypress(): Promise<void> {
-    process.stdin.setRawMode(true);
-    return new Promise(resolve => process.stdin.once('data', data => {
-        const byteArray = [...data];
-        if (byteArray.length > 0 && byteArray[0] === 3) {
-            console.log('^C');
-            process.exit(1);
-        }
-        process.stdin.setRawMode(false);
-        resolve();
-    }))
-}
-
 //        👇👇👇
 // 🚨🚨🚨 launch first a Pathfinder node with webSocket activated.
 //        👆👆👆
@@ -41,7 +29,7 @@ async function main() {
     let wsOpen: boolean = false;
     const start0 = new Date().getTime();
     let end0: number = 0;
-    const ws = new WebSocket("ws://192.168.1.11:9545/ws");
+    const ws = new WebSocket("ws://192.168.1.11:9545/rpc/v0_8");
     console.log("A");
     ws.on('open', function open() {
         end0 = new Date().getTime();

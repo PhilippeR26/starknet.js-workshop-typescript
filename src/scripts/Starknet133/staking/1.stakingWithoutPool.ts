@@ -133,12 +133,10 @@ async function main() {
   await wait(60 * 1000);
   const info8: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
   if (info8.isSome()) {
-    const info8b = info8.unwrap();
-    if (!!info8b) {
+    const info8b = info8.unwrap() as StakerInfo;
       console.log("unclaimed_rewards =",info8b.unclaimed_rewards_own, formatBalance(BigInt(info8b.unclaimed_rewards_own), 18), "STRK");
-    }
   }
-  if (info8.isNone()) { console.log("No staker"); }
+  else { console.log("No staker"); }
   const claimCall = stakingContract.populate("claim_rewards", {
     staker_address: account0.address
   })
@@ -149,12 +147,10 @@ async function main() {
   console.log("Final balance account0 =", formatBalance(bal3, 18));
   const info7: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
   if (info7.isSome()) {
-    const info7b = info7.unwrap();
-    if (!!info7b) {
+    const info7b = info7.unwrap() as StakerInfo;
       console.log("unclaimed_rewards =", info7b.unclaimed_rewards_own,formatBalance(BigInt(info7b.unclaimed_rewards_own), 18), "STRK");
-    }
   }
-  if (info7.isNone()) { console.log("No staker"); process.exit()}
+  else { console.log("No staker"); process.exit()}
 
 
   console.log("🔜 Unstake...")

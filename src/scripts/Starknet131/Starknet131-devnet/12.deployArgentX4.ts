@@ -31,7 +31,7 @@ export async function deployAccountArgentX4(myProvider: RpcProvider, account0: A
   console.log('AX account Public Key  =', starkKeyPubAX);
 
   // declare
-  console.log("casm_hash",hash.computeCompiledClassHash(accountAXcasm));
+  console.log("casm_hash", hash.computeCompiledClassHash(accountAXcasm));
   const respDecl = await account0.declareIfNot({ contract: accountAXsierra, casm: accountAXcasm });
   if (respDecl.transaction_hash) {
     await myProvider.waitForTransaction(respDecl.transaction_hash);
@@ -40,9 +40,62 @@ export async function deployAccountArgentX4(myProvider: RpcProvider, account0: A
 
   const contractAXclassHash = "0x036078334509b514626504edc9fb252328d1a240e4e948bef8d0c08dff45927f"; //v0.4.0
   //const contractAXclassHash=respDecl.class_hash;
+
+  // ArgentX Abi : 
+  // {
+  //   "type": "enum",
+  //   "name": "argent::signer::signer_signature::Signer",
+  //   "variants": [
+  //     {
+  //       "name": "Starknet",
+  //       "type": "argent::signer::signer_signature::StarknetSigner"
+  //     },
+  //     {
+  //       "name": "Secp256k1",
+  //       "type": "argent::signer::signer_signature::Secp256k1Signer"
+  //     },
+  //     {
+  //       "name": "Secp256r1",
+  //       "type": "argent::signer::signer_signature::Secp256r1Signer"
+  //     },
+  //     {
+  //       "name": "Eip191",
+  //       "type": "argent::signer::signer_signature::Eip191Signer"
+  //     },
+  //     {
+  //       "name": "Webauthn",
+  //       "type": "argent::signer::signer_signature::WebauthnSigner"
+  //     }
+  //   ]
+  // }
+  type StarknetSigner = {
+    pubkey: BigNumberish
+  };
+  type EthAddress = {
+    address: BigNumberish
+  };
+  type Secp256k1Signer = {
+    pubkey_hash: EthAddress
+  };
+  type Secp256r1Signer = {
+    pubkey: BigNumberish
+  };
+  type Eip191Signer = {
+    eth_address: EthAddress
+  };
+  type WebauthnSigner = {
+    origin: BigNumberish[],
+    rp_id_hash: BigNumberish,
+    pubkey: BigNumberish
+  };
+
   const calldataAX = new CallData(accountAXsierra.abi);
-  const axSigner = new CairoCustomEnum({ Starknet: { pubkey: starkKeyPubAX } });
-  const axGuardian = new CairoOption<unknown>(CairoOptionVariant.None)
+  const accountSigner: StarknetSigner = { pubkey: starkKeyPubAX };
+  const guardianAddress="0x123653467456745654";
+  const accountGuardian: StarknetSigner = { pubkey: guardianAddress }
+  const axSigner = new CairoCustomEnum({ Starknet: accountSigner }); // Starknet || Secp256k1Signer || Secp256r1Signer || Eip191Signer || WebauthnSigner
+  // const axGuardian = new CairoOption<CairoCustomEnum>(CairoOptionVariant.Some, new CairoCustomEnum({ Starknet: accountGuardian })); // Starknet || Secp256k1Signer || Secp256r1Signer || Eip191Signer || WebauthnSigner
+  const axGuardian = new CairoOption<CairoCustomEnum>(CairoOptionVariant.None);
   const constructorAXCallData = calldataAX.compile("constructor", {
     owner: axSigner,
     guardian: axGuardian

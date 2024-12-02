@@ -4,6 +4,7 @@
 
 import { formatBalance } from "../utils/formatBalance";
 import WebSocket from 'ws';
+import { keypress } from "../utils/utils";
 // import * as dotenv from "dotenv";
 // dotenv.config();
 function wait(delay: number) {
@@ -15,19 +16,6 @@ function wait(delay: number) {
 async function waitFor(f: Function) {
     while (!f()) await wait(200);
     return f();
-}
-
-async function keypress(): Promise<void> {
-    process.stdin.setRawMode(true);
-    return new Promise(resolve => process.stdin.once('data', data => {
-        const byteArray = [...data];
-        if (byteArray.length > 0 && byteArray[0] === 3) {
-            console.log('^C');
-            process.exit(1);
-        }
-        process.stdin.setRawMode(false);
-        resolve();
-    }))
 }
 
 //        👇👇👇

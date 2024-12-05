@@ -1,11 +1,12 @@
 // Mint token in an ArgentX account in a devnet-rs (forked from mainnet)
-// Launch with npx ts-node src/scripts/Starknet132/Starknet132-devnet/1.mintArgentX.ts
-// Coded with Starknet.js v6.14.1 & devnet-rs v0.2.0 & starknet-devnet.js v0.2.0
+// Launch with npx ts-node src/scripts/Starknet133/Starknet133-devnet/3.testWaitForTx.ts
+// Coded with Starknet.js v6.20.3 & devnet-rs v0.2.3 & starknet-devnet.js v0.2.3
 
-import { RpcProvider, Account, shortString } from "starknet";
+import { RpcProvider, Account, shortString, json, Contract, type InvokeFunctionResponse, TransactionFinalityStatus } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
 import * as dotenv from "dotenv";
-import { deployAccountArgentX4 } from "../../Starknet131/Starknet131-devnet/12.deployArgentX4";
+import fs from "fs";
+import { strkAddress } from "../../utils/constants";
 dotenv.config();
 
 //          👇👇👇
@@ -46,8 +47,20 @@ async function main() {
   const account2 = new Account(myProvider, accData[2].address, accData[2].private_key);
   console.log("Accounts connected.\n");
 
-  // minting account
-  const accountAX=await deployAccountArgentX4(myProvider,account0);
+  const strkSierra = json.parse(fs.readFileSync("./compiledContracts/cairo264/openZeppelin14/openzeppelin_ERC20.sierra.json").toString("ascii"));
+  const strkContract = new Contract(strkSierra.abi, strkAddress, account0);
+  console.log("Tx...");
+  const resp = await strkContract.transfer(account1.address, 100n) as InvokeFunctionResponse;
+  const txR = await myProvider.waitForTransaction(resp.transaction_hash, { successStates: [TransactionFinalityStatus.ACCEPTED_ON_L2] });
+  console.log(txR);
+  txR.match({
+    success: () => {
+      console.log('➡️Success');
+    },
+    _: () => {
+      console.log('➡️Unsuccess');
+    },
+  });
 
   console.log("✅ Test performed.");
 }

@@ -12,17 +12,6 @@ import { WebSocket } from "isows";
 // import * as dotenv from "dotenv";
 // dotenv.config();
 
-// function wait(delay: number) {
-//     return new Promise((res) => {
-//         setTimeout(res, delay);
-//     });
-// }
-
-// async function waitFor(f: Function) {
-//     while (!f()) await wait(200);
-//     return f();
-// }
-
 //        👇👇👇
 // 🚨🚨🚨 launch first a Pathfinder node with webSocket activated.
 //        👆👆👆
@@ -62,7 +51,7 @@ async function main() {
         throw new Error("newHead subscription failed");
     }
     let i = 0;
-    myWS.onNewHeads = async function (newHead) {
+    myWS.onNewHeads = async function (newHead:SubscriptionNewHeadsResponse) {
         i += 1;
         console.log("newHead event =", i, newHead);
         if (i === 2) {
@@ -72,7 +61,7 @@ async function main() {
     };
     const expectedId = myWS.subscriptions.get(WSSubscriptions.NEW_HEADS);
     console.log({ expectedId });
-    const subscriptionId = await myWS.waitForUnsubscription(newHeadsID);
+    const subscriptionId = await myWS.waitForUnsubscription(expectedId);
     console.log({ subscriptionId });
 
 
@@ -88,7 +77,10 @@ async function main() {
     await keypress();
 
     // const status0 = await myWS.unsubscribeNewHeads();
-
+    console.log("Disconnect...");
+    myWS.disconnect();
+    const resQuit4:WebSocket = await myWS.waitForDisconnection();
+    console.log("After disconnect. Connected4 =", myWS.isConnected(), resQuit);
 
 
     console.log('✅ Test completed.');

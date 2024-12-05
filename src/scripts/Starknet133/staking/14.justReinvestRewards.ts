@@ -46,7 +46,7 @@ async function main() {
 
 
   const bal0 = await strkContract.balanceOf(account0.address);
-  console.log("Balance of account0 =", formatBalance(bal0, 18), "ETH");
+  console.log("Balance of account0 =", formatBalance(bal0, 18), "STRK");
 
 
   console.log("🔜 claim...");
@@ -66,7 +66,7 @@ async function main() {
   const txR5 = await account0.waitForTransaction(resp5.transaction_hash);
   if (txR5.isSuccess()) { console.log("Success.") } else { console.log("Error5", txR5); process.exit() }
   const bal3 = await strkContract.balanceOf(account0.address);
-  console.log("New balance account0 =", formatBalance(bal3, 18), "ETH");
+  console.log("New balance account0 =", formatBalance(bal3, 18), "STRK");
 
 
   console.log("🔜 Reinvest rewards...");
@@ -82,7 +82,7 @@ async function main() {
   const txR1 = await account0.waitForTransaction(resp1.transaction_hash);
   if (txR1.isSuccess()) { console.log("Success.") } else { console.log("Error1", txR1) }
   const bal1 = await strkContract.balanceOf(account0.address);
-  console.log("Final balance account0 =", formatBalance(bal1, 18), "ETH");
+  console.log("Final balance account0 =", formatBalance(bal1, 18), "STRK");
 
   const info1: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(account0.address));
   if (info1.isSome()) {

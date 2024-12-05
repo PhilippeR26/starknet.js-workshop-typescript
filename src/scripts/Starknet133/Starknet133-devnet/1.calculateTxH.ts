@@ -9,7 +9,7 @@ import axios from "axios";
 import { strkSierra } from "../staking/constants";
 import { strkAddress } from "../../utils/constants";
 import { account1TestBraavosSepoliaAddress, account1TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress } from "../../../A1priv/A1priv";
-import { ETransactionVersion, ETransactionVersion2, ETransactionVersion3 } from "starknet-types-07";
+import { ETransactionVersion, ETransactionVersion2, ETransactionVersion3 } from "@starknet-io/types-js";
 import { DevnetProvider } from "starknet-devnet";
 
 

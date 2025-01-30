@@ -1,7 +1,7 @@
 // Deploy an instance of an already declared contract.
 // use of OZ deployer
 // launch with npx ts-node src/scripts/4.deployContractOZ.ts
-// Coded with Starknet.js v6.11.0
+// Coded with Starknet.js v6.23.0
 
 import { Account, CallData, Contract, json, RpcProvider } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
@@ -40,7 +40,7 @@ async function main() {
     // Connect the new contract :
     const myTestContract = new Contract(testSierra.abi, deployResponse.contract_address, myProvider);
     console.log('✅ Test Contract connected at =', myTestContract.address);
-    // Devnet-rs will be closed in script 11
+    // devnet-rs is not closed, to be able to run script 11
 }
 main()
     .then(() => process.exit(0))

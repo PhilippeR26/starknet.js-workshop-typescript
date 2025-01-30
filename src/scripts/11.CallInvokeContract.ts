@@ -1,6 +1,6 @@
 // interact with a contract that is already deployed on devnet-rs.
 // launch with npx ts-node src/scripts/11.CallInvokeContract.ts
-// Coded with Starknet.js v6.11.0, 
+// Coded with Starknet.js v6.23.0 
 
 import { Contract, Account, json, RpcProvider } from "starknet";
 import fs from "fs";
@@ -30,8 +30,8 @@ async function main() {
     // Connect the deployed Test instance in devnet-rs
 
     //          👇👇👇
-    // 🚨🚨🚨 modify in accordance with result of script 5
-    const testAddress = "0x554de9bd7f8b774d41cf03a009eb35055025205635dcff565f60debab2b7b24";
+    // 🚨🚨🚨 modify in accordance with result of script 4 or 5
+    const testAddress = "0x3d53a8dca668f794184faf138339fa06a0d9cadd6c27eb830dc58d27d9d8c52";
     
     const compiledTest = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.sierra.json").toString("ascii"));
     const myTestContract = new Contract(compiledTest.abi, testAddress, myProvider);

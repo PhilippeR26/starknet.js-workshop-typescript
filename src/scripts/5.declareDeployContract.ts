@@ -1,6 +1,6 @@
 // declare & deploy a contract.
 // launch with npx ts-node src/scripts/5.declareDeployContractOZ.ts
-// Coded with Starknet.js v6.11.0
+// Coded with Starknet.js v6.23.0
 
 import { Account, CallData, Contract, json, RpcProvider, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";
@@ -50,9 +50,7 @@ async function main() {
     const myTestContract = new Contract(testSierra.abi, deployResponse.deploy.contract_address, myProvider);
     console.log('✅ Test Contract connected at =', myTestContract.address);
 
-    outputStream.end();
-    const pid: string[] = await kill(DEVNET_PORT);
-    console.log("Devnet-rs stopped. Pid :", pid, "\nYou can close the log window.");
+    // 👉 Launch script 11 to test the contract & close devnet-rs
 }
 main()
     .then(() => process.exit(0))

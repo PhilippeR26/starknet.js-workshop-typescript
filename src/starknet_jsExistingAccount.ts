@@ -1,9 +1,9 @@
 // Deploy and use an ERC20, monetized by an existing account
 // Launch with : npx ts-node src/starknet_jsExistingAccount.ts
-// Coded with Starknet.js v6.11.0
+// Coded with Starknet.js v6.23.0
 
 import fs from "fs";
-import { Account, Contract, json, CallData, Calldata, Call, RpcProvider, shortString } from "starknet";
+import { Account, Contract, json, CallData, Calldata, Call, RpcProvider, shortString, units } from "starknet";
 import { Devnet } from "starknet-devnet";
 import * as dotenv from "dotenv";
 import { formatBalance } from "./scripts/utils/formatBalance";

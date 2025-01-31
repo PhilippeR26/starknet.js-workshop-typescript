@@ -2,7 +2,7 @@
 // Launch with npx ts-node src/scripts/Starknet133/Starknet133-mainnet/1.scanStakers.ts
 // Use Starknet.js v6.19.0
 
-import { Account, Contract, json, constants,  CallData, RpcProvider, hash,  num, events, ParsedEvent, type CairoOption } from "starknet";
+import { Account, Contract, json, constants, CallData, RpcProvider, hash, num, events, ParsedEvent, type CairoOption } from "starknet";
 import fs from "fs";
 // import { accountTestnet4privateKey, accountTestnet4Address } from "../../A1priv/A1priv";
 // import { accountTestnet2ArgentX1Address, accountTestnet2ArgentX1privateKey, TonyNode } from "../../A2priv/A2priv";
@@ -23,7 +23,7 @@ async function main() {
     // ***** mainnet
     // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_7" });
     // mainnet :
-     const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:6060/v0_7" }); //v0.7.0 local juno node mainnet
+    const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:6060/v0_7" }); //v0.7.0 local juno node mainnet
     console.log('✅ Connected.');
 
     // Connect the  contract  :
@@ -82,26 +82,26 @@ async function main() {
         const info6: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(stakerAddr));
         return info6;
     }));
-    console.log("Staker info =",stakersData[0],"\nPool info =",stakersData[0].unwrap()?.pool_info);
+    console.log("Staker info =", stakersData[0], "\nPool info =", stakersData[0].unwrap()?.pool_info);
     // total Staked
     const totalOfStakers: bigint = stakersData.reduce((fri: bigint, currentOption: CairoOption<StakerInfo>) => {
-        if (currentOption.isSome()) { 
-            return fri + BigInt((currentOption.unwrap() as StakerInfo).amount_own) 
+        if (currentOption.isSome()) {
+            return fri + BigInt((currentOption.unwrap() as StakerInfo).amount_own)
         } else { return fri }
     }, 0n);
     console.log("total STRK of stakers =", formatBalance(totalOfStakers, 18));
 
     const totalOfPools: bigint = stakersData.reduce((fri: bigint, currentOption: CairoOption<StakerInfo>) => {
-        if (currentOption.isSome()) { 
-            const stakerData:StakerInfo=currentOption.unwrap() as StakerInfo;
+        if (currentOption.isSome()) {
+            const stakerData: StakerInfo = currentOption.unwrap() as StakerInfo;
             if (stakerData.pool_info.isSome()) {
                 return fri + BigInt((stakerData.pool_info.unwrap() as StakerPoolInfo).amount)
-            }else {return fri}
-             
+            } else { return fri }
+
         } else { return fri }
     }, 0n);
     console.log("total STRK of pools =", formatBalance(totalOfPools, 18));
-    console.log("total STRK staked =", formatBalance(totalOfStakers+totalOfPools, 18));
+    console.log("total STRK staked =", formatBalance(totalOfStakers + totalOfPools, 18));
 
 
     console.log("✅ Test completed.");

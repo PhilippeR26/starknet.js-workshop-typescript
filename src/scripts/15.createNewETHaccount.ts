@@ -1,6 +1,6 @@
 // create a new OZ ETHEREUM account in devnet-rs
 // launch with npx ts-node src/scripts/15.createNewETHaccount.ts
-// Coded with Starknet.js v6.6.6, Starknet-devnet-rs v0.0.3
+// Coded with Starknet.js v6.23.0
 
 
 import { Account, json, hash, CallData, RpcProvider, EthSigner, num, stark, addAddressPadding, encode, cairo, constants, Contract, shortString } from "starknet";

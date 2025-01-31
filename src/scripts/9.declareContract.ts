@@ -1,6 +1,6 @@
 // Declare a contract.
 // launch with npx ts-node src/scripts/9.declareContract.ts
-// Coded with Starknet.js v6.11.0
+// Coded with Starknet.js v6.23.0
 
 import { Account, json, RpcProvider, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";
@@ -42,6 +42,8 @@ async function main() {
     await myProvider.waitForTransaction(declareResponse.transaction_hash);
     console.log('✅ Test completed.');
     // outputStream.end();
+
+    // devnet-rs is not closed, to be able to run script 4
 }
 main()
     .then(() => process.exit(0))

@@ -1,6 +1,6 @@
 // Connect an existing account in devnet-s, using .env file.
 // launch with : npx ts-node src/scripts/8.ConnectWallet.ts
-// Coded with Starknet.js v6.11.0
+// Coded with Starknet.js v6.23.0
 
 import { Account, RpcProvider, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";

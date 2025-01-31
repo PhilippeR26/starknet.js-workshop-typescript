@@ -1,6 +1,6 @@
 // create a new OZ 14 account in devnet-rs
 // launch with npx ts-node src/scripts/2.createNewOZaccount.ts
-// Coded with Starknet.js v6.11.0
+// Coded with Starknet.js v6.23.0
 
 import { Account, ec, json, hash, CallData, RpcProvider, stark, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";

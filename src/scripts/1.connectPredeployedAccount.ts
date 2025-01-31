@@ -1,7 +1,7 @@
 // Connect a predeployed OZ account in devnet-rs. 
 // Address and PrivKey are displayed when launching starknet-devnet.
 // launch with npx ts-node src/scripts/1.connectPredeployedAccount.ts
-// Coded with Starknet.js v6.11.0
+// Coded with Starknet.js v6.23.0
 
 import { Account, RpcProvider, shortString } from "starknet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";

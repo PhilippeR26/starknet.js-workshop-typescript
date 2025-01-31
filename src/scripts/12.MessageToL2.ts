@@ -1,6 +1,6 @@
-// Connect a predeployed OZ account in devnet. 
+// estimate fees of a message.
 // launch with npx ts-node src/scripts/12.MessageToL2.ts
-// Coded with Starknet.js v5.16.0, Starknet-devnet-rs v0.1.0
+// Coded with Starknet.js v6.23.0
 
 import { Account, hash, json, RpcProvider, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";

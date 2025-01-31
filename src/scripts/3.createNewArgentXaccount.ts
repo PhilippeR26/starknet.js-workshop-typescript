@@ -1,6 +1,6 @@
 // Deploy a new ArgentX wallet (Cairo1, v0.4.0).
 // launch with : npx ts-node ssrc/scripts/3.createNewArgentXaccount.ts
-// Coded with Starknet.js v6.11.0
+// Coded with Starknet.js v6.23.0
 
 import { RpcProvider, Account, ec, json, hash, CallData,  CairoOption, CairoOptionVariant, CairoCustomEnum, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";
@@ -11,9 +11,6 @@ import events from "events";
 import kill from "cross-port-killer";
 
 
-//          👇👇👇
-// 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet-rs directory before using this script
-//          👆👆👆
 async function main() {
     // launch devnet-rs with a new console window
     const outputStream = fs.createWriteStream("./src/scripts/devnet-out.txt");

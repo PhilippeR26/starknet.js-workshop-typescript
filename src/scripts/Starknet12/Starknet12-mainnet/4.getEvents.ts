@@ -3,13 +3,19 @@
 // launch with npx ts-node src/scripts/mainnet/4.getEvents.ts
 
 import { RpcProvider, hash, num } from 'starknet'
-import { DAIaddress, USDCaddress, ethAddress } from '../../utils/constants';
+import { DAIaddress, DAIv2address, USDCaddress, ethAddress } from '../../utils/constants';
 
 async function main() {
 
     const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:6060" }); // local network Juno Mainnet
     
-    const keyFilter = [num.toHex(hash.starknetKeccak("Transfer"))]
+    // filter is: Transfer or Approval.
+    // [[A,B]] = A OR B
+    // [[A],[B]] = A AND B
+    const keyFilter = [
+        num.toHex(hash.starknetKeccak("Transfer")), 
+        num.toHex(hash.starknetKeccak("Approval"))
+    ]
     let block = await provider.getBlock('latest');
     console.log("bloc #", block.block_number);
     let continuationToken: string | undefined = "0";
@@ -17,12 +23,12 @@ async function main() {
     while (continuationToken) {
         const eventsRes = await provider.getEvents({
             from_block: {
-                block_number: block.block_number - 1
+                block_number: block.block_number - 10
             },
             to_block: {
                 block_number: block.block_number
             },
-            address: DAIaddress,
+            address: DAIv2address,
             keys: [keyFilter],
             chunk_size: 8,
             continuation_token: continuationToken === "0" ? undefined : continuationToken

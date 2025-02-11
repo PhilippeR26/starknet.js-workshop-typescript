@@ -9,6 +9,7 @@ import axios from "axios";
 import { strkSierra } from "../staking/constants";
 import { strkAddress } from "../../utils/constants";
 import { account1TestBraavosSepoliaAddress, account1TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress } from "../../../A1priv/A1priv";
+import { wait } from "../../utils/utils";
 
 
 async function main() {
@@ -71,6 +72,10 @@ async function main() {
     console.log("0a OK");
     // const result0b = await account0.getSimulateTransaction(invocation2, {skipValidate:false});  // is failing due to missing address
     // console.log("0b OK");
+
+await wait(5000);
+
+
     const result1 = await account0.simulateTransaction(invocation1); // skipValidate=true by default
     console.log("1 OK");
     const result1a = await account0.simulateTransaction(invocation1, { skipValidate: true });

@@ -9,8 +9,8 @@ import * as dotenv from "dotenv";
 import { ethAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
 import assert from "assert";
-import type { SPEC } from "@starknet-io/types-js";
 import { account1BraavosSepoliaAddress, account1BraavosSepoliaPrivateKey, accountETHoz17snip9Address, accountETHoz17snip9PrivateKey } from "../../../A1priv/A1priv";
+import type { INVOKE_TXN_RECEIPT } from "@starknet-io/types-js";
 dotenv.config();
 
 
@@ -115,7 +115,7 @@ async function main() {
   console.log("suggestedMaxFee =",formatBalance(res1.suggestedMaxFee,18),"ETH" );
   const res2 = accountEthOZ17.execute(myCall, { maxFee: 5n * 10n ** 15n });
   const txR = await myProvider.waitForTransaction((await res2).transaction_hash);
-  console.log("\nreally spent =",formatBalance(num.toBigInt((txR.value as SPEC.INVOKE_TXN_RECEIPT).actual_fee.amount),18),"ETH" );
+  console.log("\nreally spent =",formatBalance(num.toBigInt((txR.value as unknown as INVOKE_TXN_RECEIPT).actual_fee.amount),18),"ETH" );
 
   console.log("✅ Test performed.");
 }

@@ -1,11 +1,9 @@
-// Deploy a Braavos 1.0.0 account in devnet.
-// Coded with Starknet.js v6.11.0 & devnet-rs v0.1.1 & starknet-devnet.js v0.0.4
+// Deploy a Braavos 1.1.0 account in devnet.
+// Coded with Starknet.js v6.23.1 
 
 import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo, type UniversalDetails } from "starknet";
-import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature, isV3tx } from "../../braavos/3c.deployBraavos1v3";
+import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature, isV3tx } from "../../braavos/3d.deployBraavos110v3";
 import { DevnetProvider } from "starknet-devnet";
-//import { OutsideExecution, OutsideExecutionOptions } from 'starknet';
-
 
 import fs from "fs";
 import * as dotenv from "dotenv";
@@ -24,19 +22,20 @@ export async function deployAccountBraavos(
 
   // *********** Deploy Braavos account *************
   // declare
-  const accountBraavosBaseSierra = json.parse(fs.readFileSync("./compiledContracts/cairo251/braavos_account_BraavosBase100.sierra.json").toString("ascii"));
-  const accountBraavosBaseCasm = json.parse(fs.readFileSync("./compiledContracts/cairo251/braavos_account_BraavosBase100.casm.json").toString("ascii"));
-  const ch = hash.computeContractClassHash(accountBraavosBaseSierra);
-  console.log("Braavos account declare in progress...");
+  const accountBraavosBaseSierra = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosBaseAccount110.contract_class.json").toString("ascii"));
+  const accountBraavosBaseCasm = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosBaseAccount110.compiled_contract_class.json").toString("ascii"));
+  // const ch = hash.computeContractClassHash(accountBraavosBaseSierra);
+  // console.log("Braavos base contract class Hash =",ch);
+  console.log("Braavos account v1.1.0 declare in progress...");
   const respDecl = await account0.declareIfNot({ contract: accountBraavosBaseSierra, casm: accountBraavosBaseCasm });
   const contractBraavosClassHash = respDecl.class_hash;
   if (respDecl.transaction_hash) { await myProvider.waitForTransaction(respDecl.transaction_hash) };
-  //console.log("Braavos base contract class hash :", respDecl.class_hash);
-  const accountBraavosSierra = json.parse(fs.readFileSync("./compiledContracts/cairo251/braavos_account_Braavos100.sierra.json").toString("ascii"));
-  const accountBraavosCasm = json.parse(fs.readFileSync("./compiledContracts/cairo251/braavos_account_Braavos100.casm.json").toString("ascii"));
+  console.log("Braavos base contract v1.1.0 class hash :", respDecl.class_hash);
+  const accountBraavosSierra = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosAccount110.contract_class.json").toString("ascii"));
+  const accountBraavosCasm = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosAccount110.compiled_contract_class.json").toString("ascii"));
   const respDecl2 = await account0.declareIfNot({ contract: accountBraavosSierra, casm: accountBraavosCasm });
   const contractBraavosClassHash2 = respDecl2.class_hash;
-  //console.log("Braavos contract class hash :", respDecl2.class_hash);
+  console.log("Braavos contract v1.1.0 class hash :", respDecl2.class_hash);
   if (respDecl2.transaction_hash) { await myProvider.waitForTransaction(respDecl2.transaction_hash) };
 
   // Calculate future address of the Braavos account

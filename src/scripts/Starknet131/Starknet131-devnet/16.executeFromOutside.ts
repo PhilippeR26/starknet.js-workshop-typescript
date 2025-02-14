@@ -12,7 +12,7 @@ import { formatBalance } from "../../utils/formatBalance";
 import { ethAddress, strkAddress } from "../../utils/constants";
 import { deployAccountArgentX4 } from "./12.deployArgentX4";
 import { deployAccountArgentX3 } from "./13.deployArgentX3";
-import { deployAccountBraavos } from "./11.deployBraavos";
+import { deployAccountBraavos } from "./11a.deployBraavos110";
 import { deployAccountOpenzeppelin14 } from "./14.deployOZ14";
 import { deployAccountNoERC165 } from "./15.deployNoIntrospection";
 dotenv.config();

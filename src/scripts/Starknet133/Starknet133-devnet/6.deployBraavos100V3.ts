@@ -1,10 +1,10 @@
-// Test Cairo fixed array type
-// Launch with npx ts-node src/scripts/Starknet133/Starknet133-devnet/4.fixedArray.ts
+// Test deploy Braavos account v1.0.0 with transaction v3
+// Launch with npx ts-node src/scripts/Starknet133/Starknet133-devnet/6.deployBraavos100V3.ts
 // Coded with Starknet.js v6.23.1
 
 import { RpcProvider, Account, shortString, json, Contract, type InvokeFunctionResponse, TransactionFinalityStatus, Call, CairoCustomEnum, CallData, cairo } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
-import { deployAccountBraavos } from "../../Starknet131/Starknet131-devnet/11.deployBraavos";
+import { deployAccountBraavos } from "../../Starknet131/Starknet131-devnet/11.deployBraavos100";
 import * as dotenv from "dotenv";
 import fs from "fs";
 import type { DeployAccountResp } from "../../utils/types";
@@ -44,7 +44,7 @@ async function main() {
     //  const accountAddress0 = account1BraavosMainnetAddress;
     //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
-    const account0 = new Account(myProvider, accountAddress0, privateKey0, undefined, "0x3");
+    const account0 = new Account(myProvider, accountAddress0, privateKey0, undefined, "0x2");
     console.log("Account connected.\n");
     // *******************************
     const resDeploy: DeployAccountResp = await deployAccountBraavos(myProvider, account0, ETransactionVersion.V3);

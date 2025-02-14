@@ -1,7 +1,7 @@
 // Collection of functions for Braavos account (Cairo 1) creation
 // coded with Starknet.js v6.1.4
 
-import { ec, hash, num, constants, CallData, stark, BigNumberish, type RpcProvider, RPC, type V2InvocationsSignerDetails, type DeployAccountSignerDetails, type V2DeployAccountSignerDetails, type V3DeployAccountSignerDetails, type V3InvocationsSignerDetails, type UniversalDetails } from "starknet";
+import { ec, hash, num, constants, CallData, stark, BigNumberish, type RpcProvider, RPC, type V2InvocationsSignerDetails, type DeployAccountSignerDetails, type V2DeployAccountSignerDetails, type V3DeployAccountSignerDetails, type V3InvocationsSignerDetails, type UniversalDetails, type EstimateFeeResponse } from "starknet";
 import { type DeployContractResponse, type Calldata, type DeployAccountContractPayload, type EstimateFeeDetails, type CairoVersion, type DeployAccountContractTransaction, } from "starknet";
 import { EDAMode, ETransactionVersion, ETransactionVersion2, ETransactionVersion3, type ResourceBounds } from "@starknet-io/types-js";
 
@@ -178,10 +178,10 @@ async function buildBraavosAccountDeployPayload(
 export async function estimateBraavosAccountDeployFee(
     privateKeyBraavos: num.BigNumberish,
     provider: RpcProvider,
-    { blockIdentifier, skipValidate }: EstimateFeeDetails = {}
-): Promise<bigint> {
+    { blockIdentifier, skipValidate, version: txVersion }: EstimateFeeDetails = { version: ETransactionVersion.V3 }
+): Promise<UniversalDetails> {
 
-    const version = RPC.ETransactionVersion2.F1;
+    const EstimateVersion = RPC.ETransactionVersion2.F1;
     const nonce = constants.ZERO;
     const chainId = await provider.getChainId();
     const cairoVersion: CairoVersion = "1"; // dummy value, not used but mandatory
@@ -200,7 +200,7 @@ export async function estimateBraavosAccountDeployFee(
         {
             nonce,
             chainId,
-            version,
+            version: EstimateVersion,
             walletAddress: BraavosAccountAddress,
             maxFee: constants.ZERO,
             cairoVersion: cairoVersion,
@@ -210,14 +210,14 @@ export async function estimateBraavosAccountDeployFee(
 
     const response = await provider.getDeployAccountEstimateFee(
         { ...payload },
-        { version, nonce },
+        { version: EstimateVersion, nonce },
         blockIdentifier,
         skipValidate
     );
     console.log("response estimate fee =", response);
     const suggestedMaxFee = stark.estimatedFeeToMaxFee(response.overall_fee);
 
-    return suggestedMaxFee;
+    return {};
 
 }
 
@@ -229,8 +229,8 @@ export function isV3tx(version: string): boolean {
 export async function deployBraavosAccount(
     privateKeyBraavos: num.BigNumberish,
     provider: RpcProvider,
-    maxFeeDetails: UniversalDetails, // TODO: set optional & V3
-    txVersion: ETransactionVersion,
+    maxFeeDetails?: UniversalDetails,
+    txVersion: ETransactionVersion = ETransactionVersion.V3,
 ): Promise<DeployContractResponse> {
     const nonce = constants.ZERO;
     const chainId = await provider.getChainId();
@@ -238,6 +238,7 @@ export async function deployBraavosAccount(
     const starkKeyPubBraavos = ec.starkCurve.getStarkKey(num.toHex(privateKeyBraavos));
     const BraavosAccountAddress = calculateAddressBraavos(privateKeyBraavos);
     const BraavosConstructorCallData = BraavosConstructor(starkKeyPubBraavos);
+    const feeDetails: UniversalDetails = maxFeeDetails ?? await estimateBraavosAccountDeployFee(privateKeyBraavos, provider, { version: txVersion });
     const isV3 = isV3tx(txVersion);
     if (isV3) {
         const payload: DeployAccountContractTransaction = await buildBraavosAccountDeployPayload(
@@ -249,13 +250,12 @@ export async function deployBraavosAccount(
                 contractAddress: BraavosAccountAddress
             },
             {
-
                 chainId,
                 nonce,
                 version: txVersion,
                 walletAddress: BraavosAccountAddress,
                 cairoVersion: cairoVersion,
-                ...maxFeeDetails
+                ...feeDetails
             } as V3InvocationsSignerDetails
         );
         console.log("deploy payload V3 =", payload);
@@ -269,7 +269,7 @@ export async function deployBraavosAccount(
             {
                 nonce,
                 version: txVersion,
-                ...maxFeeDetails
+                ...feeDetails
             }
         );
 
@@ -287,7 +287,7 @@ export async function deployBraavosAccount(
                 chainId,
                 version: txVersion as ETransactionVersion2,
                 walletAddress: BraavosAccountAddress,
-                maxFee: maxFeeDetails.maxFee as BigNumberish,
+                maxFee: feeDetails.maxFee as BigNumberish,
                 cairoVersion: cairoVersion,
             }
         );
@@ -301,7 +301,7 @@ export async function deployBraavosAccount(
             },
             {
                 nonce,
-                maxFee: maxFeeDetails.maxFee,
+                maxFee: feeDetails.maxFee,
                 version: txVersion,
             }
         );

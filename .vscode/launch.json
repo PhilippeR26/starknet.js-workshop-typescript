@@ -24,7 +24,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/Starknet133/Starknet133-devnet/4.fixedArray.ts",
+            "program": "${workspaceFolder}/src/scripts/Starknet133/Starknet133-devnet/6.deployBraavosV3.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

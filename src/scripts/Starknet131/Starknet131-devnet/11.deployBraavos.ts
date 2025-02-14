@@ -1,8 +1,8 @@
 // Deploy a Braavos 1.0.0 account in devnet.
 // Coded with Starknet.js v6.11.0 & devnet-rs v0.1.1 & starknet-devnet.js v0.0.4
 
-import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo } from "starknet";
-import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature } from "../../braavos/3b.deployBraavos1";
+import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo, type UniversalDetails } from "starknet";
+import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature, isV3tx } from "../../braavos/3c.deployBraavos1v3";
 import { DevnetProvider } from "starknet-devnet";
 //import { OutsideExecution, OutsideExecutionOptions } from 'starknet';
 
@@ -12,9 +12,14 @@ import * as dotenv from "dotenv";
 import { formatBalance } from "../../utils/formatBalance";
 import { ethAddress, strkAddress } from "../../utils/constants";
 import type { DeployAccountResp } from "../../utils/types";
+import { EDataAvailabilityMode, type ETransactionVersion } from "@starknet-io/types-js";
 dotenv.config();
 
-export async function deployAccountBraavos(myProvider: RpcProvider, account0: Account): Promise<DeployAccountResp> {
+export async function deployAccountBraavos(
+  myProvider: RpcProvider,
+  account0: Account,
+  version: ETransactionVersion,
+): Promise<DeployAccountResp> {
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
 
   // *********** Deploy Braavos account *************
@@ -54,11 +59,32 @@ export async function deployAccountBraavos(myProvider: RpcProvider, account0: Ac
   await l2DevnetProvider.mint(accountBraavosAddress, 10n * 10n ** 18n, "WEI");
   await l2DevnetProvider.mint(accountBraavosAddress, 100n * 10n ** 18n, "FRI");
   // deploy Braavos account
-  const myMaxFee = 2 * 10 ** 15; // defined manually as estimateFee fails.
-  const respDeploy = await deployBraavosAccount(privateKeyBraavosBase, myProvider, myMaxFee);
+
+  const maxQtyGasAuthorized = 4000n; // max quantity of gas authorized
+  const maxPriceAuthorizeForOneGas = 1n * 10n ** 12n; // max FRI authorized to pay 1 gas (1 FRI=10**-18 STRK)
+  const myMaxFee: UniversalDetails = isV3tx(version) ? {
+    feeDataAvailabilityMode: EDataAvailabilityMode.L1,
+    nonceDataAvailabilityMode: EDataAvailabilityMode.L1,
+    tip: 10 ** 13,
+    paymasterData: [],
+    resourceBounds: {
+      l1_gas: {
+        max_amount: num.toHex(maxQtyGasAuthorized),
+        max_price_per_unit: num.toHex(maxPriceAuthorizeForOneGas),
+      },
+      l2_gas: {
+        max_amount: num.toHex(0),
+        max_price_per_unit: num.toHex(0),
+      },
+    },
+  } :
+    { maxFee: 2 * 10 ** 15 }; // V1
+  console.log("input maxFee=", { myMaxFee });
+
+  const respDeploy = await deployBraavosAccount(privateKeyBraavosBase, myProvider, myMaxFee, version);
   const txR = await myProvider.waitForTransaction(respDeploy.transaction_hash);
   //console.log("Transaction receipt success =", txR.isSuccess());
-  const accountBraavos=new Account(myProvider,accountBraavosAddress,privateKeyBraavosBase);
+  const accountBraavos = new Account(myProvider, accountBraavosAddress, privateKeyBraavosBase);
   console.log("Braavos account created.\nFinal address =", accountBraavosAddress);
   console.log('✅ Braavos 1.0.0 account deployed.');
 

@@ -1,17 +1,15 @@
 // Deploy a Braavos 1.1.0 account in devnet.
 // Coded with Starknet.js v6.23.1 
 
-import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo, type UniversalDetails } from "starknet";
-import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature, isV3tx } from "../../braavos/3d.deployBraavos110v3";
+import { RpcProvider, Account, ec, json, stark, CallData,  hash, type BigNumberish } from "starknet";
+import { deployBraavosAccount } from "../../braavos/3d.deployBraavos110v3";
 import { DevnetProvider } from "starknet-devnet";
-
 import fs from "fs";
 import * as dotenv from "dotenv";
-import { formatBalance } from "../../utils/formatBalance";
-import { ethAddress, strkAddress } from "../../utils/constants";
 import type { DeployAccountResp } from "../../utils/types";
-import { EDataAvailabilityMode, type ETransactionVersion } from "@starknet-io/types-js";
+import { type ETransactionVersion } from "@starknet-io/types-js";
 dotenv.config();
+
 
 export async function deployAccountBraavos(
   myProvider: RpcProvider,
@@ -61,23 +59,25 @@ export async function deployAccountBraavos(
 
   const maxQtyGasAuthorized = 4000n; // max quantity of gas authorized
   const maxPriceAuthorizeForOneGas = 1n * 10n ** 12n; // max FRI authorized to pay 1 gas (1 FRI=10**-18 STRK)
-  const myMaxFee: UniversalDetails = isV3tx(version) ? {
-    feeDataAvailabilityMode: EDataAvailabilityMode.L1,
-    nonceDataAvailabilityMode: EDataAvailabilityMode.L1,
-    tip: 10 ** 13,
-    paymasterData: [],
-    resourceBounds: {
-      l1_gas: {
-        max_amount: num.toHex(maxQtyGasAuthorized),
-        max_price_per_unit: num.toHex(maxPriceAuthorizeForOneGas),
-      },
-      l2_gas: {
-        max_amount: num.toHex(0),
-        max_price_per_unit: num.toHex(0),
-      },
-    },
-  } :
-    { maxFee: 2 * 10 ** 15 }; // V1
+  const myMaxFee = undefined;
+  // ******* if you want to set manually the fees :
+  // const myMaxFee: UniversalDetails = isV3tx(version) ? {
+  //   feeDataAvailabilityMode: EDataAvailabilityMode.L1,
+  //   nonceDataAvailabilityMode: EDataAvailabilityMode.L1,
+  //   tip: 10 ** 13,
+  //   paymasterData: [],
+  //   resourceBounds: {
+  //     l1_gas: {
+  //       max_amount: num.toHex(maxQtyGasAuthorized),
+  //       max_price_per_unit: num.toHex(maxPriceAuthorizeForOneGas),
+  //     },
+  //     l2_gas: {
+  //       max_amount: num.toHex(0),
+  //       max_price_per_unit: num.toHex(0),
+  //     },
+  //   },
+  // } :
+  //   { maxFee: 2 * 10 ** 15 }; // V1
   console.log("input maxFee=", { myMaxFee });
 
   const respDeploy = await deployBraavosAccount(privateKeyBraavosBase, myProvider, myMaxFee, version);

@@ -1,8 +1,8 @@
-// Test Test deploy Braavos account v1.1.0 with transaction v3
+// Test deploy Braavos account v1.1.0 with a transaction v3
 // Launch with npx ts-node src/scripts/Starknet133/Starknet133-devnet/6a.deployBraavos110V3.ts
 // Coded with Starknet.js v6.23.1
 
-import { RpcProvider, Account, shortString, json, Contract, type InvokeFunctionResponse, TransactionFinalityStatus, Call, CairoCustomEnum, CallData, cairo } from "starknet";
+import { RpcProvider, Account, shortString } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
 import { deployAccountBraavos } from "../../Starknet131/Starknet131-devnet/11a.deployBraavos110";
 import * as dotenv from "dotenv";
@@ -44,10 +44,14 @@ async function main() {
     //  const accountAddress0 = account1BraavosMainnetAddress;
     //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
-    const account0 = new Account(myProvider, accountAddress0, privateKey0, undefined, "0x3");
+    const account0 = new Account(myProvider, accountAddress0, privateKey0, undefined, "0x3"); // 0x2 (Tx V1) or 0x3 (tx V3), for initial declare/deploy of contracts.
     console.log("Account connected.\n");
     // *******************************
-    const resDeploy: DeployAccountResp = await deployAccountBraavos(myProvider, account0, ETransactionVersion.V3);
+    const resDeploy: DeployAccountResp = await deployAccountBraavos(
+        myProvider,
+        account0,
+        ETransactionVersion.V3 // 👈👈 V1 or V3 deploy transaction
+    );
     console.log(resDeploy);
 
 

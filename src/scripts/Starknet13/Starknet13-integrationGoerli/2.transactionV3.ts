@@ -11,7 +11,7 @@ import { constants, Contract, Account, json, shortString, RpcProvider, types, RP
 import fs from "fs";
 import { account1IntegrationGoerliAXaddress, account1IntegrationGoerliAXprivateKey, account2IntegrationGoerliOZ081address, account2IntegrationGoerliOZ081privateKey, account5TestnetAddress, account5TestnetPrivateKey, goerliIntegrationUrl } from "../../../A1priv/A1priv";
 import { account0OZSepoliaAddress, account0OZSepoliaPrivateKey } from "../../../A1priv/A1priv";
-import { account1IntegrationOZaddress, account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
+import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
 import { ethAddress, strkAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
 import axios from "axios";

@@ -5,7 +5,7 @@
 import { constants, Contract, Account, json, shortString, RpcProvider, types, RPC, num, ec, CallData, hash, cairo, type CompiledSierraCasm, type ByteCode, type EntryPointsByType, type PythonicHints, type ContractEntryPointFields, type Builtins } from "starknet";
 import fs from "fs";
 import { account0OZSepoliaAddress, account0OZSepoliaPrivateKey, account2TestnetAddress, account2TestnetPrivateKey } from "../../../A1priv/A1priv";
-import { account1IntegrationOZaddress, account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
+import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
 import { ethAddress, strkAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
 import * as dotenv from "dotenv";

@@ -6,7 +6,7 @@ import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";
 dotenv.config();
-import { account1IntegrationOZaddress, account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
+import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
 
 import { infuraKey, account4MainnetAddress, account4MainnetPrivateKey } from "../../../A-MainPriv/mainPriv";
 import { junoNMtestnet } from "../../../A1priv/A1priv";
@@ -20,7 +20,7 @@ async function main() {
 
 
     // deploy account
-    const OZaccount0 = new Account(provider, account1IntegrationOZaddress, account1IntegrationOZprivateKey);
+    const OZaccount0 = new Account(provider, account1IntegrationOZ8address, account1IntegrationOZ8privateKey);
     const OZ080b1ClassHash = "0x00903752516de5c04fe91600ca6891e325278b2dfc54880ae11a809abb364844";
     const starkKeyPub = await OZaccount0.signer.getPubKey();
     console.log("Calculated public key =", starkKeyPub);

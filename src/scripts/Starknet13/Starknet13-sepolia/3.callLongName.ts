@@ -6,7 +6,7 @@ import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num,
 import fs from "fs";
 import { infuraKey, account1MainnetAddress, account1MainnetPrivateKey, blastKey } from "../../../A-MainPriv/mainPriv";
 import { account0OZSepoliaAddress, account0OZSepoliaPrivateKey } from "../../../A1priv/A1priv";
-import { account1IntegrationOZaddress, account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
+import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
 import axios from "axios";
 import { formatBalance } from "../../utils/formatBalance";
 

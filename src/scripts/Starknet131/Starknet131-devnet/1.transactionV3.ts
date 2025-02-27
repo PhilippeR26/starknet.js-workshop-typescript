@@ -5,7 +5,7 @@
 import { constants, Contract, Account, json, shortString, RpcProvider, types, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type EstimateFee } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey } from "../../../A1priv/A1priv";
-import { account1IntegrationOZaddress, account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
+import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
 import { ethAddress, strkAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
 import axios from "axios";

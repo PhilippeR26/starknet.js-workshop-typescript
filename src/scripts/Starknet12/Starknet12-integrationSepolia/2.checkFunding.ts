@@ -9,7 +9,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import { account0OZSepoliaAddress, account7TestnetAddress, account7TestnetPrivateKey } from "../../../A1priv/A1priv";
 import { infuraKey, account4MainnetAddress, account4MainnetPrivateKey } from "../../../A-MainPriv/mainPriv";
-import { account1IntegrationOZaddress,account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
+import { account1IntegrationOZ8address,account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
 import { account2IntegrationAXaddress, account2IntegrationAXprivateKey } from "../../../A2priv/A2priv";
 
 import { ethAddress } from "../../utils/constants";
@@ -34,9 +34,9 @@ async function main() {
     const ethContract = new Contract(compiledEthContract.abi, ethAddress, provider);
     console.log('ETH ERC20 contract connected at =', ethContract.address);
 
-    const res1 = await ethContract.balanceOf(account1IntegrationOZaddress);
+    const res1 = await ethContract.balanceOf(account1IntegrationOZ8address);
     const balance = BigInt(uint256.uint256ToBN(res1.balance));
-    console.log("addr: ", account1IntegrationOZaddress, res1, balance);
+    console.log("addr: ", account1IntegrationOZ8address, res1, balance);
     console.log("Node report that account owns", formatBalance(balance, 18), "ETH");
 
     // const OZ080ClassHash = "0x5400e90f7e0ae78bd02c77cd75527280470e2fe19c54970dd79dc37a9d3645c";

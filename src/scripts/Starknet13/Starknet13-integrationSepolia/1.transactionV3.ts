@@ -7,7 +7,7 @@ import fs from "fs";
 import { account5TestnetAddress, account5TestnetPrivateKey } from "../../../A1priv/A1priv";
 import { infuraKey, account4MainnetAddress, account4MainnetPrivateKey, blastKey } from "../../../A-MainPriv/mainPriv";
 import { account0OZSepoliaAddress, account0OZSepoliaPrivateKey } from "../../../A1priv/A1priv";
-import { account1IntegrationOZaddress, account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
+import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
 
 
 
@@ -36,8 +36,8 @@ async function main() {
     //const privateKey0 = account0OZSepoliaPrivateKey;
     //const accountAddress0 = account0OZSepoliaAddress;
     // *** initialize existing Sepolia Integration account
-     const privateKey0 = account1IntegrationOZprivateKey;
-     const accountAddress0 = account1IntegrationOZaddress;
+     const privateKey0 = account1IntegrationOZ8privateKey;
+     const accountAddress0 = account1IntegrationOZ8address;
     const account0 = new Account(provider, accountAddress0, privateKey0, undefined, constants.TRANSACTION_VERSION.V3);
     console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
     console.log('existing account connected.\n');

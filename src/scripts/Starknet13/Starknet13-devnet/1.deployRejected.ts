@@ -5,7 +5,7 @@
 import { constants, Contract, Account, json, shortString, RpcProvider } from "starknet";
 import fs from "fs";
 import { account0OZSepoliaAddress,account0OZSepoliaPrivateKey } from "../../../A1priv/A1priv";
-import { account1IntegrationOZaddress, account1IntegrationOZprivateKey } from "../../../A2priv/A2priv";
+import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
 
 
 

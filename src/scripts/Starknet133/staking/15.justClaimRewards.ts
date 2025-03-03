@@ -2,7 +2,7 @@
 // launch with npx ts-node src/scripts/Starknet133/staking/15.justClaimRewards.ts
 // Coded with Starknet.js v6.20.3
 
-import { BigNumberish, shortString, RpcProvider, Account, json, hash, Contract, CairoOption } from "starknet";
+import { BigNumberish, shortString, RpcProvider, Account, json, hash, Contract, CairoOption, constants } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { account1TestBraavosSepoliaAddress, account1TestBraavosSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
@@ -18,7 +18,7 @@ async function main() {
   //   const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only starknet-devnet-rs
   // const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   // ****  Sepolia Testnet 
-  const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" });
+  const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_7" });
   // const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_7" });
   // const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); // local pathfinder testnet node
   // const provider = new RpcProvider({ nodeUrl: junoNMtestnet }); // local pathfinder testnet node
@@ -40,7 +40,7 @@ async function main() {
   //  const accountAddress0 = account1BraavosMainnetAddress;
   //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
-  const account0 = new Account(myProvider, accountAddress0, privateKey0);
+  const account0 = new Account(myProvider, accountAddress0, privateKey0, undefined, constants.TRANSACTION_VERSION.V3);
   const strkContract = new Contract(strkSierra.abi, strkAddress, myProvider);
   const stakingContract = new Contract(compiledSierraStake.abi, STAKING_ADDRESS, myProvider);
 

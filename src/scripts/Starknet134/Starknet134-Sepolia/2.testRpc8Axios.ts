@@ -43,10 +43,10 @@ async function main() {
   // const url = "https://starknet-mainnet.public.blastapi.io/rpc/v0_8";
 
   // == pathfinder Testnet
-  const url = "http://192.168.1.78:9545/rpc/v0_8";
+  // const url = "http://192.168.1.78:9545/rpc/v0_8";
   // const url = "http://localhost:9545/rpc/v0_8";
   // == juno Testnet
-  //  const url = "http://192.168.1.78:6070/v0_8";
+  const url = "http://192.168.1.78:6070/v0_8";
   // const url = "http://localhost:6070/v0_8"; 
 
   // **** Sepolia integration
@@ -135,7 +135,9 @@ async function main() {
     method: "starknet_getStorageProof",
     params: {
       block_id,
+      class_hashes: [],
       contract_addresses: ["0x33ba2f0e6fb9a4a63a701728bacd7c86fd7750889c7f454711fa5d2766ce34c"],
+      contracts_storage_keys: []
     }
   }, {
     headers: {

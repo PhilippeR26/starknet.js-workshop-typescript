@@ -1,5 +1,5 @@
-// Connect to a local Testnet node. Test webSocket of rpc 0_8.
-// Launch with npx ts-node src/scripts/Starknet134/Starknet134-Sepolia/3.testWS08.ts
+// Connect to a local Testnet node. Test webSocket of rpc 0_8, using the ws library.
+// Launch with npx ts-node src/scripts/Starknet134/Starknet134-Sepolia/3.testWS08ws.ts
 // Coded with Starknet.js v7b
 
 
@@ -40,10 +40,10 @@ async function main() {
   // const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   // ****  Sepolia Testnet 
   // const base="https://free-rpc.nethermind.io/sepolia-juno";
-  // == pathfinder Testnet
+  // == pathfinder Testnet rpc
   // const base = "192.168.1.11:9545/rpc/v0_8";
-  // == juno Testnet
-   const base = "localhost:6070/rpc/v0_7"; 
+  // == juno Testnet rpc
+  const base = "localhost:6070/rpc/v0_8";
 
   // **** Sepolia integration
   // == Pathfinder Sepolia Integration
@@ -51,9 +51,9 @@ async function main() {
   // == Juno Sepolia Integration
   // const base = "localhost:6095/rpc/v0_8";
 
-   const url = "http://" + base;
+  const url = "http://" + base;
 
-  const myProvider = new RpcProvider({ nodeUrl: url });
+  const myProvider = await RpcProvider.create({ nodeUrl: url });
   //const myProvider = new RpcProvider({ nodeUrl: url }); // local pathfinder testnet node
   // const provider = new RpcProvider({ nodeUrl: junoNMtestnet }); // local pathfinder testnet node
   // if (!(await l2DevnetProvider.isAlive())) {
@@ -72,12 +72,14 @@ async function main() {
   let subID7: bigint = 0n;
   let subID8: bigint = 0n;
   let subID9: bigint = 0n;
+  let subID10: bigint = 0n;
   // const ws_custom = new WebSocket("ws://192.168.1.11:9545/ws"); // pathfinder Testnet
   // const ws_custom = new WebSocket("ws://localhost:6071"); // juno Testnet
-   const ws_starknetRpc = new WebSocket("ws://localhost:9545/rpc/v0_8"); // pathfinder Testnet
-  // juno Testnet
-  // const ws_starknetRpc = new WebSocket("ws://localhost:6071/v0_8"); 
-   // **** Sepolia integration
+  // pathfinder Testnet ws
+  // const ws_starknetRpc = new WebSocket("ws://localhost:9545/rpc/v0_8");
+  // juno Testnet ws
+  const ws_starknetRpc = new WebSocket("ws://localhost:6071/v0_8"); 
+  // **** Sepolia integration
   // == Pathfinder Sepolia Integration
   //const ws_starknetRpc = new WebSocket("ws://localhost:9545/rpc/v0_8"); 
   // == Juno Sepolia Integration
@@ -114,7 +116,7 @@ async function main() {
     id: 1
   });
   ws_starknetRpc.send(message1);
-  
+
   console.log("B");
 
   const message6 = JSON.stringify({
@@ -149,6 +151,14 @@ async function main() {
   });
   ws_starknetRpc.send(message9);
 
+  const message10 = JSON.stringify({
+    jsonrpc: "2.0",
+    method: "starknet_subscribeTransactionStatus",
+    params: ["0xbff99a5621021b7954025192121b30efc4ea21a479931c088e905da37306f3"],
+    id: 10
+  });
+  ws_starknetRpc.send(message10);
+
   function message(data: any) {
     end = new Date().getTime();
     const newMessage = json.parse(data.toString("ascii"));
@@ -158,13 +168,14 @@ async function main() {
   ws_starknetRpc.onmessage = (event) => {
     end = new Date().getTime();
     const response = json.parse(event.data.toString("ascii"));
-    if (response.id == 6 && !subID6) subID6 = response.subscription_id;
-    if (response.id == 7 && !subID7) subID7 = response.subscription_id;
-    if (response.id == 8 && !subID8) subID8 = response.subscription_id;
-    if (response.id == 9 && !subID9) subID9 = response.subscription_id;
-    
+    if (response.id == 6 && !subID6) subID6 = response.result;
+    if (response.id == 7 && !subID7) subID7 = response.result;
+    if (response.id == 8 && !subID8) subID8 = response.result;
+    if (response.id == 9 && !subID9) subID9 = response.result;
+    if (response.id == 10 && !subID10) subID10 = response.result;
+
     console.log("Received response ws_starknet_rpc: after", end - start, "ms :", response);
-  
+
   };
   // ws_custom.on('message', message);
 
@@ -172,8 +183,9 @@ async function main() {
   await wait(10 * 1000); // 10 sec
   console.log("press a key to stop the subscription.");
   await keypress();
- 
+
   if (subID6) {
+    console.log("unsubscribe starknet_subscribeNewHeads...");
     const unsubscribe6 = JSON.stringify({
       jsonrpc: "2.0",
       method: "starknet__unsubscribe",
@@ -183,31 +195,44 @@ async function main() {
     ws_starknetRpc.send(unsubscribe6);
   }
   if (subID7) {
-    const unsubscribe6 = JSON.stringify({
+    console.log("unsubscribe starknet_subscribeEvents...");
+    const unsubscribe7 = JSON.stringify({
       jsonrpc: "2.0",
       method: "starknet__unsubscribe",
       params: [subID7.toString()],
       id: 33
     });
-    ws_starknetRpc.send(unsubscribe6);
+    ws_starknetRpc.send(unsubscribe7);
   }
   if (subID8) {
-    const unsubscribe6 = JSON.stringify({
+    console.log("unsubscribe starknet_subscribeTransactionStatus...");
+    const unsubscribe8 = JSON.stringify({
       jsonrpc: "2.0",
       method: "starknet__unsubscribe",
       params: [subID8.toString()],
       id: 34
     });
-    ws_starknetRpc.send(unsubscribe6);
+    ws_starknetRpc.send(unsubscribe8);
   }
   if (subID9) {
-    const unsubscribe6 = JSON.stringify({
+    console.log("unsubscribe starknet_subscribePendingTransactions...");
+    const unsubscribe9 = JSON.stringify({
       jsonrpc: "2.0",
       method: "starknet__unsubscribe",
       params: [subID9.toString()],
       id: 35
     });
-    ws_starknetRpc.send(unsubscribe6);
+    ws_starknetRpc.send(unsubscribe9);
+  }
+  if (subID10) {
+    console.log("unsubscribe starknet_subscribeTransactionStatus 2...");
+    const unsubscribe10 = JSON.stringify({
+      jsonrpc: "2.0",
+      method: "starknet__unsubscribe",
+      params: [subID10.toString()],
+      id: 36
+    });
+    ws_starknetRpc.send(unsubscribe10);
   }
   ws_starknetRpc.close();
 

@@ -1,5 +1,5 @@
 // Connect to a Testnet node, located in a remote computer in the local network. Test rpc 0.8 new IP.
-// Launch with npx ts-node src/scripts/Starknet132/Starknet132-Sepolia/3.testRpc8.ts
+// Launch with npx ts-node src/scripts/Starknet134/Starknet134-Sepolia/2.testRpc8Axios.ts
 // Coded with Starknet.js v6.15.0
 
 
@@ -43,9 +43,10 @@ async function main() {
   // const url = "https://starknet-mainnet.public.blastapi.io/rpc/v0_8";
 
   // == pathfinder Testnet
-  // const url = "http://192.168.1.11:9545/rpc/v0_8";
-   const url = "http://localhost:9545/rpc/v0_8";
+  const url = "http://192.168.1.78:9545/rpc/v0_8";
+  // const url = "http://localhost:9545/rpc/v0_8";
   // == juno Testnet
+  //  const url = "http://192.168.1.78:6070/v0_8";
   // const url = "http://localhost:6070/v0_8"; 
 
   // **** Sepolia integration
@@ -55,8 +56,8 @@ async function main() {
   // const url = "http://localhost:6095/rpc/v0_8";
 
 
-  const myProvider = new RpcProvider({ nodeUrl: url });
-  //const myProvider = new RpcProvider({ nodeUrl: url }); // local pathfinder testnet node
+  const myProvider = await RpcProvider.create({ nodeUrl: url });
+  // const myProvider = new RpcProvider({ nodeUrl: url }); // local pathfinder testnet node
   // const provider = new RpcProvider({ nodeUrl: junoNMtestnet }); // local pathfinder testnet node
   // if (!(await l2DevnetProvider.isAlive())) {
   //     console.log("No l2 devnet.");
@@ -125,7 +126,7 @@ async function main() {
 
   // const block_id = new provider.Block("556892").identifier;
   // const block_id=new provider.Block("pending").identifier;
-  const block_id=new provider.Block("latest").identifier;
+  const block_id = new provider.Block("latest").identifier;
   console.log({ block_id });
 
   const { data: answer4 } = await axios.post(url, {

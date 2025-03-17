@@ -1,14 +1,15 @@
 
 // Test rpc 0.8 new websocket with Starknet.js.
-// Launch with npx ts-node src/scripts/webSocket/7.testWStransactionStatus.ts
+// Launch with npx ts-node src/scripts/webSocket/9.testWSpendingTx.ts
 // Coded with Starknet.js v7.0.0-beta.3
 
 import { json, WebSocketChannel, WSSubscriptions } from "starknet";
 import { formatBalance } from "../utils/formatBalance";
 // import WebSocket from 'ws';
 import { keypress, wait } from "../utils/utils";
-import { SubscriptionNewHeadsResponse, type SubscriptionTransactionsStatusResponse } from "@starknet-io/types-js";
+import { SubscriptionNewHeadsResponse, type SubscriptionEventsResponse, type SubscriptionPendingTransactionsResponse } from "@starknet-io/types-js";
 import { WebSocket } from "isows";
+import { strkAddress } from "../utils/constants";
 // import * as dotenv from "dotenv";
 // dotenv.config();
 
@@ -31,40 +32,33 @@ async function main() {
     }
 
 
-    // subscribe transaction status
-    const txStatusID = await myWS.subscribeTransactionStatus("0x7f0dce88163f6565139d677f86ded8c396b449ed098272c6b06c5d2bddeae43");
-    console.log("subscribe TransactionStatus response =", txStatusID);
+    // subscribe pending tx
+    const txStatusID = await myWS.subscribePendingTransaction();
+    console.log("subscribe pending tx response =", txStatusID);
     if (!txStatusID) {
-        throw new Error("TransactionStatus subscription failed");
+        throw new Error("pending tx subscription failed");
     }
-    // const txStatusID2 = await myWS.subscribeTransactionStatus("0xbff99a5621021b7954025192121b30efc4ea21a479931c088e905da37306f3");
-    // console.log("subscribe TransactionStatus2 response =", txStatusID2);
-    // if (!txStatusID2) {
-    //     throw new Error("TransactionStatus2 subscription failed");
-    // }
-
 
     const subscriptions = myWS.subscriptions;
     console.log({ subscriptions });
-    console.log("get tx status =", myWS.subscriptions.get(WSSubscriptions.TRANSACTION_STATUS));
+    console.log("get tx status =", myWS.subscriptions.get(WSSubscriptions.PENDING_TRANSACTION));
 
     let i: number = 0;
-    myWS.onTransactionStatus= function (txS:SubscriptionTransactionsStatusResponse) {
+    myWS.onPendingTransaction = function (pendingTx: SubscriptionPendingTransactionsResponse) {
         i++
-        console.log("tx status event",i,"=", txS);
+        console.log("pending tx event", i, "=", pendingTx);
     }
-
 
 
     console.log("press a key to stop to wait messages.");
     await keypress();
 
-    const expectedId2 = myWS.subscriptions.get(WSSubscriptions.TRANSACTION_STATUS);
-    console.log("Unsubscribe transactionStatus", expectedId2, "...");
-    const statusTxStatus = await myWS.unsubscribeTransactionStatus();
+    const expectedId2 = myWS.subscriptions.get(WSSubscriptions.PENDING_TRANSACTION);
+    console.log("Unsubscribe pending tx", expectedId2, "...");
+    const statusTxStatus = await myWS.unsubscribePendingTransaction();
     console.log({ statusTxStatus });
     // const subscriptionId2 = await myWS.waitForUnsubscription(expectedId2); // to use if unsubscription occurred somewhere else in the code
-    // console.log("Done for transactionStatus...", subscriptionId2);
+    // console.log("Done for pending tx...", subscriptionId2);
 
 
 

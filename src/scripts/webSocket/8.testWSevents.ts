@@ -1,14 +1,15 @@
 
 // Test rpc 0.8 new websocket with Starknet.js.
-// Launch with npx ts-node src/scripts/webSocket/6.testWSnewHeads.ts
+// Launch with npx ts-node src/scripts/webSocket/8.testWSevents.ts
 // Coded with Starknet.js v7.0.0-beta.3
 
 import { json, WebSocketChannel, WSSubscriptions } from "starknet";
 import { formatBalance } from "../utils/formatBalance";
 // import WebSocket from 'ws';
 import { keypress, wait } from "../utils/utils";
-import { SubscriptionNewHeadsResponse } from "@starknet-io/types-js";
+import { SubscriptionNewHeadsResponse, type SubscriptionEventsResponse } from "@starknet-io/types-js";
 import { WebSocket } from "isows";
+import { strkAddress } from "../utils/constants";
 // import * as dotenv from "dotenv";
 // dotenv.config();
 
@@ -24,35 +25,40 @@ async function main() {
     const myWS = new WebSocketChannel({ nodeUrl: wsUrl });
     try {
         await myWS.waitForConnection();
-        console.log("connected0 =", myWS.isConnected());
+        console.log("is WS connected =", myWS.isConnected());
     } catch (error: any) {
         console.log("E1", error.message);
         process.exit(1);
     }
 
-    // subscribe newHeads
-    const newHeadsID = await myWS.subscribeNewHeads();
-    console.log("subscribe newHead response =", newHeadsID);
-    if (!newHeadsID) {
-        throw new Error("newHead subscription failed");
+
+    // subscribe events
+    const txStatusID = await myWS.subscribeEvents(strkAddress);
+    console.log("subscribe Events response =", txStatusID);
+    if (!txStatusID) {
+        throw new Error("Events subscription failed");
     }
-    myWS.onNewHeads = async function (newHead: SubscriptionNewHeadsResponse) {
-        console.log("newHead event =", newHead);
-    };
 
-
+    const subscriptions = myWS.subscriptions;
+    console.log({ subscriptions });
+    console.log("get tx status =", myWS.subscriptions.get(WSSubscriptions.EVENTS));
+    let i: number = 0;
+    myWS.onEvents = function (txS: SubscriptionEventsResponse) {
+        i++;
+        console.log("tx event event", i, "=", txS);
+    }
 
 
     console.log("press a key to stop to wait messages.");
     await keypress();
 
-    console.log("unsubscribe newHead...");
-    const statusUnsubscribeNewHeads = await myWS.unsubscribeNewHeads();
-    console.log({ statusUnsubscribeNewHeads }); // true/false
-    const expectedId = myWS.subscriptions.get(WSSubscriptions.NEW_HEADS);
-    //console.log("wait for newHeads unsubscribed , ID", expectedId, "...");
-    // const subscriptionId = await myWS.waitForUnsubscription(newHeadsID); // to use if unsubscription occurred somewhere else in the code
-    // console.log("Done for new Heads...", subscriptionId);
+    const expectedId2 = myWS.subscriptions.get(WSSubscriptions.EVENTS);
+    console.log("Unsubscribe events", expectedId2, "...");
+    const statusTxStatus = await myWS.unsubscribeEvents();
+    console.log({ statusTxStatus });
+    // const subscriptionId2 = await myWS.waitForUnsubscription(expectedId2); // to use if unsubscription occurred somewhere else in the code
+    // console.log("Done for Events...", subscriptionId2);
+
 
 
     console.log("Disconnect...");

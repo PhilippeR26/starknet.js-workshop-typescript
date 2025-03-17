@@ -1,5 +1,5 @@
 // Get Starknet version of Sepolia  network
-// Launch with npx ts-node src/scripts/Starknet134/Starknet134-Sepolia/1.transferAndGetBlock.ts
+// Launch with npx ts-node src/scripts/Starknet134/Starknet134-Sepolia/1.testRpc8snjs.ts
 // Coded with Starknet.js v7b3
 
 import { RpcProvider, Account, shortString, json, Contract, cairo, logger, config, type RPC08, Provider, type SuccessfulTransactionReceiptResponse, num, hash } from "starknet";
@@ -9,7 +9,6 @@ import { ethAddress, strkAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
 import { account2IntegrationAXaddress, account2IntegrationAXprivateKey, } from "../../../A2priv/A2priv";
 import { account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address, accountETHoz17snip9PrivateKey } from "../../../A1priv/A1priv";
-import type { CASM_COMPILED_CONTRACT_CLASS } from "@starknet-io/types-js/dist/types/api/executable";
 dotenv.config();
 
 
@@ -20,8 +19,8 @@ async function main() {
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
   // local Juno Sepolia Testnet node
-   const myProvider = await RpcProvider.create({ nodeUrl: "http://192.168.1.78:6070/rpc/v0_8" });
-  // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:6070/rpc/v0_8" }); 
+  // const myProvider = await RpcProvider.create({ nodeUrl: "http://192.168.1.78:6070/rpc/v0_8" });
+  const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:6070/rpc/v0_8" });
   // ******** Sepolia Integration **************
   // const myProvider = new RpcProvider({ nodeUrl: "http://localhost:9550/rpc/v0_8" }); // local pathfinder Sepolia Integration node
   // const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.0:6095/rpc/v0_8" }); // local Juno Sepolia Integration node
@@ -29,7 +28,7 @@ async function main() {
 
 
   logger.setLogLevel('INFO');
-  //config.set("legacyMode",true);
+  // config.set("legacyMode",true);
   console.log(
     "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
     ", rpc", await myProvider.getSpecVersion(),
@@ -53,30 +52,30 @@ async function main() {
   const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));
   const ethToken = new Contract(compiledERC20Contract.abi, ethAddress, myProvider);
   const strkToken = new Contract(compiledERC20Contract.abi, strkAddress, myProvider);
-  // console.log("ETH source account balance =", formatBalance(await ethToken.call("balanceOf", [OZaccount0.address]) as bigint, 18), "ETH");
-  // console.log("STRK source account balance =", formatBalance(await strkToken.call("balanceOf", [OZaccount0.address]) as bigint, 18), "STRK");
-  // console.log("ETH dest account balance =", formatBalance(await ethToken.call("balanceOf", [accountDest.address]) as bigint, 18), "ETH");
-  // console.log("STRK dest account balance =", formatBalance(await strkToken.call("balanceOf", [accountDest.address]) as bigint, 18), "STRK");
+  console.log("ETH source account balance =", formatBalance(await ethToken.call("balanceOf", [OZaccount0.address]) as bigint, 18), "ETH");
+  console.log("STRK source account balance =", formatBalance(await strkToken.call("balanceOf", [OZaccount0.address]) as bigint, 18), "STRK");
+  console.log("ETH dest account balance =", formatBalance(await ethToken.call("balanceOf", [accountDest.address]) as bigint, 18), "ETH");
+  console.log("STRK dest account balance =", formatBalance(await strkToken.call("balanceOf", [accountDest.address]) as bigint, 18), "STRK");
 
-  // const myCall0 = ethToken.populate("transfer", {
-  //   recipient: accountDest.address,
-  //   amount: cairo.uint256(1 * 10 ** 11),
-  // });
-  // const myCall1 = strkToken.populate("transfer", {
-  //   recipient: accountDest.address,
-  //   amount: cairo.uint256(1 * 10 ** 12),
-  // });
-  // const res = await OZaccount0.execute(
-  //   [myCall0, myCall1],
-  //  // { version: 1 },
-  // );
-  // const txR = await OZaccount0.waitForTransaction(res.transaction_hash);
-  // console.log((txR as unknown as SuccessfulTransactionReceiptResponse).finality_status);
+  const myCall0 = ethToken.populate("transfer", {
+    recipient: accountDest.address,
+    amount: cairo.uint256(1 * 10 ** 11),
+  });
+  const myCall1 = strkToken.populate("transfer", {
+    recipient: accountDest.address,
+    amount: cairo.uint256(1 * 10 ** 12),
+  });
+  const res = await OZaccount0.execute(
+    [myCall0, myCall1],
+    // { version: 1 },
+  );
+  const txR = await OZaccount0.waitForTransaction(res.transaction_hash);
+  console.log((txR as unknown as SuccessfulTransactionReceiptResponse).finality_status);
 
-  // console.log("ETH source account balance =", formatBalance(await ethToken.call("balanceOf", [OZaccount0.address]) as bigint, 18), "ETH");
-  // console.log("STRK source account balance =", formatBalance(await strkToken.call("balanceOf", [OZaccount0.address]) as bigint, 18), "STRK");
-  // console.log("ETH dest account balance =", formatBalance(await ethToken.call("balanceOf", [accountDest.address]) as bigint, 18), "ETH");
-  // console.log("STRK dest account balance =", formatBalance(await strkToken.call("balanceOf", [accountDest.address]) as bigint, 18), "STRK");
+  console.log("ETH source account balance =", formatBalance(await ethToken.call("balanceOf", [OZaccount0.address]) as bigint, 18), "ETH");
+  console.log("STRK source account balance =", formatBalance(await strkToken.call("balanceOf", [OZaccount0.address]) as bigint, 18), "STRK");
+  console.log("ETH dest account balance =", formatBalance(await ethToken.call("balanceOf", [accountDest.address]) as bigint, 18), "ETH");
+  console.log("STRK dest account balance =", formatBalance(await strkToken.call("balanceOf", [accountDest.address]) as bigint, 18), "STRK");
 
   const block = await myProvider.getBlock();
   const dateC = new Date(block.timestamp * 1000);

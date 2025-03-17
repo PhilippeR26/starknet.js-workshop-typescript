@@ -1,7 +1,7 @@
 
 // Test rpc 0.8 new websocket IP.
 // Launch with npx ts-node src/scripts/webSocket/5.testWSconnect.ts
-// Coded with Starknet.js v7 experimental
+// Coded with Starknet.js v7.0.0-beta.3
 
 import { json, WebSocketChannel, WSSubscriptions } from "starknet";
 import { formatBalance } from "../utils/formatBalance";
@@ -18,9 +18,9 @@ import { WebSocket } from "isows";
 
 async function main() {
     // pathfinder Testnet
-    // const wsUrl = "ws://localhost:9545/rpc/v0_8";
+    const wsUrl = "ws://localhost:9545/rpc/v0_8";
     // juno Testnet
-    const wsUrl = "ws://192.168.1.78:6071/v0_8";
+    // const wsUrl = "ws://localhost:6071/v0_8";
     const myWS = new WebSocketChannel({ nodeUrl: wsUrl });
     try {
         await myWS.waitForConnection();
@@ -50,11 +50,11 @@ async function main() {
     console.log("Connected2 =", myWS.isConnected());
 
 
-     console.log("Disconnect...");
+    console.log("Disconnect...");
     myWS.disconnect();
     const resQuit4 = await myWS.waitForDisconnection();
     console.log({ resQuit4 });
-    console.log("After disconnect. Connected4 =", myWS.isConnected(), resQuit4);
+    console.log("After disconnect. Connected4 =", myWS.isConnected());
 
 
     console.log('✅ Test completed.');

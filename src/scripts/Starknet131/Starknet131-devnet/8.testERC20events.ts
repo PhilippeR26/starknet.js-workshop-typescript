@@ -2,9 +2,10 @@
 // launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/8.testERC20events.ts
 // Coded with Starknet.js v6.8.0 + starknet devnet-rs 0.0.5
 
-import { Contract, Account, json, shortString, RpcProvider, CallData, Call, Calldata, type SuccessfulTransactionReceiptResponse, uint256 } from "starknet";
+import { Contract, Account, json, shortString, RpcProvider, CallData, Call, Calldata, type SuccessfulTransactionReceiptResponse, uint256, type InvokeTransactionReceiptResponse } from "starknet";
 import fs from "fs";
 import axios from "axios";
+import type { INVOKE_TXN_RECEIPT } from "@starknet-io/types-js";
 
 type EVENT = {
     from_address: string;
@@ -106,8 +107,8 @@ async function main() {
             console.log('Unsuccess tx!');
         },
         success: (receipt: SuccessfulTransactionReceiptResponse) => {
-            const transfers: Transfer[] = extractTransfers(receipt.events);
-            console.log("ERC transfers :\n", transfers);
+            //const transfers: Transfer[] = extractTransfers(receipt.events);
+            console.log("ERC transfers :\n", receipt.);
         },
     });
 

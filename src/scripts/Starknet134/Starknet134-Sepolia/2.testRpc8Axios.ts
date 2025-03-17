@@ -43,11 +43,11 @@ async function main() {
   // const url = "https://starknet-mainnet.public.blastapi.io/rpc/v0_8";
 
   // == pathfinder Testnet
-  // const url = "http://192.168.1.78:9545/rpc/v0_8";
+  // const url = "http://192.168.1.11:9545/rpc/v0_8";
   // const url = "http://localhost:9545/rpc/v0_8";
   // == juno Testnet
-  const url = "http://192.168.1.78:6070/v0_8";
-  // const url = "http://localhost:6070/v0_8"; 
+  // const url = "http://192.168.1.11:6070/v0_8";
+   const url = "http://localhost:6070/v0_8"; 
 
   // **** Sepolia integration
   // == Pathfinder Sepolia Integration

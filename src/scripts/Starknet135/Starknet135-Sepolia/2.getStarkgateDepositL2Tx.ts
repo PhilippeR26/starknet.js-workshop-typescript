@@ -53,13 +53,15 @@ async function main() {
       constants.StarknetChainId["SN_SEPOLIA"],
       l1Nonce
     );
-    const l1Contract = num.toHex64(l2Call[0]);
-    const l1Recipient = num.toHex64(l2Call[1]);
+    const l1Token = num.toHex64(l2Call[0]);
+    const l1Depositor = num.toHex64(l2Call[1]);
     const l2To = num.toHex64(l2Call[2]);
     const amount = uint256.uint256ToBN({ low: l2Call[3], high: l2Call[4] })
     console.log("Starkgate deposit in", l1Network, ":");
     console.log("From L1 transaction hash:", depositL1txHash);
-    console.log("Corresponding L2 transaction:", result);
+    console.log("Corresponding L2 transaction hash:", result);
+    console.log("L1 account depositor:", l1Depositor);
+    console.log("L1 token address:", l1Token);
     console.log("L2 recipient account:", l2To);
     console.log("Qty:", amount);
   }

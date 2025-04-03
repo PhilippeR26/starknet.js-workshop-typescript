@@ -1,0 +1,470 @@
+[
+    {
+      "type": "impl",
+      "name": "Reclaimimpl",
+      "interface_name": "reclaim::reclaim::IReclaim"
+    },
+    {
+      "type": "struct",
+      "name": "core::integer::u256",
+      "members": [
+        {
+          "name": "low",
+          "type": "core::integer::u128"
+        },
+        {
+          "name": "high",
+          "type": "core::integer::u128"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "reclaim::reclaim::Epoch",
+      "members": [
+        {
+          "name": "epoch_number",
+          "type": "core::integer::u8"
+        },
+        {
+          "name": "timestamp_start",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "timestamp_end",
+          "type": "core::integer::u64"
+        },
+        {
+          "name": "minimum_witnesses_for_claim_creation",
+          "type": "core::integer::u32"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::byte_array::ByteArray",
+      "members": [
+        {
+          "name": "data",
+          "type": "core::array::Array::<core::bytes_31::bytes31>"
+        },
+        {
+          "name": "pending_word",
+          "type": "core::felt252"
+        },
+        {
+          "name": "pending_word_len",
+          "type": "core::integer::u32"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "reclaim::reclaim::ClaimInfo",
+      "members": [
+        {
+          "name": "provider",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "parameters",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "context",
+          "type": "core::byte_array::ByteArray"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "reclaim::reclaim::CompleteClaimData",
+      "members": [
+        {
+          "name": "identifier",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "byte_identifier",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "owner",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "epoch",
+          "type": "core::byte_array::ByteArray"
+        },
+        {
+          "name": "timestamp_s",
+          "type": "core::byte_array::ByteArray"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "reclaim::reclaim::ReclaimSignature",
+      "members": [
+        {
+          "name": "r",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "s",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "v",
+          "type": "core::integer::u32"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "reclaim::reclaim::SignedClaim",
+      "members": [
+        {
+          "name": "claim",
+          "type": "reclaim::reclaim::CompleteClaimData"
+        },
+        {
+          "name": "signatures",
+          "type": "core::array::Array::<reclaim::reclaim::ReclaimSignature>"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "reclaim::reclaim::Proof",
+      "members": [
+        {
+          "name": "claim_info",
+          "type": "reclaim::reclaim::ClaimInfo"
+        },
+        {
+          "name": "signed_claim",
+          "type": "reclaim::reclaim::SignedClaim"
+        }
+      ]
+    },
+    {
+      "type": "enum",
+      "name": "core::bool",
+      "variants": [
+        {
+          "name": "False",
+          "type": "()"
+        },
+        {
+          "name": "True",
+          "type": "()"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::starknet::secp256_trait::Signature",
+      "members": [
+        {
+          "name": "r",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "s",
+          "type": "core::integer::u256"
+        },
+        {
+          "name": "y_parity",
+          "type": "core::bool"
+        }
+      ]
+    },
+    {
+      "type": "struct",
+      "name": "core::starknet::eth_address::EthAddress",
+      "members": [
+        {
+          "name": "address",
+          "type": "core::felt252"
+        }
+      ]
+    },
+    {
+      "type": "interface",
+      "name": "reclaim::reclaim::IReclaim",
+      "items": [
+        {
+          "type": "function",
+          "name": "add_new_epoch",
+          "inputs": [
+            {
+              "name": "witnesses",
+              "type": "core::array::Array::<core::integer::u256>"
+            },
+            {
+              "name": "requisite_witnesses_for_claim_create",
+              "type": "core::integer::u32"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "get_epoch",
+          "inputs": [
+            {
+              "name": "epoch_index",
+              "type": "core::felt252"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "reclaim::reclaim::Epoch"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "verify_proof",
+          "inputs": [
+            {
+              "name": "proof",
+              "type": "reclaim::reclaim::Proof"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "create_claim_info",
+          "inputs": [
+            {
+              "name": "provider",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "parameters",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "context",
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "reclaim::reclaim::ClaimInfo"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "create_claim_data",
+          "inputs": [
+            {
+              "name": "identifier",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "byte_identifier",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "owner",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "epoch",
+              "type": "core::byte_array::ByteArray"
+            },
+            {
+              "name": "timestamp_s",
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "reclaim::reclaim::CompleteClaimData"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "create_signed_claim",
+          "inputs": [
+            {
+              "name": "claim",
+              "type": "reclaim::reclaim::CompleteClaimData"
+            },
+            {
+              "name": "signatures",
+              "type": "core::array::Array::<reclaim::reclaim::ReclaimSignature>"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "reclaim::reclaim::SignedClaim"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "create_claim_info_data",
+          "inputs": [
+            {
+              "name": "claim_info",
+              "type": "reclaim::reclaim::ClaimInfo"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::byte_array::ByteArray"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "create_reclaim_signature",
+          "inputs": [
+            {
+              "name": "r",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "s",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "v",
+              "type": "core::integer::u32"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "reclaim::reclaim::ReclaimSignature"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "process_identifier",
+          "inputs": [
+            {
+              "name": "input",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::integer::u256"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "get_current_witnesses",
+          "inputs": [],
+          "outputs": [
+            {
+              "type": "core::array::Array::<core::integer::u256>"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "u256_to_array_u32",
+          "inputs": [
+            {
+              "name": "value",
+              "type": "core::integer::u256"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::array::Array::<core::integer::u32>"
+            }
+          ],
+          "state_mutability": "external"
+        },
+        {
+          "type": "function",
+          "name": "get_signature",
+          "inputs": [
+            {
+              "name": "r",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "s",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "v",
+              "type": "core::integer::u32"
+            }
+          ],
+          "outputs": [
+            {
+              "type": "core::starknet::secp256_trait::Signature"
+            }
+          ],
+          "state_mutability": "view"
+        },
+        {
+          "type": "function",
+          "name": "verify_eth_signature",
+          "inputs": [
+            {
+              "name": "eth_address",
+              "type": "core::starknet::eth_address::EthAddress"
+            },
+            {
+              "name": "msg_hash",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "r",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "s",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "v",
+              "type": "core::integer::u32"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "view"
+        }
+      ]
+    },
+    {
+      "type": "constructor",
+      "name": "constructor",
+      "inputs": [
+        {
+          "name": "owner_address",
+          "type": "core::starknet::contract_address::ContractAddress"
+        }
+      ]
+    },
+    {
+      "type": "event",
+      "name": "reclaim::reclaim::ReclaimContract::Event",
+      "kind": "enum",
+      "variants": []
+    }
+  ]

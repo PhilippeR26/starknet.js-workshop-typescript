@@ -17,7 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "@ethersproject/hdnode": "^5.7.0",
-    "@ledgerhq/hw-app-starknet": "2.4.0",
+    "@ledgerhq/hw-app-starknet": "2.5.0",
     "@ledgerhq/hw-transport": "^6.31.4",
     "@ledgerhq/hw-transport-node-hid": "^6.29.5",
     "@ledgerhq/hw-transport-node-speculos": "^6.29.4",
@@ -43,7 +43,7 @@
     "prompt-sync": "^4.2.0",
     "rpc-websockets": "^9.0.4",
     "rsv-signature": "^1.1.0",
-    "starknet": "7.0.0-beta.3",
+    "starknet": "7.0.1",
     "starknet-devnet": "^0.2.2",
     "starknet-merkle-tree": "1.0.5",
     "vm2": "^3.9.19",

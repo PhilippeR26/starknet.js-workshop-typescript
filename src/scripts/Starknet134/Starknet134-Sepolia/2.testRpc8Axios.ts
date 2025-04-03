@@ -136,7 +136,7 @@ async function main() {
     params: {
       block_id,
       class_hashes: [],
-      contract_addresses: ["0x33ba2f0e6fb9a4a63a701728bacd7c86fd7750889c7f454711fa5d2766ce34c"],
+      contract_address: ["0x33ba2f0e6fb9a4a63a701728bacd7c86fd7750889c7f454711fa5d2766ce34c"],
       contracts_storage_keys: []
     }
   }, {

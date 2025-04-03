@@ -57,20 +57,20 @@ async function main() {
   console.log("ETH dest account balance =", formatBalance(await ethToken.call("balanceOf", [accountDest.address]) as bigint, 18), "ETH");
   console.log("STRK dest account balance =", formatBalance(await strkToken.call("balanceOf", [accountDest.address]) as bigint, 18), "STRK");
 
-  const myCall0 = ethToken.populate("transfer", {
-    recipient: accountDest.address,
-    amount: cairo.uint256(1 * 10 ** 11),
-  });
-  const myCall1 = strkToken.populate("transfer", {
-    recipient: accountDest.address,
-    amount: cairo.uint256(1 * 10 ** 12),
-  });
-  const res = await OZaccount0.execute(
-    [myCall0, myCall1],
-    // { version: 1 },
-  );
-  const txR = await OZaccount0.waitForTransaction(res.transaction_hash);
-  console.log((txR as unknown as SuccessfulTransactionReceiptResponse).finality_status);
+  // const myCall0 = ethToken.populate("transfer", {
+  //   recipient: accountDest.address,
+  //   amount: cairo.uint256(1 * 10 ** 11),
+  // });
+  // const myCall1 = strkToken.populate("transfer", {
+  //   recipient: accountDest.address,
+  //   amount: cairo.uint256(1 * 10 ** 12),
+  // });
+  // const res = await OZaccount0.execute(
+  //   [myCall0, myCall1],
+  //   // { version: 1 },
+  // );
+  // const txR = await OZaccount0.waitForTransaction(res.transaction_hash);
+  // console.log((txR as unknown as SuccessfulTransactionReceiptResponse).finality_status);
 
   console.log("ETH source account balance =", formatBalance(await ethToken.call("balanceOf", [OZaccount0.address]) as bigint, 18), "ETH");
   console.log("STRK source account balance =", formatBalance(await strkToken.call("balanceOf", [OZaccount0.address]) as bigint, 18), "STRK");

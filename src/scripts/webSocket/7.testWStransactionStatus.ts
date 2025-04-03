@@ -20,7 +20,7 @@ async function main() {
     // pathfinder Testnet
     const wsUrl = "ws://localhost:9545/rpc/v0_8";
     // juno Testnet
-    // const wsUrl = "ws://localhost:6071/v0_8";
+    //const wsUrl = "ws://localhost:6071/ws/rpc/v0_8";
     const myWS = new WebSocketChannel({ nodeUrl: wsUrl });
     try {
         await myWS.waitForConnection();
@@ -32,39 +32,67 @@ async function main() {
 
 
     // subscribe transaction status
-    const txStatusID = await myWS.subscribeTransactionStatus("0x7f0dce88163f6565139d677f86ded8c396b449ed098272c6b06c5d2bddeae43");
-    console.log("subscribe TransactionStatus response =", txStatusID);
-    if (!txStatusID) {
-        throw new Error("TransactionStatus subscription failed");
-    }
-    // const txStatusID2 = await myWS.subscribeTransactionStatus("0xbff99a5621021b7954025192121b30efc4ea21a479931c088e905da37306f3");
-    // console.log("subscribe TransactionStatus2 response =", txStatusID2);
-    // if (!txStatusID2) {
-    //     throw new Error("TransactionStatus2 subscription failed");
-    // }
-
+    const tx1="0x7f0dce88163f6565139d677f86ded8c396b449ed098272c6b06c5d2bddeae43";
+    const tx1SubscriptionID = await myWS.subscribeTransactionStatus(tx1);
+    console.log("***subscribe TransactionStatus1 response =", tx1SubscriptionID);
+    await wait(2000);
+    
+    const tx2= "0x673d61f5a7d94ab378af127e53eec82603be9c00de7201558abbcde12ee3118";
+    const tx2SubscriptionID = await myWS.subscribeTransactionStatus(tx2);
+    console.log("***subscribe TransactionStatus2 response =", tx2SubscriptionID);
+    await wait(2000);
+    
+    const tx3SubscriptionID = await myWS.subscribeTransactionStatus("0x260b26e71896d78641fbcdcb84d1fb496481af395805f5f1777245c7602039f");
+    console.log("***subscribe TransactionStatus3 response =", tx3SubscriptionID);
+    await wait(2000);
+    
 
     const subscriptions = myWS.subscriptions;
     console.log({ subscriptions });
-    console.log("get tx status =", myWS.subscriptions.get(WSSubscriptions.TRANSACTION_STATUS));
 
-    let i: number = 0;
-    myWS.onTransactionStatus= function (txS:SubscriptionTransactionsStatusResponse) {
-        i++
-        console.log("tx status event",i,"=", txS);
+    let counterTx1: number = 0;
+    let counterTx2: number = 0;
+    let counterTx3: number = 0;
+    myWS.onTransactionStatus = (txS: SubscriptionTransactionsStatusResponse)=> {
+        console.log("***: txIDs",tx1SubscriptionID??"Nop",tx2SubscriptionID??"Nop",tx3SubscriptionID??"Nop");
+        console.log("***: txIDs",txS);
+        if (txS.subscription_id == tx1SubscriptionID) {
+            counterTx1++;
+            console.log("*****tx status1 #", counterTx1, "=", txS);
+        }
+        if (txS.subscription_id == tx2SubscriptionID) {
+            counterTx2++;
+            console.log("*****tx status 2 #", counterTx2, "=", txS);
+        }
+        if (txS.subscription_id == tx3SubscriptionID) {
+            counterTx3++;
+            console.log("*****tx status 3 #", counterTx3, "=", txS);
+        }
     }
-
 
 
     console.log("press a key to stop to wait messages.");
     await keypress();
+// await wait(2000);
+    // console.log("Unsubscribe transactionStatus 2 ...");
+    // const statusTxStatus2 = await myWS.unsubscribe(tx1SubscriptionID);
+    // console.log({ statusTxStatus2 });
+    // const subscriptions2 = myWS.subscriptions;
+    // console.log({ subscriptions2 });
+    // const statusTxStatus2b = await myWS.unsubscribe(tx2SubscriptionID);
+    // console.log({ statusTxStatus2b });
+    // const subscriptions2b = myWS.subscriptions;
+    // console.log({ subscriptions2b });
 
-    const expectedId2 = myWS.subscriptions.get(WSSubscriptions.TRANSACTION_STATUS);
-    console.log("Unsubscribe transactionStatus", expectedId2, "...");
-    const statusTxStatus = await myWS.unsubscribeTransactionStatus();
-    console.log({ statusTxStatus });
-    // const subscriptionId2 = await myWS.waitForUnsubscription(expectedId2); // to use if unsubscription occurred somewhere else in the code
-    // console.log("Done for transactionStatus...", subscriptionId2);
+    console.log("unsubscribe all ()...");
+    const statusTxStatus3 = await myWS.unsubscribeTransactionStatus();
+    console.log({ statusTxStatus3 });
+
+    const subscriptions3 = myWS.subscriptions;
+    console.log({ subscriptions3 });
+
+    // const st=await myWS.unsubscribe(tx2SubscriptionID);
+    // console.log({st});
 
 
 
@@ -78,11 +106,10 @@ async function main() {
     console.log('✅ Test completed.');
 
 }
+
 main()
     .then(() => process.exit(0))
     .catch((error) => {
         console.error(error);
         process.exit(1);
     });
-
-

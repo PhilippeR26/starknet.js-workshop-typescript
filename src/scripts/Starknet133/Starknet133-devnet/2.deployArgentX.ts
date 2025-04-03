@@ -1,8 +1,8 @@
 // Mint token in an ArgentX account in a devnet-rs (forked from mainnet)
 // Launch with npx ts-node src/scripts/Starknet133/Starknet133-devnet/2.deployArgentX.ts
-// Coded with Starknet.js v6.14.1 & devnet-rs v0.2.0 & starknet-devnet.js v0.2.0
+// Coded with Starknet.js v7.0.0-beta.4 & devnet-rs v0.2.4 & starknet-devnet.js v0.2.2
 
-import { RpcProvider, Account, shortString } from "starknet";
+import { RpcProvider, Account, shortString, constants } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
 import * as dotenv from "dotenv";
 import { deployAccountArgentX4 } from "../../Starknet131/Starknet131-devnet/12.deployArgentX4";
@@ -13,7 +13,8 @@ dotenv.config();
 //          👆👆👆
 
 async function main() {
-  const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
+  // const myProvider:RpcProvider =await RpcProvider.create({ nodeUrl: "http://127.0.0.1:5050/rpc"  });
+  const myProvider: RpcProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: "0.7" });
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   // **** local Sepolia Testnet node
   //const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); 
@@ -47,7 +48,7 @@ async function main() {
   console.log("Accounts connected.\n");
 
   // minting account
-  const accountAX=await deployAccountArgentX4(myProvider,account0);
+  const accountAX = await deployAccountArgentX4(myProvider, account0);
 
   console.log("✅ Test performed.");
 }

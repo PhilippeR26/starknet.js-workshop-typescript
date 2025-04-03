@@ -1,8 +1,8 @@
-// Deploy a Braavos 1.1.0 account in devnet.
-// Coded with Starknet.js v6.23.1 
+// Test deploy Braavos account v1.1.0 with a transaction v3
+// Coded with Starknet.js v7.0.1 & devnet-rs v0.3.0 (rpc0.8) & starknet-devnet.js v0.2.2
 
 import { RpcProvider, Account, ec, json, stark, CallData,  hash, type BigNumberish } from "starknet";
-import { deployBraavosAccount } from "../../braavos/3d.deployBraavos110v3";
+import { deployBraavosAccount } from "../../braavos/3e.deployBraavos110v3rpc08";
 import { DevnetProvider } from "starknet-devnet";
 import fs from "fs";
 import * as dotenv from "dotenv";
@@ -82,8 +82,8 @@ export async function deployAccountBraavos(
 
   const respDeploy = await deployBraavosAccount(privateKeyBraavosBase, myProvider, myMaxFee, version);
   const txR = await myProvider.waitForTransaction(respDeploy.transaction_hash);
-  //console.log("Transaction receipt success =", txR.isSuccess());
-  const accountBraavos = new Account(myProvider, accountBraavosAddress, privateKeyBraavosBase);
+  console.log("Transaction receipt is success =", txR.isSuccess());
+   const accountBraavos = new Account(myProvider, accountBraavosAddress, privateKeyBraavosBase);
   console.log("Braavos account created.\nFinal address =", accountBraavosAddress);
   console.log('✅ Braavos 1.1.0 account deployed.');
 

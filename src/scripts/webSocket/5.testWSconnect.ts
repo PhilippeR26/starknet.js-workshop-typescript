@@ -18,9 +18,9 @@ import { WebSocket } from "isows";
 
 async function main() {
     // pathfinder Testnet
-    const wsUrl = "ws://localhost:9545/rpc/v0_8";
+    //const wsUrl = "ws://localhost:9545/rpc/v0_8";
     // juno Testnet
-    // const wsUrl = "ws://localhost:6071/v0_8";
+     const wsUrl = "ws://localhost:6071/ws/rpc/v0_8";
     const myWS = new WebSocketChannel({ nodeUrl: wsUrl });
     try {
         await myWS.waitForConnection();

@@ -18,19 +18,23 @@ import { WebSocket } from "isows";
 
 async function main() {
     // pathfinder Testnet
-    const wsUrl = "ws://localhost:9545/rpc/v0_8";
+     const wsUrl = "ws://localhost:9545/rpc/v0_8";
+    // const wsUrl = "wss://starknet-mainnet.public.blastapi.io/rpc/v0_8";
     // juno Testnet
-    // const wsUrl = "ws://localhost:6071/v0_8";
+    // const wsUrl = "ws://localhost:6071/ws/rpc/v0_8";
+    // const wsUrl = "wss://free-rpc.nethermind.io/sepolia-juno/rpc/v0_8";
+
     const myWS = new WebSocketChannel({ nodeUrl: wsUrl });
     try {
-        await myWS.waitForConnection();
+        const conn=await myWS.waitForConnection();
         console.log("connected0 =", myWS.isConnected());
     } catch (error: any) {
-        console.log("E1", error.message);
+        console.log("Err1", error.message);
         process.exit(1);
     }
 
     // subscribe newHeads
+    console.log("subscribe newHeads...");
     const newHeadsID = await myWS.subscribeNewHeads();
     console.log("subscribe newHead response =", newHeadsID);
     if (!newHeadsID) {

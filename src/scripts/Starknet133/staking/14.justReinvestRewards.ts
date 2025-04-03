@@ -1,8 +1,8 @@
 // Reinvest the unclaimed rewards
 // launch with npx ts-node src/scripts/Starknet133/staking/14.justReinvestRewards.ts
-// Coded with Starknet.js v6.20.3
+// Coded with Starknet.js v7.0.0-beta.3
 
-import { BigNumberish, shortString, RpcProvider, Account, json, hash, Contract, CairoOption, constants } from "starknet";
+import { BigNumberish, shortString, RpcProvider, Account, json, hash, Contract, CairoOption, constants, config } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { account1TestBraavosSepoliaAddress, account1TestBraavosSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
@@ -15,10 +15,15 @@ dotenv.config();
 
 
 async function main() {
+  config.set("legacyMode", true);
   //   const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only starknet-devnet-rs
   // const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   // ****  Sepolia Testnet 
-  const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_7" });
+  const myProvider = await RpcProvider.create({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_7" });
+  // **** Mainnet
+  // const myProvider = await RpcProvider.create({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_7" });
+  // const myProvider = await RpcProvider.create({ nodeUrl: "https://starknet-mainnet.public.blastapi.io/rpc/v0_7" });
+
   // const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_7" });
   // const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); // local pathfinder testnet node
   // const provider = new RpcProvider({ nodeUrl: junoNMtestnet }); // local pathfinder testnet node

@@ -1,7 +1,7 @@
 // test Lava urls
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/4.testLava.ts
 // Coded with Starknet.js v7.0.1 & Devnet 0.3.0
-import { RpcProvider, Account, shortString, json, Contract, cairo, logger, config, type RPC08, Provider, type SuccessfulTransactionReceiptResponse, num, hash, type constants } from "starknet";
+import { RpcProvider, Account, constants, shortString, json, Contract, cairo, logger, config, type RPC08, Provider, type SuccessfulTransactionReceiptResponse, num, hash } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { ethAddress, strkAddress } from "../../utils/constants";
@@ -26,8 +26,6 @@ async function main() {
   // const myProvider = new RpcProvider({ nodeUrl: "http://localhost:9550/rpc/v0_8" }); // local pathfinder Sepolia Integration node
   // const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.0:6095/rpc/v0_8" }); // local Juno Sepolia Integration node
   //const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9550/rpc/v0_8" }); // local pathfinder Sepolia Integration node
-
-
   logger.setLogLevel('INFO');
   config.set("legacyMode", true);
   console.log(
@@ -57,7 +55,7 @@ async function main() {
     "https://rpc.starknet.lava.build/rpc/v0_7",
     "https://rpc.starknet.lava.build/rpc/v0_8",
   ];
-  
+
   let collect: string[][] = [];
   collect = nodeUrls.map((val: string) => [val]);
   for (let i = 0; i < 10; i++) {

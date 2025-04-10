@@ -1,5 +1,5 @@
 // Get Starknet V3 tx from rpc 0.7 & 0.8.
-// Launch with npx ts-node src/scripts/Starknet134/Starknet134-Sepolia/4.createATx.ts
+// Launch with npx ts-node src/scripts/Starknet134/Starknet134-Sepolia/5.createATx.ts
 // Coded with Starknet.js v7.0.1
 
 import { RpcProvider, Account, shortString, json, Contract, cairo, logger, config, type RPC08, Provider, type SuccessfulTransactionReceiptResponse, num, hash } from "starknet";
@@ -10,7 +10,7 @@ import { formatBalance } from "../../utils/formatBalance";
 import { account2IntegrationAXaddress, account2IntegrationAXprivateKey, } from "../../../A2priv/A2priv";
 import { account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address, accountETHoz17snip9PrivateKey } from "../../../A1priv/A1priv";
 import type { CASM_COMPILED_CONTRACT_CLASS } from "@starknet-io/types-js/dist/types/api/executable";
-import { Signer } from "./5.debugSigner";
+import { Signer } from "./6.debugSigner";
 dotenv.config();
 
 
@@ -47,8 +47,8 @@ async function main() {
   // const account7Address = "0x016fc169fb9b6c3f2b128d42903e50e7c7abb24a01340ee19c8c36a35a1770e1";
   // const account8Address="0x0745d525a3582e91299d8d7c71730ffc4b1f191f5b219d800334bc0edad0983b";
   const account7Address = account3ArgentXSepoliaAddress;
-  const account8Address=account3ArgentXSepoliaAddress;
-  const destAccount=account2TestBraavosSepoliaAddress;
+  const account8Address = account3ArgentXSepoliaAddress;
+  const destAccount = account2TestBraavosSepoliaAddress;
 
   const mySigner = new Signer(account3ArgentXSepoliaPrivateKey);
   const account7 = new Account(

@@ -38,25 +38,25 @@ async function main() {
   const l1Receipt = await l1Provider.getTransactionReceipt(depositL1txHash);
   if (l1Receipt) {
     const { data, topics } = validateLogs(l1Receipt.logs);
-    const [l2Call, l1Nonce] = ethers.AbiCoder.defaultAbiCoder().decode(
+    const [l2Calldata, l1Nonce] = ethers.AbiCoder.defaultAbiCoder().decode(
       ['uint256[]', 'uint256', 'uint256'],
       ethers.dataSlice(data)
     );
     const l1FromAddress = topics[1];
     const l2ToAddress = topics[2];
     const l2Selector = topics[3];
-    const result = hash.calculateL2MessageTxHash(
+    const result = num.toHex64(hash.calculateL2MessageTxHash(
       l1FromAddress,
       l2ToAddress,
       l2Selector,
-      l2Call,
+      l2Calldata,
       constants.StarknetChainId["SN_SEPOLIA"],
       l1Nonce
-    );
-    const l1Token = num.toHex64(l2Call[0]);
-    const l1Depositor = num.toHex64(l2Call[1]);
-    const l2To = num.toHex64(l2Call[2]);
-    const amount = uint256.uint256ToBN({ low: l2Call[3], high: l2Call[4] })
+    ));
+    const l1Token = num.toHex(l2Calldata[0]);
+    const l1Depositor = num.toHex(l2Calldata[1]);
+    const l2To = num.toHex64(l2Calldata[2]);
+    const amount = uint256.uint256ToBN({ low: l2Calldata[3], high: l2Calldata[4] })
     console.log("Starkgate deposit in", l1Network, ":");
     console.log("From L1 transaction hash:", depositL1txHash);
     console.log("Corresponding L2 transaction hash:", result);

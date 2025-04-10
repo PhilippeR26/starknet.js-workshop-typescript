@@ -25,7 +25,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/webSocket/7.testWStransactionStatus.ts",
+            "program": "${workspaceFolder}/src/scripts/Starknet135/Starknet135-Sepolia/4.testLava.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

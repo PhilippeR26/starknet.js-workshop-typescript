@@ -1,8 +1,8 @@
 // Deploy an account : OpenZeppelin v0.17.0, upgradable & compatible SNIP-9.
 // Launch with npx ts-node src/scripts/Starknet132/Starknet132-devnet/2.accountOZ17snip-9.ts
-// Coded with Starknet.js v6.14.1 & devnet-rs v0.2.0 & starknet-devnet.js v0.2.0
+// Coded with Starknet.js v7.0.1 & devnet v0.3.0 & starknet-devnet.js v0.2.2
 
-import { RpcProvider, Account, shortString, hash, CallData, json, stark, ec, OutsideExecutionVersion, type OutsideExecutionOptions, cairo, type OutsideTransaction, Contract } from "starknet";
+import { RpcProvider, Account, shortString, hash, CallData, json, stark, ec, OutsideExecutionVersion, type OutsideExecutionOptions, cairo, type OutsideTransaction, Contract, config } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
 import fs from "fs";
 import * as dotenv from "dotenv";
@@ -16,15 +16,15 @@ async function balances(accounts: Account[], provider: RpcProvider) {
   const ethContract = new Contract(compiledERC20Contract.abi, ethAddress, provider);
   console.log("devnet account0   =", formatBalance(await ethContract.call("balanceOf", [accounts[0].address]) as bigint, 18));
   console.log("devnet account1   =", formatBalance(await ethContract.call("balanceOf", [accounts[1].address]) as bigint, 18));
-  console.log("devnet accountOZ17=", formatBalance(await ethContract.call("balanceOf", [accounts[2].address]) as bigint, 18),"\n");
+  console.log("devnet accountOZ17=", formatBalance(await ethContract.call("balanceOf", [accounts[2].address]) as bigint, 18), "\n");
 }
 
 //          👇👇👇
-// 🚨🚨🚨 launch 'cargo run --release -- --seed 0  --state-archive-capacity full --lite-mode' in devnet-rs directory before using this script.
+// 🚨🚨🚨 launch 'cargo run --release -- --seed 0  --state-archive-capacity full --lite-mode' in devnet directory before using this script.
 //          👆👆👆
 
 async function main() {
-  const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
+  const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: "0.8" });
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   // **** local Sepolia Testnet node
   //const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); 
@@ -38,11 +38,16 @@ async function main() {
     console.log("No l2 devnet.");
     process.exit();
   }
-  console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
+  console.log(
+    "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+    ", rpc", await myProvider.getSpecVersion(),
+    ", SN version =", (await myProvider.getBlock()).starknet_version,
+  );
   console.log("Provider connected to Starknet");
 
-  const accData = await l2DevnetProvider.getPredeployedAccounts();
+  config.set('legacyMode', true);
   // *** initialize existing predeployed account 0 of Devnet
+  const accData = await l2DevnetProvider.getPredeployedAccounts();
   const accountAddress0 = accData[0].address;
   const privateKey0 = accData[0].private_key;
   // **** Sepolia
@@ -63,23 +68,27 @@ async function main() {
   const ch = hash.computeContractClassHash(accountSierra);
   console.log("Class Hash of contract =", ch);
 
-  // Calculate future address of the  account
-  const privateKey = stark.randomAddress();
-  console.log('account Private Key =', privateKey);
-  const starkKeyPub = ec.starkCurve.getStarkKey(privateKey);
-  console.log('account Public Key  =', starkKeyPub);
-
   // declare
+  console.log("Declare account if necessary...");
   const respDecl = await account0.declareIfNot({ contract: accountSierra, casm: accountCasm });
   // const contractClassHash = "0x540d7f5ec7ecf317e68d48564934cb99259781b1ee3cedbbc37ec5337f8e688";
   const contractClassHash = respDecl.class_hash;
   if (respDecl.transaction_hash) {
     await myProvider.waitForTransaction(respDecl.transaction_hash);
-    console.log("OZ17_SNIP-9 account class declared")
+    console.log("OZ17_SNIP-9 account class declared!")
   }
 
-  const calldata = new CallData(accountSierra.abi);
-  const constructorCallData = calldata.compile("constructor", {
+  console.log("Deploy account...");
+  // Calculate future address of the  account
+  // const privateKey = stark.randomAddress();
+  const privateKey = "0x5700124b8a0060d98de04ea56f4b09308426eeffdbc675d91158f03ec6083e7";
+  console.log('account Private Key =', privateKey);
+  const starkKeyPub = ec.starkCurve.getStarkKey(privateKey);
+  console.log('account Public Key  =', starkKeyPub);
+
+
+  const accountCallData = new CallData(accountSierra.abi);
+  const constructorCallData = accountCallData.compile("constructor", {
     public_key: starkKeyPub,
   });
   console.log("constructor =", constructorCallData);
@@ -122,11 +131,11 @@ async function main() {
       amount: cairo.uint256(1n * 10n ** 15n),
     },
   };
-  await balances([account0, account1, accountOZ17],myProvider);
+  await balances([account0, account1, accountOZ17], myProvider);
   const outsideTransaction1: OutsideTransaction = await accountOZ17.getOutsideTransaction(callOptions, call1);
   const res0 = await account0.executeFromOutside(outsideTransaction1);
   await myProvider.waitForTransaction(res0.transaction_hash);
-  await balances([account0, account1, accountOZ17],myProvider);
+  await balances([account0, account1, accountOZ17], myProvider);
 
   console.log("✅ Test performed.");
 }

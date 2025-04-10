@@ -1,30 +1,35 @@
 // Declare a contract.
 // launch with npx ts-node src/scripts/9.declareContract.ts
-// Coded with Starknet.js v6.23.0
+// Coded with Starknet.js v7.0.1 & Devnet 0.3.0
 
-import { Account, json, RpcProvider, shortString } from "starknet";
+import { Account, config, json, RpcProvider, shortString, stark, type EstimateFee, type FeeEstimate, type ResourceBoundsOverhead, type SuccessfulTransactionReceiptResponse } from "starknet";
 import { Devnet } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
 import cp from "child_process";
 import events from "events";
+import kill from "cross-port-killer";
 
 async function main() {
-    // launch devnet-rs with a new console window
+    // launch devnet with a new console window
     const outputStream = fs.createWriteStream("./src/scripts/devnet-out.txt");
     await events.once(outputStream, "open");
     // the following line is working in Linux. To adapt or remove for other OS
     cp.spawn("gnome-terminal", ["--", "bash", "-c", "pwd; tail -f ./src/scripts/devnet-out.txt; read"]);
     const devnet = await Devnet.spawnVersion(DEVNET_VERSION, {
         stdout: outputStream,
-        stderr:  outputStream,
+        stderr: outputStream,
         keepAlive: true,
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
-    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
-    console.log("devnet-rs : url =", devnet.provider.url);
-    console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-    console.log("Provider connected to Starknet-devnet-rs");
+    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url, specVersion: "0.8" });
+    console.log("devnet url =", devnet.provider.url);
+    console.log(
+        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()), 
+        ", rpc", await myProvider.getSpecVersion(),
+        ", SN version =", (await myProvider.getBlock()).starknet_version,
+    );
+    console.log("Provider connected to Starknet-devnet");
 
     // initialize existing pre-deployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
@@ -32,18 +37,45 @@ async function main() {
     console.log("Account 0 connected.\n");
 
     // Declare Test contract in devnet
-     const testSierra = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.sierra.json").toString("ascii"));
+    const testSierra = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.sierra.json").toString("ascii"));
     const testCasm = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.casm.json").toString("ascii"));
-    const { suggestedMaxFee: fee1 } = await account0.estimateDeclareFee({ contract: testSierra, casm: testCasm });
-    console.log("suggestedMaxFee =", fee1.toString(), "wei");
-    const declareResponse = await account0.declare({ contract: testSierra, casm: testCasm }, { maxFee: fee1 * 11n / 10n });
+    const fees: EstimateFee = await account0.estimateDeclareFee({ contract: testSierra, casm: testCasm });
+    console.log("fees :", fees);
+    // If fees are not sufficient, you can increase them for all next transactions (values are additional percentage):
+    config.set('feeMarginPercentage', {
+        bounds: {
+            l1_gas: {
+                max_amount: 75,
+                max_price_per_unit: 60,
+            },
+            l2_gas: {
+                max_amount: 62,
+                max_price_per_unit: 64,
+            },
+            l1_data_gas: {
+                max_amount: 65,
+                max_price_per_unit: 70,
+            },
+        },
+        maxFee: 72,
+    });
+
+    const declareResponse = await account0.declareIfNot({ contract: testSierra, casm: testCasm });
 
     console.log('Test Contract Class Hash =', declareResponse.class_hash);
-    await myProvider.waitForTransaction(declareResponse.transaction_hash);
-    console.log('✅ Test completed.');
-    // outputStream.end();
+    if (declareResponse.transaction_hash) {
+        const txR = await myProvider.waitForTransaction(declareResponse.transaction_hash);
+        console.log(txR.value);
+        txR.match({
+            success: (txR: SuccessfulTransactionReceiptResponse) => { console.log("Fees paid =", txR.actual_fee) },
+            _: () => { }
+        });
+    }
+    console.log("✅ Test completed.\n", declareResponse);
 
-    // devnet-rs is not closed, to be able to run script 4
+    // *** devnet is not closed, to be able to run script 4
+    // outputStream.end();
+    // const pid: string[] = await kill(DEVNET_PORT);
 }
 main()
     .then(() => process.exit(0))

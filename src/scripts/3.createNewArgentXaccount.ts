@@ -2,7 +2,7 @@
 // launch with : npx ts-node ssrc/scripts/3.createNewArgentXaccount.ts
 // Coded with Starknet.js v6.23.0
 
-import { RpcProvider, Account, ec, json, hash, CallData,  CairoOption, CairoOptionVariant, CairoCustomEnum, shortString } from "starknet";
+import { RpcProvider, Account, ec, json, hash, CallData, CairoOption, CairoOptionVariant, CairoCustomEnum, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
@@ -12,7 +12,7 @@ import kill from "cross-port-killer";
 
 
 async function main() {
-    // launch devnet-rs with a new console window
+    // launch devnet with a new console window
     const outputStream = fs.createWriteStream("./src/scripts/devnet-out.txt");
     await events.once(outputStream, "open");
     // the following line is working in Linux. To adapt or remove for other OS
@@ -23,10 +23,10 @@ async function main() {
         keepAlive: false,
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
-    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
-    console.log("devnet-rs : url =", devnet.provider.url);
+    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url, specVersion: "0.8" });
+    console.log("devnet url =", devnet.provider.url);
     console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-    console.log("Provider connected to Starknet-devnet-rs");
+    console.log("Provider connected to Starknet-devnet");
 
     // initialize existing predeployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
@@ -67,8 +67,8 @@ async function main() {
 
     // fund account address before account creation
     await devnet.provider.mint(accountAXAddress, 10n * 10n ** 18n, "WEI"); // 10 ETH
-    await devnet.provider.mint(accountAXAddress, 100n * 10n ** 18n, "WEI"); // 100 STRK
-     
+    await devnet.provider.mint(accountAXAddress, 100n * 10n ** 18n, "FRI"); // 100 STRK
+
     // deploy ArgentX account
     const accountAX = new Account(myProvider, accountAXAddress, privateKeyAX);
     const deployAccountPayload = {
@@ -84,7 +84,7 @@ async function main() {
 
     outputStream.end();
     const pid: string[] = await kill(DEVNET_PORT);
-    console.log("Devnet-rs stopped. Pid :", pid, "\nYou can close the log window.");
+    console.log("Devnet stopped. Pid :", pid, "\nYou can close the log window.");
 }
 main()
     .then(() => process.exit(0))

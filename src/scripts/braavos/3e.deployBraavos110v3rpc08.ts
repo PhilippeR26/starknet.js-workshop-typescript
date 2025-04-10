@@ -4,7 +4,6 @@
 import { ec, hash, num, constants, CallData, stark, BigNumberish, type RpcProvider, type V2InvocationsSignerDetails, type DeployAccountSignerDetails, type V2DeployAccountSignerDetails, type V3DeployAccountSignerDetails, type V3InvocationsSignerDetails, type UniversalDetails, type V3TransactionDetails, type EstimateFeeResponse } from "starknet";
 import { type DeployContractResponse, type Calldata, type DeployAccountContractPayload, type EstimateFeeDetails, type CairoVersion, type DeployAccountContractTransaction, } from "starknet";
 import { EDAMode, EDataAvailabilityMode, ETransactionVersion, ETransactionVersion2, ETransactionVersion3, type ResourceBounds } from "@starknet-io/types-js";
-import { version } from "os";
 
 
 const BraavosBaseClassHash = "0x3d16c7a9a60b0593bd202f660a28c5d76e0403601d9ccc7e4fa253b6a70c201";

@@ -1,7 +1,7 @@
 // Deploy an instance of an already declared contract.
-// use of OZ deployer
+// use of universal OZ deployer
 // launch with npx ts-node src/scripts/4.deployContractOZ.ts
-// Coded with Starknet.js v6.23.0
+// Coded with Starknet.js v7.0.1 & Devnet 0.3.0
 
 import { Account, CallData, Contract, json, RpcProvider } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
@@ -18,7 +18,7 @@ dotenv.config();
 async function main() {
     // Devnet-rs has already been started in script 9
     const devnet = new DevnetProvider({ url: "http://127.0.0.1:" + DEVNET_PORT }); // running devnet-rs
-    const myProvider = new RpcProvider({ nodeUrl: devnet.url });
+    const myProvider = new RpcProvider({ nodeUrl: devnet.url, specVersion: "0.8" });
     console.log("Provider connected to Starknet-devnet-rs");
 
     // initialize existing predeployed account 0 of Devnet-rs

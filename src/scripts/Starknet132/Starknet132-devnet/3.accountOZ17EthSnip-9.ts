@@ -1,6 +1,6 @@
-// Deploy an account : OpenZeppelin v0.17.0,ETH signature, upgradable & compatible SNIP-9.
+// Deploy an account : OpenZeppelin v0.20.0,ETH signature, upgradable & compatible SNIP-9.
 // Launch with npx ts-node src/scripts/Starknet132/Starknet132-devnet/3.accountOZ17EthSnip-9.ts
-// Coded with Starknet.js v6.14.1 & devnet-rs v0.2.0 & starknet-devnet.js v0.2.0
+// Coded with Starknet.js v7.0.1 & devnet-rs v0.3.0 & starknet-devnet.js v0.2.2
 
 import { RpcProvider, Account, shortString, hash, CallData, json, stark, ec, OutsideExecutionVersion, type OutsideExecutionOptions, cairo, type OutsideTransaction, Contract, eth, EthSigner, addAddressPadding, encode } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
@@ -39,7 +39,11 @@ async function main() {
     console.log("No l2 devnet.");
     process.exit();
   }
-  console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
+  console.log(
+    "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+    ", rpc", await myProvider.getSpecVersion(),
+    ", SN version =", (await myProvider.getBlock()).starknet_version,
+  );
   console.log("Provider connected to Starknet");
 
   const accData = await l2DevnetProvider.getPredeployedAccounts();
@@ -59,8 +63,8 @@ async function main() {
   console.log("Accounts connected.\n");
 
   // declare & deploy account
-  const accountSierra = json.parse(fs.readFileSync("./compiledContracts/cairo282/account_oz17_AccountEthSnip9OZ17.contract_class.json").toString("ascii"));
-  const accountCasm = json.parse(fs.readFileSync("./compiledContracts/cairo282/account_oz17_AccountEthSnip9OZ17.compiled_contract_class.json").toString("ascii"));
+  const accountSierra = json.parse(fs.readFileSync("./compiledContracts/cairo291/account_oz20_AccountEthSnip9OZ20.contract_class.json").toString("ascii"));
+  const accountCasm = json.parse(fs.readFileSync("./compiledContracts/cairo291/account_oz20_AccountEthSnip9OZ20.compiled_contract_class.json").toString("ascii"));
   const ch = hash.computeContractClassHash(accountSierra);
   console.log("Class Hash of contract =", ch);
 
@@ -73,7 +77,10 @@ async function main() {
 
   // declare
   const respDecl = await account0.declareIfNot({ contract: accountSierra, casm: accountCasm });
+  // v0.17.0
   // const contractClassHash = "0x3940bc18abf1df6bc540cabadb1cad9486c6803b95801e57b6153ae21abfe06";
+  // v0.20.0
+  // const contractClassHash = "0x5efa5705ddbfee85b4940570caf39cacf8a526a60690335dbb9001665536b85";
   const contractClassHash = respDecl.class_hash;
   if (respDecl.transaction_hash) {
     await myProvider.waitForTransaction(respDecl.transaction_hash);
@@ -84,6 +91,7 @@ async function main() {
   const pubKeyETHy = cairo.uint256(addAddressPadding(encode.addHexPrefix(ethPubKey.slice(-64))));
   const pubKeyETHx = cairo.uint256(addAddressPadding(encode.addHexPrefix(ethPubKey.slice(4, -64))));
   const salt = pubKeyETHx.low;
+  const sierraContract = await myProvider.getClassByHash(contractClassHash);
   const myCallData = new CallData(accountSierra.abi);
   const constructorCallData = myCallData.compile("constructor", { public_key: ethPubKey });
   console.log("constructor =", constructorCallData);
@@ -103,7 +111,10 @@ async function main() {
     contractAddress: accountAddress,
     addressSalt: salt
   };
-  const { transaction_hash: th, contract_address: accountAXFinalAddress } = await accountOZ17.deployAccount(deployAccountPayload, { maxFee: 1n * 10n ** 17n });
+  const estimatedFees = await accountOZ17.estimateAccountDeployFee(deployAccountPayload, { skipValidate: false });
+  console.log("Estimated fee =", estimatedFees);
+
+  const { transaction_hash: th, contract_address: accountAXFinalAddress } = await accountOZ17.deployAccount(deployAccountPayload, { skipValidate: false });
   console.log("Final address =", accountAXFinalAddress);
   console.log("Account deployed.");
   await myProvider.waitForTransaction(th);

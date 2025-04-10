@@ -1,13 +1,14 @@
-// Test deploy Braavos account v1.1.0 with a transaction v3
+// Test deploy Braavos account v1.1.0 with a transaction rpc 0.8 v3
 // Coded with Starknet.js v7.0.1 & devnet-rs v0.3.0 (rpc0.8) & starknet-devnet.js v0.2.2
 
-import { RpcProvider, Account, ec, json, stark, CallData,  hash, type BigNumberish } from "starknet";
-import { deployBraavosAccount } from "../../braavos/3e.deployBraavos110v3rpc08";
+import { RpcProvider, Account, ec, json, stark, CallData, hash, type BigNumberish, constants } from "starknet";
+import { deployBraavosAccount, calculateAddressBraavos, estimateBraavosAccountDeployFee } from "../../braavos/3e.deployBraavos110v3rpc08";
 import { DevnetProvider } from "starknet-devnet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import type { DeployAccountResp } from "../../utils/types";
-import { type ETransactionVersion } from "@starknet-io/types-js";
+import { ETransactionVersion } from "@starknet-io/types-js";
+import axios from "axios";
 dotenv.config();
 
 
@@ -22,8 +23,6 @@ export async function deployAccountBraavos(
   // declare
   const accountBraavosBaseSierra = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosBaseAccount110.contract_class.json").toString("ascii"));
   const accountBraavosBaseCasm = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosBaseAccount110.compiled_contract_class.json").toString("ascii"));
-  // const ch = hash.computeContractClassHash(accountBraavosBaseSierra);
-  // console.log("Braavos base contract class Hash =",ch);
   console.log("Braavos account v1.1.0 declare in progress...");
   const respDecl = await account0.declareIfNot({ contract: accountBraavosBaseSierra, casm: accountBraavosBaseCasm });
   const contractBraavosClassHash = respDecl.class_hash;
@@ -43,14 +42,15 @@ export async function deployAccountBraavos(
   console.log('Braavos account Public Key  =', starkKeyPubBraavosBase);
 
 
-  const calldataBraavos = new CallData(accountBraavosBaseSierra.abi);
-  type StarkPubKey = { pub_key: BigNumberish };
-  const myPubKey: StarkPubKey = { pub_key: starkKeyPubBraavosBase };
-  const constructorBraavosCallData = calldataBraavos.compile("constructor", {
-    stark_pub_key: myPubKey,
-  });
-  const accountBraavosAddress = hash.calculateContractAddressFromHash(starkKeyPubBraavosBase, contractBraavosClassHash, constructorBraavosCallData, 0);
-  //console.log('Precalculated account address=', accountBraavosAddress);
+  // const calldataBraavos = new CallData(accountBraavosBaseSierra.abi);
+  // type StarkPubKey = { pub_key: BigNumberish };
+  // const myPubKey: StarkPubKey = { pub_key: starkKeyPubBraavosBase };
+  // const constructorBraavosCallData = calldataBraavos.compile("constructor", {
+  //   stark_pub_key: myPubKey,
+  // });
+  // const accountBraavosAddress = hash.calculateContractAddressFromHash(starkKeyPubBraavosBase, contractBraavosClassHash, constructorBraavosCallData, 0);
+
+  const accountBraavosAddress = calculateAddressBraavos(privateKeyBraavosBase);
 
   // fund account address before account creation
   await l2DevnetProvider.mint(accountBraavosAddress, 10n * 10n ** 18n, "WEI");
@@ -60,30 +60,15 @@ export async function deployAccountBraavos(
   const maxQtyGasAuthorized = 4000n; // max quantity of gas authorized
   const maxPriceAuthorizeForOneGas = 1n * 10n ** 12n; // max FRI authorized to pay 1 gas (1 FRI=10**-18 STRK)
   const myMaxFee = undefined;
-  // ******* if you want to set manually the fees :
-  // const myMaxFee: UniversalDetails = isV3tx(version) ? {
-  //   feeDataAvailabilityMode: EDataAvailabilityMode.L1,
-  //   nonceDataAvailabilityMode: EDataAvailabilityMode.L1,
-  //   tip: 10 ** 13,
-  //   paymasterData: [],
-  //   resourceBounds: {
-  //     l1_gas: {
-  //       max_amount: num.toHex(maxQtyGasAuthorized),
-  //       max_price_per_unit: num.toHex(maxPriceAuthorizeForOneGas),
-  //     },
-  //     l2_gas: {
-  //       max_amount: num.toHex(0),
-  //       max_price_per_unit: num.toHex(0),
-  //     },
-  //   },
-  // } :
-  //   { maxFee: 2 * 10 ** 15 }; // V1
   console.log("input maxFee=", { myMaxFee });
+
+  const estimatedFee = await estimateBraavosAccountDeployFee(privateKeyBraavosBase, myProvider, { version });
+  console.log({ estimatedFee });
 
   const respDeploy = await deployBraavosAccount(privateKeyBraavosBase, myProvider, myMaxFee, version);
   const txR = await myProvider.waitForTransaction(respDeploy.transaction_hash);
   console.log("Transaction receipt is success =", txR.isSuccess());
-   const accountBraavos = new Account(myProvider, accountBraavosAddress, privateKeyBraavosBase);
+  const accountBraavos = new Account(myProvider, accountBraavosAddress, privateKeyBraavosBase);
   console.log("Braavos account created.\nFinal address =", accountBraavosAddress);
   console.log('✅ Braavos 1.1.0 account deployed.');
 

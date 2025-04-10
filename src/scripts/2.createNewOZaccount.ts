@@ -1,9 +1,9 @@
-// create a new OZ 14 account in devnet-rs
-// launch with npx ts-node src/scripts/2.createNewOZaccount.ts
-// Coded with Starknet.js v6.23.0
+// Create a new OZ 17 account in devnet
+// Launch with npx ts-node src/scripts/2.createNewOZaccount.ts
+// Coded with Starknet.js v7.0.1 & Devnet 0.3.0
 
-import { Account, ec, json, hash, CallData, RpcProvider, stark, shortString } from "starknet";
-import { Devnet } from "starknet-devnet";
+import { Account, ec, json, hash, CallData, RpcProvider, stark, shortString, config, ETransactionVersion } from "starknet";
+import { Devnet, DevnetProvider } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
 import cp from "child_process";
@@ -12,7 +12,7 @@ import kill from "cross-port-killer";
 
 
 async function main() {
-    // launch devnet-rs with a new console window
+    // launch devnet with a new console window
     const outputStream = fs.createWriteStream("./src/scripts/devnet-out.txt");
     await events.once(outputStream, "open");
     // the following line is working in Linux. To adapt or remove for other OS
@@ -23,57 +23,81 @@ async function main() {
         keepAlive: false,
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
-    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
-    console.log("devnet-rs : url =", devnet.provider.url);
-    console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-    console.log("Provider connected to Starknet-devnet-rs");
+    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url, specVersion: "0.8" });
+    // already running Devnet
+    // const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: "0.8" });
+    // const devnet = new DevnetProvider({ timeout: 40_000 });
+    if (!(await devnet.provider.isAlive())) {
+        console.log("No l2 devnet.");
+        process.exit();
+    }
+    console.log("devnet : url =", devnet.provider.url);
+    console.log(
+        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        ", rpc", await myProvider.getSpecVersion(),
+        ", SN version =", (await myProvider.getBlock()).starknet_version,
+    );
+    console.log("Provider connected to Starknet-devnet.");
+
+    config.set('legacyMode', true); // useful for rpc 0.7
 
     // initialize existing predeployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
     const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
     console.log("Account 0 connected.\nAddress =", account0.address, "\n");
 
-    // new Open Zeppelin account v0.14.0 (Cairo 1) :
+    // new Open Zeppelin account v0.17.0 (Cairo 1) :
 
-    // Generate public and private key pair.
-    const privateKey = stark.randomAddress();
-    console.log('New account :\nprivateKey=', privateKey);
-    const starkKeyPub = ec.starkCurve.getStarkKey(privateKey);
-    console.log('publicKey=', starkKeyPub);
-    //declare OZ wallet contract
-    const compiledOZAccount = json.parse(
-        fs.readFileSync("./compiledContracts/cairo264/openZeppelin14/openzeppelin_AccountUpgradeable.sierra.json").toString("ascii")
+    // declare OZ wallet contract
+    const accountSierra = json.parse(
+        fs.readFileSync("./compiledContracts/cairo282/account_oz17_AccountStrkSnip9OZ17.contract_class.json").toString("ascii")
     );
-    const casmOZAccount = json.parse(
-        fs.readFileSync("./compiledContracts/cairo264/openZeppelin14/openzeppelin_AccountUpgradeable.casm.json").toString("ascii")
+    const accountCasm = json.parse(
+        fs.readFileSync("./compiledContracts/cairo282/account_oz17_AccountStrkSnip9OZ17.compiled_contract_class.json").toString("ascii")
     );
-    const { transaction_hash: declTH, class_hash: decClassHash } = await account0.declareIfNot({ contract: compiledOZAccount, casm: casmOZAccount });
-    console.log('OpenZeppelin account class hash =', decClassHash);
+    console.log("Declare account if necessary...");
+    const ch = hash.computeContractClassHash(accountSierra);
+    console.log("Calculated class Hash of contract =", ch);
+    const { transaction_hash: declTH, class_hash: contractClassHash } = await account0.declareIfNot({ contract: accountSierra, casm: accountCasm });
+    console.log('OpenZeppelin account class hash created =', contractClassHash);
     if (declTH) { await myProvider.waitForTransaction(declTH); }
 
+    console.log("Deploy account...");
+    // Generate public and private key pair.
+    const privateKey = stark.randomAddress();
+    //const privateKey = stark.randomAddress();
+    console.log('New account :\nprivateKey =', privateKey);
+    const starkKeyPub = ec.starkCurve.getStarkKey(privateKey);
+    console.log('publicKey =', starkKeyPub);
+
     // Calculate future address of the account
-    const OZaccountConstructorCallData = CallData.compile({ publicKey: starkKeyPub });
-    const OZcontractAddress = hash.calculateContractAddressFromHash(starkKeyPub, decClassHash, OZaccountConstructorCallData, 0);
-    console.log('Precalculated account address=', OZcontractAddress);
+    const accountCallData = new CallData(accountSierra.abi);
+    const constructorCallData = accountCallData.compile("constructor", {
+        public_key: starkKeyPub,
+    });
+    console.log("constructor =", constructorCallData);
+    const accountAddress = hash.calculateContractAddressFromHash(starkKeyPub, contractClassHash, constructorCallData, 0);
+    console.log('Precalculated account address=', accountAddress);
 
     // fund account address before account creation
-    await devnet.provider.mint(OZcontractAddress, 10n * 10n ** 18n, "WEI"); // 10 ETH
-    await devnet.provider.mint(OZcontractAddress, 100n * 10n ** 18n, "WEI"); // 100 STRK
+    await devnet.provider.mint(accountAddress, 10n * 10n ** 18n, "WEI"); // 10 ETH
+    await devnet.provider.mint(accountAddress, 100n * 10n ** 18n, "FRI"); // 100 STRK
 
     // deploy account
-    const OZaccount = new Account(myProvider, OZcontractAddress, privateKey);
+    const OZaccount = new Account(myProvider, accountAddress, privateKey, undefined, ETransactionVersion.V2);
+    console.log("Deploy account...");
     const { transaction_hash, contract_address } = await OZaccount.deployAccount({
-        classHash: decClassHash,
-        constructorCalldata: OZaccountConstructorCallData,
+        classHash: contractClassHash,
+        constructorCalldata: constructorCallData,
         addressSalt: starkKeyPub,
-        contractAddress: OZcontractAddress
+        contractAddress: accountAddress
     });
     console.log('✅ New OpenZeppelin account created.\n   final address =', contract_address);
     await myProvider.waitForTransaction(transaction_hash);
 
     outputStream.end();
     const pid: string[] = await kill(DEVNET_PORT);
-    console.log("Devnet-rs stopped. Pid :", pid, "\nYou can close the log window.");
+    console.log("Devnet stopped. Pid :", pid, "\nYou can close the log window.");
 
 }
 main()

@@ -1,8 +1,8 @@
-// Test deploy Braavos account v1.1.0 with a transaction rpc 0.8 v3
-// Coded with Starknet.js v7.0.1 & devnet-rs v0.3.0 (rpc0.8) & starknet-devnet.js v0.2.2
+// Test deploy Braavos account v1.2.0 with a transaction rpc 0.8 v3
+// Coded with Starknet.js v7.1.0 & devnet-rs v0.3.0 (rpc0.8) & starknet-devnet.js v0.2.2
 
 import { RpcProvider, Account, ec, json, stark, CallData, hash, type BigNumberish, constants } from "starknet";
-import { deployBraavosAccount, calculateAddressBraavos, estimateBraavosAccountDeployFee } from "../../braavos/3e.deployBraavos110v3rpc08";
+import { deployBraavosAccount, calculateAddressBraavos, estimateBraavosAccountDeployFee } from "../../braavos/3f.deployBraavos120v3rpc08";
 import { DevnetProvider } from "starknet-devnet";
 import fs from "fs";
 import * as dotenv from "dotenv";

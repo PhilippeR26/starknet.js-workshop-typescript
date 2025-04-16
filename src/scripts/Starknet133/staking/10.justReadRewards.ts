@@ -1,6 +1,6 @@
-// Read the non claimed rewards of a staker
+// Read the non claimed rewards of a staker V2
 // launch with npx src/scripts/Starknet133/staking/10.justReadRewards.ts
-// Coded with Starknet.js v6.17.0
+// Coded with Starknet.js v7.1.0
 
 import { BigNumberish, shortString, RpcProvider, Account, json, hash, Contract, CairoOption, constants } from "starknet";
 import fs from "fs";
@@ -9,7 +9,7 @@ import { account1TestBraavosSepoliaAddress, account1TestBraavosSepoliaPrivateKey
 import { strkAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
 import { wait } from "../../utils/utils";
-import { compiledSierraStake, STAKING_ADDRESS, strkSierra } from "./constants";
+import { abiCompiledSierraStakeV2, STAKING_ADDRESS, strkSierra } from "./constants";
 import type { StakerInfo } from "./type";
 dotenv.config();
 
@@ -19,7 +19,7 @@ async function main() {
   // const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   // ****  Sepolia Testnet 
   //const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_7" });
-  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_7" });
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8" });
   // const provider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); // local pathfinder testnet node
   // const provider = new RpcProvider({ nodeUrl: junoNMtestnet }); // local pathfinder testnet node
   // if (!(await l2DevnetProvider.isAlive())) {
@@ -42,9 +42,9 @@ async function main() {
 
   const accountTest2 = new Account(myProvider, accountAddress0, privateKey0, undefined, constants.TRANSACTION_VERSION.V3);
   const strkContract = new Contract(strkSierra.abi, strkAddress, myProvider);
-  const stakingContract = new Contract(compiledSierraStake.abi, STAKING_ADDRESS, myProvider);
+  const stakingContract = new Contract(abiCompiledSierraStakeV2, STAKING_ADDRESS, myProvider);
 
-  const info6: CairoOption<StakerInfo> = await stakingContract.get_staker_info(BigInt(accountTest2.address));
+  const info6: CairoOption<StakerInfo> = await stakingContract.get_staker_info_v1(BigInt(accountTest2.address));
   if (info6.isSome()) {
     const info = info6.unwrap() as StakerInfo;
     console.log(info); 

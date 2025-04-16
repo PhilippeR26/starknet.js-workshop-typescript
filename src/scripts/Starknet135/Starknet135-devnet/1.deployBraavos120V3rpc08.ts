@@ -1,10 +1,10 @@
 // Test deploy Braavos account v1.1.0 with a transaction v3 in rpc 0.8.
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-devnet/2.deployBraavos110V3rpc08.ts
-// Coded with Starknet.js v7.0.1 & devnet-rs v0.3.0 (rpc0.8) & starknet-devnet.js v0.2.2
+// Coded with Starknet.js v7.0.1 & devnet v0.3.0 (rpc0.8) & starknet-devnet.js v0.2.2
 
 import { RpcProvider, Account, shortString } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
-import { deployAccountBraavos } from "./1.deployBraavos110V3rpc08Lib";
+import { deployAccountBraavos } from "./2.deployBraavos120V3rpc08Lib";
 import * as dotenv from "dotenv";
 import fs from "fs";
 import type { DeployAccountResp } from "../../utils/types";

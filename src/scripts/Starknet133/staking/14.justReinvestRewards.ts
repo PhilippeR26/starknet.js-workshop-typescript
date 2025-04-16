@@ -1,6 +1,6 @@
-// Reinvest the unclaimed rewards
+// Reinvest the unclaimed rewards V2
 // launch with npx ts-node src/scripts/Starknet133/staking/14.justReinvestRewards.ts
-// Coded with Starknet.js v7.0.0-beta.3
+// Coded with Starknet.js v7.1.0
 
 import { BigNumberish, shortString, RpcProvider, Account, json, hash, Contract, CairoOption, constants, config } from "starknet";
 import fs from "fs";
@@ -9,17 +9,17 @@ import { account1TestBraavosSepoliaAddress, account1TestBraavosSepoliaPrivateKey
 import { strkAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
 import { wait } from "../../utils/utils";
-import { compiledSierraStake, STAKING_ADDRESS, strkSierra } from "./constants";
+import { abiCompiledSierraStakeV2, STAKING_ADDRESS, strkSierra } from "./constants";
 import type { PoolMemberInfo, StakerInfo } from "./type";
 dotenv.config();
 
 
 async function main() {
-  config.set("legacyMode", true);
+  // config.set("legacyMode", true);
   //   const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only starknet-devnet-rs
   // const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   // ****  Sepolia Testnet 
-  const myProvider = await RpcProvider.create({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_7" });
+  const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8", specVersion: constants.SupportedRpcVersion.v08 });
   // **** Mainnet
   // const myProvider = await RpcProvider.create({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_7" });
   // const myProvider = await RpcProvider.create({ nodeUrl: "https://starknet-mainnet.public.blastapi.io/rpc/v0_7" });
@@ -31,8 +31,11 @@ async function main() {
   //     console.log("No l2 devnet.");
   //     process.exit();
   //   }
-  console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-  console.log("Provider connected to Starknet");
+  console.log(
+    "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+    ", rpc", await myProvider.getSpecVersion(),
+    ", SN version =", (await myProvider.getBlock()).starknet_version);
+  console.log("Provider connected to Starknet Sepolia testnet.");
 
   //const accData = await l2DevnetProvider.getPredeployedAccounts();
   // *** initialize existing predeployed account 0 of Devnet
@@ -45,9 +48,27 @@ async function main() {
   //  const accountAddress0 = account1BraavosMainnetAddress;
   //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
-  const account0 = new Account(myProvider, accountAddress0, privateKey0, undefined, constants.TRANSACTION_VERSION.V3);
+  const account0 = new Account(myProvider, accountAddress0, privateKey0);
+  // config.set('feeMarginPercentage', {
+  //   bounds: {
+  //     l1_gas: {
+  //       max_amount: 80,
+  //       max_price_per_unit: 80,
+  //     },
+  //     l2_gas: {
+  //       max_amount: 80,
+  //       max_price_per_unit: 80,
+  //     },
+  //     l1_data_gas: {
+  //       max_amount: 80,
+  //       max_price_per_unit: 80,
+  //     },
+  //   },
+  //   maxFee: 80,
+  // });
+
   const strkContract = new Contract(strkSierra.abi, strkAddress, myProvider);
-  const stakingContract = new Contract(compiledSierraStake.abi, STAKING_ADDRESS, myProvider);
+  const stakingContract = new Contract(abiCompiledSierraStakeV2, STAKING_ADDRESS, myProvider);
 
 
   const bal0 = await strkContract.balanceOf(account0.address);
@@ -56,7 +77,7 @@ async function main() {
 
   console.log("🔜 claim...");
   let rewards: bigint = 0n;
-  const info8: CairoOption<StakerInfo> = await stakingContract.get_staker_info(account0.address);
+  const info8: CairoOption<StakerInfo> = await stakingContract.get_staker_info_v1(account0.address);
   if (info8.isSome()) {
     const info = info8.unwrap() as StakerInfo;
     rewards = BigInt(info.unclaimed_rewards_own);

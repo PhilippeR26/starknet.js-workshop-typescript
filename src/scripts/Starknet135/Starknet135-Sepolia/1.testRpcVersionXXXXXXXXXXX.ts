@@ -11,15 +11,10 @@ import * as dotenv from "dotenv";
 import { alchemyKey, blastKey, infuraKey, lavaMainnetKey } from "../../../A-MainPriv/mainPriv";
 dotenv.config();
 
-declare enum StarknetChainId {
-    SN_MAIN = "0x534e5f4d41494e",
-    SN_GOERLI = "0x534e5f474f45524c49",
-    SN_SEPOLIA = "0x534e5f5345504f4c4941",
-}
 
 async function testProvider(providerUrl: string): Promise<string> {
     const provider = new RpcProvider({ nodeUrl: providerUrl });
-    let chId: StarknetChainId;
+    let chId: string;
     let result: string = LogC.fg.yellow + "*** " + providerUrl;
 
     try {

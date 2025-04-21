@@ -14,7 +14,24 @@ import { ethAddress, strkAddress } from "../utils/constants";
 import type { DeployAccountResp, DeployLedgerAccountResp } from "../utils/types";
 dotenv.config();
 
-export async function deployLedgerAccount(myProvider: RpcProvider, account0: Account, starkKeyPub: string): Promise<DeployLedgerAccountResp> {
+export function calculateAccountAddress(starkKeyPubAX: BigNumberish, executorAddress: string, salt: BigNumberish): string {
+  const accountAXsierra = json.parse(fs.readFileSync("./compiledContracts/cairo263/ArgentXAccount040.sierra.json").toString("ascii"));
+  const contractAXclassHash = "0x036078334509b514626504edc9fb252328d1a240e4e948bef8d0c08dff45927f"; //v0.4.0
+  //const contractAXclassHash=respDecl.class_hash;
+  const calldataAX = new CallData(accountAXsierra.abi);
+  const axSigner = new CairoCustomEnum({ Starknet: { pubkey: starkKeyPubAX } });
+  const axGuardian = new CairoOption<unknown>(CairoOptionVariant.None)
+  const constructorAXCallData = calldataAX.compile("constructor", {
+    owner: axSigner,
+    guardian: axGuardian
+  });
+  console.log("constructor =", constructorAXCallData);
+  const accountAXAddress = hash.calculateContractAddressFromHash(ec.starkCurve.pedersen(executorAddress, salt), contractAXclassHash, constructorAXCallData, constants.UDC.ADDRESS);
+  console.log('Precalculated account address=', accountAXAddress);
+  return accountAXAddress;
+}
+
+export async function deployLedgerAccount(myProvider: RpcProvider, account0: Account, starkKeyPub: string, salt: BigNumberish): Promise<DeployLedgerAccountResp> {
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
 
   //
@@ -31,7 +48,7 @@ export async function deployLedgerAccount(myProvider: RpcProvider, account0: Acc
   console.log('AX account Public Key  =', starkKeyPubAX);
 
   // declare
-  console.log("casm_hash",hash.computeCompiledClassHash(accountAXcasm));
+  console.log("casm_hash", hash.computeCompiledClassHash(accountAXcasm));
   const respDecl = await account0.declareIfNot({ contract: accountAXsierra, casm: accountAXcasm });
   if (respDecl.transaction_hash) {
     await myProvider.waitForTransaction(respDecl.transaction_hash);
@@ -48,7 +65,6 @@ export async function deployLedgerAccount(myProvider: RpcProvider, account0: Acc
     guardian: axGuardian
   });
   console.log("constructor =", constructorAXCallData);
-  const salt = stark.randomAddress();
   const accountAXAddress = hash.calculateContractAddressFromHash(ec.starkCurve.pedersen(account0.address, salt), contractAXclassHash, constructorAXCallData, constants.UDC.ADDRESS);
   console.log('Precalculated account address=', accountAXAddress);
 
@@ -57,7 +73,7 @@ export async function deployLedgerAccount(myProvider: RpcProvider, account0: Acc
   await l2DevnetProvider.mint(accountAXAddress, 100n * 10n ** 18n, "FRI");
 
   // deploy ArgentX account
-    const myCall: Call = {
+  const myCall: Call = {
     contractAddress: constants.UDC.ADDRESS,
     entrypoint: constants.UDC.ENTRYPOINT,
     calldata: CallData.compile({
@@ -82,31 +98,31 @@ export async function deployLedgerAccount(myProvider: RpcProvider, account0: Acc
   return result
 }
 
-  // // Calculate future address of the account
-  // const myCallData = new CallData(compiledOZAccount.abi);
-  // const constructor: Calldata = myCallData.compile(
-  //   "constructor",
-  //   {
-  //     public_key: starkKeyPub,
-  //   });
-  // const salt = stark.randomAddress();
-  // const addressDepl = hash.calculateContractAddressFromHash(ec.starkCurve.pedersen(account0.address, salt), decClassHash, constructor, constants.UDC.ADDRESS);
-  // console.log("address=", addressDepl);
-  // const myCall: Call = {
+// // Calculate future address of the account
+// const myCallData = new CallData(compiledOZAccount.abi);
+// const constructor: Calldata = myCallData.compile(
+//   "constructor",
+//   {
+//     public_key: starkKeyPub,
+//   });
+// const salt = stark.randomAddress();
+// const addressDepl = hash.calculateContractAddressFromHash(ec.starkCurve.pedersen(account0.address, salt), decClassHash, constructor, constants.UDC.ADDRESS);
+// console.log("address=", addressDepl);
+// const myCall: Call = {
 
-  //   contractAddress: constants.UDC.ADDRESS,
-  //   entrypoint: constants.UDC.ENTRYPOINT,
-  //   calldata: CallData.compile({
-  //     classHash: decClassHash,
-  //     salt: salt,
-  //     unique: "1",
-  //     calldata: constructor,
-  //   }),
-  // };
-  // console.log("constructor =", constructor);
-  // console.log("Deploy of account in progress...");
-  // // *** with account.execute()
-  // const { transaction_hash: txHDepl }: InvokeFunctionResponse = await account0.execute([myCall]); // you can add other txs here
+//   contractAddress: constants.UDC.ADDRESS,
+//   entrypoint: constants.UDC.ENTRYPOINT,
+//   calldata: CallData.compile({
+//     classHash: decClassHash,
+//     salt: salt,
+//     unique: "1",
+//     calldata: constructor,
+//   }),
+// };
+// console.log("constructor =", constructor);
+// console.log("Deploy of account in progress...");
+// // *** with account.execute()
+// const { transaction_hash: txHDepl }: InvokeFunctionResponse = await account0.execute([myCall]); // you can add other txs here
 
-  // console.log("TxH =", txHDepl);
-  // const txR = await myProvider.waitForTransaction(txHDepl);
+// console.log("TxH =", txHDepl);
+// const txR = await myProvider.waitForTransaction(txHDepl);

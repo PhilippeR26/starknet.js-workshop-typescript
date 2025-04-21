@@ -15,12 +15,12 @@ dotenv.config();
 async function main() {
   // ********* Sepolia Testnet **************
   // local pathfinder Sepolia Testnet node
-  // const myProvider = await RpcProvider.create({ nodeUrl: "http://192.168.1.78:9545/rpc/v0_8" });
+  const myProvider = await RpcProvider.create({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8" });
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
   // local Juno Sepolia Testnet node
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://192.168.1.78:6070/rpc/v0_8" });
-  const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:6070/rpc/v0_8" });
+  // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:6070/rpc/v0_8" });
   // ******** Sepolia Integration **************
   // const myProvider = new RpcProvider({ nodeUrl: "http://localhost:9550/rpc/v0_8" }); // local pathfinder Sepolia Integration node
   // const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.0:6095/rpc/v0_8" }); // local Juno Sepolia Integration node
@@ -82,10 +82,13 @@ async function main() {
   const blockN = await myProvider.getBlockNumber();
   console.log("bloc #", blockN, block, dateC);
 
-  const classHash = await myProvider.getClassHashAt(strkAddress);
-
+  //const classHash = await myProvider.getClassHashAt(strkAddress);
+  const classHash = "0x3957f9f5a1cbfe918cedc2015c85200ca51a5f7506ecb6de98a5207b759bf8a"; // BraavosAccountClassHash v1.2.0
+  const sierra = await myProvider.getClassByHash(classHash);
+  fs.writeFileSync('./compiledContracts/cairo2100/BraavosSierra.json', json.stringify(sierra, undefined, 2));
   const casm = await (myProvider.channel as RPC08.RpcChannel).getCompiledCasm(classHash);
   console.log("casm version", casm.compiler_version);
+  fs.writeFileSync('./compiledContracts/cairo2100/BraavosCasm.json', json.stringify(casm, undefined, 2));
 
   const status = await (myProvider.channel as RPC08.RpcChannel).getMessagesStatus("0xaf42eb7d293d78f8a28f4ac7abe72077889b2b03cf868972688060d5ed3d5d96");
   console.log({ status });

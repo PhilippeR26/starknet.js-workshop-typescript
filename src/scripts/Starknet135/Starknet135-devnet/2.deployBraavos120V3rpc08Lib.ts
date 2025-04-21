@@ -23,16 +23,16 @@ export async function deployAccountBraavos(
   // declare
   const accountBraavosBaseSierra = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosBaseAccount110.contract_class.json").toString("ascii"));
   const accountBraavosBaseCasm = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosBaseAccount110.compiled_contract_class.json").toString("ascii"));
-  console.log("Braavos account v1.1.0 declare in progress...");
+  console.log("Braavos base account v1.1.0 declare in progress...");
   const respDecl = await account0.declareIfNot({ contract: accountBraavosBaseSierra, casm: accountBraavosBaseCasm });
   const contractBraavosClassHash = respDecl.class_hash;
   if (respDecl.transaction_hash) { await myProvider.waitForTransaction(respDecl.transaction_hash) };
   console.log("Braavos base contract v1.1.0 class hash :", respDecl.class_hash);
-  const accountBraavosSierra = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosAccount110.contract_class.json").toString("ascii"));
-  const accountBraavosCasm = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosAccount110.compiled_contract_class.json").toString("ascii"));
+  const accountBraavosSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2100/Braavos_120.contract_class.json").toString("ascii"));
+  const accountBraavosCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2100/Braavos_120.compiled_contract_class.json").toString("ascii"));
   const respDecl2 = await account0.declareIfNot({ contract: accountBraavosSierra, casm: accountBraavosCasm });
   const contractBraavosClassHash2 = respDecl2.class_hash;
-  console.log("Braavos contract v1.1.0 class hash :", respDecl2.class_hash);
+  console.log("Braavos contract v1.2.0 class hash :", respDecl2.class_hash);
   if (respDecl2.transaction_hash) { await myProvider.waitForTransaction(respDecl2.transaction_hash) };
 
   // Calculate future address of the Braavos account
@@ -40,15 +40,6 @@ export async function deployAccountBraavos(
   console.log('Braavos account Private Key =', privateKeyBraavosBase);
   const starkKeyPubBraavosBase = ec.starkCurve.getStarkKey(privateKeyBraavosBase);
   console.log('Braavos account Public Key  =', starkKeyPubBraavosBase);
-
-
-  // const calldataBraavos = new CallData(accountBraavosBaseSierra.abi);
-  // type StarkPubKey = { pub_key: BigNumberish };
-  // const myPubKey: StarkPubKey = { pub_key: starkKeyPubBraavosBase };
-  // const constructorBraavosCallData = calldataBraavos.compile("constructor", {
-  //   stark_pub_key: myPubKey,
-  // });
-  // const accountBraavosAddress = hash.calculateContractAddressFromHash(starkKeyPubBraavosBase, contractBraavosClassHash, constructorBraavosCallData, 0);
 
   const accountBraavosAddress = calculateAddressBraavos(privateKeyBraavosBase);
 
@@ -70,7 +61,7 @@ export async function deployAccountBraavos(
   console.log("Transaction receipt is success =", txR.isSuccess());
   const accountBraavos = new Account(myProvider, accountBraavosAddress, privateKeyBraavosBase);
   console.log("Braavos account created.\nFinal address =", accountBraavosAddress);
-  console.log('✅ Braavos 1.1.0 account deployed.');
+  console.log('✅ Braavos 1.2.0 account deployed.');
 
   const result: DeployAccountResp = {
     account: accountBraavos,

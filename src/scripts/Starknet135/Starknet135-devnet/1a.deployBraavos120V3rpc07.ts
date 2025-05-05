@@ -1,6 +1,8 @@
-// Test deploy Braavos account v1.2.0 with a transaction v3 in rpc 0.8.
-// Launch with npx ts-node src/scripts/Starknet135/Starknet135-devnet/1.deployBraavos120V3rpc08.ts
-// Coded with Starknet.js v7.1.0 & devnet v0.4.0 (rpc0.8) & starknet-devnet.js v0.2.2
+// Test deploy Braavos account v1.2.0
+// with a transaction v3 in rpc 0.7.
+// Launch with npx ts-node src/scripts/Starknet135/Starknet135-devnet/1a.deployBraavos120V3rpc07.ts
+// Coded with Starknet.js v7.0.1 & devnet v0.2.4 (rpc0.7) & starknet-devnet.js v0.2.2
+// 🚨🚨🚨 Do not work (Cairo 2.10 not accepted)
 
 import { RpcProvider, Account, shortString, logger, config, constants } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
@@ -16,7 +18,7 @@ dotenv.config();
 //          👆👆👆
 
 async function main() {
-    const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: constants.SupportedRpcVersion.v08 });
+    const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: constants.SupportedRpcVersion.v07 });
     const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
     // **** local Sepolia Testnet node
     //const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); 
@@ -54,7 +56,8 @@ async function main() {
     // *******************************
     const resDeploy: DeployAccountResp = await deployAccountBraavos(
         myProvider,
-        account0
+        account0,
+        ETransactionVersion.V3 // 👈👈 V1 or V3 deploy transaction
     );
     console.log(resDeploy);
 

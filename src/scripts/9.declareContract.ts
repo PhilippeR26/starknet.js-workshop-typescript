@@ -1,6 +1,6 @@
 // Declare a contract.
 // launch with npx ts-node src/scripts/9.declareContract.ts
-// Coded with Starknet.js v7.0.1 & Devnet 0.3.0
+// Coded with Starknet.js v7.1.0 & Devnet 0.4.0
 
 import { Account, config, json, RpcProvider, shortString, stark, type EstimateFee, type FeeEstimate, type ResourceBoundsOverhead, type SuccessfulTransactionReceiptResponse } from "starknet";
 import { Devnet } from "starknet-devnet";
@@ -71,7 +71,9 @@ async function main() {
             _: () => { }
         });
     }
-    console.log("✅ Test completed.\n", declareResponse);
+    console.log(declareResponse);
+    
+    console.log("✅ Test completed.");
 
     // *** devnet is not closed, to be able to run script 4
     // outputStream.end();

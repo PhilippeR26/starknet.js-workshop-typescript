@@ -1,6 +1,6 @@
-// connect a contract that is already deployed in devnet-rs.
+// connect a contract that is already deployed in Devnet.
 // launch with npx ts-node src/scripts/7.connectContract.ts
-// Coded with Starknet.js v6.11.0
+// Coded with Starknet.js v7.1.0 & Devnet v0.4.0
 
 import { Contract, json, RpcProvider, shortString } from "starknet";
 import { Devnet, DevnetProvider } from "starknet-devnet";
@@ -15,12 +15,16 @@ import kill from "cross-port-killer";
 //   Launch before the script for deployment of Test (script 5).
 //          👆👆👆
 async function main() {
-    // Devnet-rs has already been started in script 9
-    const devnet = new DevnetProvider({ url: "http://127.0.0.1:" + DEVNET_PORT }); // running devnet-rs
+    // Devnet has already been started in script 9
+    const devnet = new DevnetProvider({ url: "http://127.0.0.1:" + DEVNET_PORT }); // running Devnet
     const myProvider = new RpcProvider({ nodeUrl: devnet.url });
-    console.log("Provider connected to Starknet-devnet-rs");
-    console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-    console.log("Provider connected to Starknet-devnet-rs");
+    console.log("Provider connected to Starknet-Devnet");
+    console.log(
+        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()), 
+        ", rpc", await myProvider.getSpecVersion(),
+        ", SN version =", (await myProvider.getBlock()).starknet_version,
+    );
+    console.log("Provider connected to Starknet-Devnet");
 
     // Connect the deployed Test instance in devnet
     //          👇👇👇
@@ -30,7 +34,7 @@ async function main() {
     const myTestContract = new Contract(testSierra.abi, testAddress, myProvider);
     
     const pid: string[] = await kill(DEVNET_PORT);
-        console.log("Devnet-rs stopped. Pid :", pid,"\nYou can close the log window.");
+        console.log("Devnet stopped. Pid :", pid,"\nYou can close the log window.");
     console.log('✅ Test Contract connected at =', myTestContract.address);
 
 }

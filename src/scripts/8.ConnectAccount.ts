@@ -1,6 +1,6 @@
-// Connect an existing account in devnet-s, using .env file.
+// Connect an existing account in Devnet, using .env file.
 // launch with : npx ts-node src/scripts/8.ConnectWallet.ts
-// Coded with Starknet.js v6.23.0
+// Coded with Starknet.js v7.1.0 & Devnet v0.4.0
 
 import { Account, RpcProvider, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";
@@ -14,7 +14,7 @@ dotenv.config();
 
 
 async function main() {
-    // launch devnet-rs with a new console window
+    // launch Devnet with a new console window
     const outputStream = fs.createWriteStream("./src/scripts/devnet-out.txt");
     await events.once(outputStream, "open");
     // the following line is working in Linux. To adapt or remove for other OS
@@ -26,9 +26,13 @@ async function main() {
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
-    console.log("devnet-rs : url =", devnet.provider.url);
-    console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-    console.log("Provider connected to Starknet-devnet-rs");
+    console.log("Devnet : url =", devnet.provider.url);
+    console.log(
+        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()), 
+        ", rpc", await myProvider.getSpecVersion(),
+        ", SN version =", (await myProvider.getBlock()).starknet_version,
+    );
+    console.log("Provider connected to Starknet-Devnet");
 
     // initialize existing predeployed account 0 of Devnet
     console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
@@ -41,7 +45,7 @@ async function main() {
 
     outputStream.end();
     const pid: string[] = await kill(DEVNET_PORT);
-    console.log("Devnet-rs stopped. Pid :", pid, "\nYou can close the log window.");
+    console.log("Devnet stopped. Pid :", pid, "\nYou can close the log window.");
 }
 main()
     .then(() => process.exit(0))

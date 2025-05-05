@@ -11,7 +11,7 @@ dotenv.config();
 async function main() {
   // ********* Sepolia Testnet **************
   // local pathfinder Sepolia Testnet node
-  const myProvider = await RpcProvider.create({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8" });
+  const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8" });
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
   // local Juno Sepolia Testnet node
@@ -23,7 +23,7 @@ async function main() {
   //const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9550/rpc/v0_8" }); // local pathfinder Sepolia Integration node
 
 
-  logger.setLogLevel('INFO');
+  // logger.setLogLevel("ERROR");
   // config.set("legacyMode",true);
   console.log(
     "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
@@ -36,7 +36,7 @@ async function main() {
   const classHash = "0x3957f9f5a1cbfe918cedc2015c85200ca51a5f7506ecb6de98a5207b759bf8a"; // BraavosAccountClassHash v1.2.0
   const sierra = await myProvider.getClassByHash(classHash);
   fs.writeFileSync('./compiledContracts/sierra.json', json.stringify(sierra, undefined, 2));
-  const casm = await (myProvider.channel as RPC08.RpcChannel).getCompiledCasm(classHash);
+  const casm = await myProvider.getCompiledCasm(classHash);
   console.log("Cairo compiler version", casm.compiler_version);
   fs.writeFileSync('./compiledContracts/casm.json', json.stringify(casm, undefined, 2));
 

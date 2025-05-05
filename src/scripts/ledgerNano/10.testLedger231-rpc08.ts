@@ -1,9 +1,9 @@
-// Use a Ledger Nano S+/X Starknet APP 2.2.5 to sign a transaction in a node rpc 0.8.
+// Use a Ledger Nano S+/X Starknet APP 2.3.1 to sign a transaction in a node rpc 0.8.
 // Use of a Starknet.js signer
-// Launch with npx ts-node src/scripts/ledgerNano/10.testLedger225-rpc08.ts
-// Coded with Starknet.js v7.0.0-beta.3 + experimental & devnet-rs v0.3.0 & starknet-devnet.js v0.2.2
+// Launch with npx ts-node src/scripts/ledgerNano/10.testLedger231-rpc08.ts
+// Coded with Starknet.js v7.1.0 + experimental & devnet v0.4.0 & starknet-devnet.js v0.2.2
 
-import { RpcProvider, Account, Contract, json, shortString, LedgerSigner221, constants, type V2InvocationsSignerDetails, type Call, hash, type V3InvocationsSignerDetails, getLedgerPathBuffer111, type TypedData, getLedgerPathBuffer221, type BigNumberish, CallData, stark, ec, ETransactionVersion, config, logger, LedgerSigner225 } from "starknet";
+import { RpcProvider, Account, Contract, json, shortString, LedgerSigner221, constants, type V2InvocationsSignerDetails, type Call, hash, type V3InvocationsSignerDetails, getLedgerPathBuffer111, type TypedData, getLedgerPathBuffer221, type BigNumberish, CallData, stark, ec, ETransactionVersion, config, logger, LedgerSigner231 } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
 import fs from "fs";
 import * as dotenv from "dotenv";
@@ -29,10 +29,11 @@ async function displayBalances(addr: BigNumberish, myProv: RpcProvider) {
 
 async function main() {
   //          👇👇👇
-  // 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet-rs directory before using this script.
-  // A Ledger Nano S+/X has to be connected via USB to your laptop, with the starknet APP v2.2.3 installed and selected.
+  // 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet directory before using this script.
+  // A Ledger Nano S+/X has to be connected via USB to your laptop, with the starknet APP v2.3.1 installed and selected.
   // The blind signing parameter must be activated.
   // The ledger shall not be locked when launching this script.
+  // Once the Starknet APP selected, you have 2 minutes to proceed, before the APP is locked.
   //          👆👆👆
   const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: "0.8" });
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
@@ -68,9 +69,7 @@ async function main() {
 
   const account0 = new Account(myProvider, accountAddress0, privateKey0, undefined, ETransactionVersion.V3);
   console.log("Account connected.\n");
-  // logger.setLogLevel('ERROR');
-  // config.set("legacyMode", true);
-
+  
   // ******* declare OZ Account (common) *****
   // declare OZ 0.17 account
   console.log("Declare...");
@@ -112,7 +111,7 @@ async function main() {
   console.log("A");
   const myLedgerTransport = await TransportNodeHid.create();
   console.log("B");
-  const myLedgerSigner = new LedgerSigner225(myLedgerTransport, 0);
+  const myLedgerSigner = new LedgerSigner231(myLedgerTransport, 0);
   console.log("C");
 
 
@@ -122,17 +121,15 @@ async function main() {
   const a = getLedgerPathBuffer221(0);
   console.log(a);
   console.log("Deployment of AX account in progress...");
-  const deployAccountDefinition = await deployLedgerAccount(myProvider, account0, pubK);
+  const deployAccountDefinition = await deployLedgerAccount(myProvider, account0, pubK,pubK);
   const ledger0addr = deployAccountDefinition.address;
   console.log({ deployAccountDefinition });
   const classH = myProvider.getClassAt(deployAccountDefinition.address);
-
   // const ledger0addr = "0x59c7bc02433c4ee91231d864e54d0256728c3dd2f9a3d4296c2b6a13ee6df66";
-
 
   const ledgerAccount = new Account(myProvider, ledger0addr, myLedgerSigner, undefined, ETransactionVersion.V3);
 
-  // // sign Message
+  // sign Message
   console.log("Sign a message in the Nano...")
   const message: TypedData = {
     types: {
@@ -201,34 +198,23 @@ async function main() {
   await displayBalances(ledgerAccount.address, myProvider);
   console.log(LogC.underscore + LogC.fg.yellow + "Sign in your Ledger for transfer of ETH" + LogC.reset);
 
-  // *********** TX V1 ***********
-  // console.log("**** Transaction V1 (ETH fees):\nSign in the Nano...");
+  console.log("If necessary unlock the Nano.\nPress a key to continue.");
+  await keypress();
   const myCall1 = EthContract.populate("transfer", [account0.address, 1n * 10n ** 12n]);
   const myCall2 = EthContract.populate("transfer", [account0.address, 2n * 10n ** 12n]);
   const myCall3 = EthContract.populate("transfer", [account0.address, 3n * 10n ** 12n]);
-  // console.log("Processing 1 call...");
-  // const resV1 = await ledgerAccount.execute(myCall1);
-  // await myProvider.waitForTransaction(resV1.transaction_hash);
-  // console.log("Processing 3 calls...");
-  // const resV1b = await ledgerAccount.execute([myCall2, myCall3, myCall1]);
-  // await myProvider.waitForTransaction(resV1b.transaction_hash);
-  // console.log("Call with empty calldata...");
-  // const myCall4 = rejectContract.populate("process_nonce", {});
-  // const resV1c = await ledgerAccount.execute(myCall4);
-  // await myProvider.waitForTransaction(resV1c.transaction_hash);
-  // await displayBalances(ledgerAccount.address, myProvider);
-
   // *********** TX V3 ***********
-  console.log("Processing 1 call with account0...");
-  const resV3a = await account0.execute(myCall1, { version: 3 });
-  await myProvider.waitForTransaction(resV3a.transaction_hash);
-  console.log("\n***** Transaction V3 (STRK fees):\nSign in the Nano...");
+    console.log("\n***** Transaction V3 (STRK fees):\nSign in the Nano...");
   console.log("Processing 1 call...");
   const resV3 = await ledgerAccount.execute(myCall1, { version: 3 });
   await myProvider.waitForTransaction(resV3.transaction_hash);
+  console.log("If necessary unlock the Nano.\nPress a key to continue.");
+  await keypress();
   console.log("Processing 3 calls...");
   const resV3b = await ledgerAccount.execute([myCall3, myCall2, myCall1], { version: 3 });
   await myProvider.waitForTransaction(resV3b.transaction_hash);
+  console.log("If necessary unlock the Nano.\nPress a key to continue.");
+  await keypress();
    console.log("Call with empty calldata...");
   const myCall4 = rejectContract.populate("process_nonce", {});
   const resV1c = await ledgerAccount.execute(myCall4);
@@ -236,54 +222,14 @@ async function main() {
   await displayBalances(ledgerAccount.address, myProvider);
 
 
-  // create account V1 *********
-  // Calculate future address of the  account
-
-  // const myLedgerSigner1 = new LedgerSigner224(myLedgerTransport, 1);
-
-
-  // const pubK1 = await myLedgerSigner1.getPubKey();
-
-  // console.log('account Public Key1  =', pubK1);
-
-  // const constructorCallData = calldataOZ.compile("constructor", {
-  //   public_key: pubK1,
-  // });
-  // console.log("constructor =", constructorCallData);
-  // const accountAddress = hash.calculateContractAddressFromHash(pubK1, contractOZClassHash, constructorCallData, 0);
-  // console.log('Precalculated account address=', accountAddress);
-
-  // // fund account address before account creation
-  // await l2DevnetProvider.mint(accountAddress, 10n * 10n ** 18n, "WEI");
-  // await l2DevnetProvider.mint(accountAddress, 100n * 10n ** 18n, "FRI");
-  // console.log("account funded.");
-
-  // // deploy account v1
-  // console.log("\nDeploy Account V1 (ETH fees):\nSign in the Nano...");
-  // const accountOZ17 = new Account(myProvider, accountAddress, myLedgerSigner1);
-  // const deployAccountPayload = {
-  //   classHash: contractOZClassHash,
-  //   constructorCalldata: constructorCallData,
-  //   contractAddress: accountAddress,
-  //   addressSalt: pubK1
-  // };
-  // const { transaction_hash: th, contract_address: accountOZFinalAddress } = await accountOZ17.deployAccount(deployAccountPayload, { version: 1 });
-  // console.log("Final address =", accountOZFinalAddress);
-  // console.log("Account deployed v1.");
-  // await myProvider.waitForTransaction(th);
-
   console.log("If necessary unlock the Nano.\nPress a key to continue.");
   await keypress();
-
   // deploy account V3 *********
   // Calculate future address of the  account
   console.log("\nDeploy Account V3 (STRK fees):\nSign in the Nano...");
-  const myLedgerSigner3 = new LedgerSigner225(myLedgerTransport, 2);
-
+  const myLedgerSigner3 = new LedgerSigner231(myLedgerTransport, 2);
   const pubK2 = await myLedgerSigner3.getPubKey();
-
   console.log('account Public Key2  =', pubK2);
-
   const constructorCallData3 = calldataOZ.compile("constructor", {
     public_key: pubK2,
   });

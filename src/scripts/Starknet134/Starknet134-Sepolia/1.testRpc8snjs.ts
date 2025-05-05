@@ -7,7 +7,6 @@ import fs from "fs";
 import * as dotenv from "dotenv";
 import { ethAddress, strkAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
-import { account2IntegrationAXaddress, account2IntegrationAXprivateKey, } from "../../../A2priv/A2priv";
 import { account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address, accountETHoz17snip9PrivateKey } from "../../../A1priv/A1priv";
 dotenv.config();
 
@@ -15,7 +14,7 @@ dotenv.config();
 async function main() {
   // ********* Sepolia Testnet **************
   // local pathfinder Sepolia Testnet node
-  const myProvider = await RpcProvider.create({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8" });
+  const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8" });
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
   // local Juno Sepolia Testnet node
@@ -86,22 +85,23 @@ async function main() {
   const classHash = "0x3957f9f5a1cbfe918cedc2015c85200ca51a5f7506ecb6de98a5207b759bf8a"; // BraavosAccountClassHash v1.2.0
   const sierra = await myProvider.getClassByHash(classHash);
   fs.writeFileSync('./compiledContracts/cairo2100/BraavosSierra.json', json.stringify(sierra, undefined, 2));
-  const casm = await (myProvider.channel as RPC08.RpcChannel).getCompiledCasm(classHash);
+  const casm = await myProvider.getCompiledCasm(classHash);
   console.log("casm version", casm.compiler_version);
   fs.writeFileSync('./compiledContracts/cairo2100/BraavosCasm.json', json.stringify(casm, undefined, 2));
 
-  const status = await (myProvider.channel as RPC08.RpcChannel).getMessagesStatus("0xaf42eb7d293d78f8a28f4ac7abe72077889b2b03cf868972688060d5ed3d5d96");
+  const status = await myProvider.getL1MessagesStatus("0xaf42eb7d293d78f8a28f4ac7abe72077889b2b03cf868972688060d5ed3d5d96");
   console.log({ status });
 
-  const proof0 = await (myProvider.channel as RPC08.RpcChannel).getStorageProof(undefined, ["0x33ba2f0e6fb9a4a63a701728bacd7c86fd7750889c7f454711fa5d2766ce34c"], undefined, "latest");
+  const proof0 = await myProvider.getStorageProof([], ["0x33ba2f0e6fb9a4a63a701728bacd7c86fd7750889c7f454711fa5d2766ce34c"], [], "latest");
   console.log("proof contract address =", { proof0 });
 
-  const proof1 = await (myProvider.channel as RPC08.RpcChannel).getStorageProof(["0x29f7ed685a31a4a5cc523da7e2cf768606375e098755b9beee479b5dd159ab"], undefined, undefined, "latest");
+  const proof1 = await myProvider.getStorageProof(["0x29f7ed685a31a4a5cc523da7e2cf768606375e098755b9beee479b5dd159ab"], [], [], "latest");
   console.log("proof class hash =", { proof1 });
 
-  const proof2 = await (myProvider.channel as RPC08.RpcChannel).getStorageProof(
-    undefined,
-    undefined,
+  // const proof2 = await (myProvider.channel as RPC08.RpcChannel).getStorageProof(
+  const proof2 = await myProvider.getStorageProof(
+    [],
+    [],
     [{
       contract_address: "0x33ba2f0e6fb9a4a63a701728bacd7c86fd7750889c7f454711fa5d2766ce34c",
       storage_keys: [num.toHex(hash.starknetKeccak("counter"))], // "0x007ebcc807b5c7e19f245995a55aed6f46f5f582f476a886b91b834b0ddf5854"

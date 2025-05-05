@@ -16,7 +16,7 @@ dotenv.config();
 
 async function main() {
   //          👇👇👇
-  // 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet-rs directory before using this script.
+  // 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet directory before using this script.
   // A Ledger Nano S+/X has to be connected via USB to your laptop, with the starknet APP v2.2.3 installed and selected.
   // The blind signing parameter must be activated.
   // The Ledger shall not be locked when launching this script.
@@ -85,7 +85,7 @@ async function main() {
     const deployAccountDefinition = await deployLedgerAccount(myProvider, account0, pubK, salt);
     console.log({ deployAccountDefinition });
   }
-  const ledgerAccount = new Account(myProvider, ledger0addr, myLedgerSigner, "1", ETransactionVersion.V2);
+  const ledgerAccount = new Account(myProvider, ledger0addr, myLedgerSigner, "1", ETransactionVersion.V3);
 
 
   // Reject contract

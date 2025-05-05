@@ -1,5 +1,6 @@
-// Collection of functions for Braavos account v1.1.0 creation
-// coded with Starknet.js v7.0.1
+// Collection of functions for Braavos account v1.2.0 creation.
+// Coded with Starknet.js v7.1.0
+// Handle Rpc0.7V1, Rpc0.7V3, Rpc0.8V3
 
 import { ec, hash, num, constants, CallData, stark, BigNumberish, type RpcProvider, type V2InvocationsSignerDetails, type DeployAccountSignerDetails, type V2DeployAccountSignerDetails, type V3DeployAccountSignerDetails, type V3InvocationsSignerDetails, type UniversalDetails, type V3TransactionDetails, type EstimateFeeResponse } from "starknet";
 import { type DeployContractResponse, type Calldata, type DeployAccountContractPayload, type EstimateFeeDetails, type CairoVersion, type DeployAccountContractTransaction, } from "starknet";
@@ -43,7 +44,7 @@ export function getBraavosSignature(
     let txnHash: string = "";
     if (Object.values(ETransactionVersion3).includes(details.version as any)) {
         const det = details as V3DeployAccountSignerDetails;
-        const v3det = stark.v3Details(det,"0.8");
+        const v3det = stark.v3Details(det, "0.8");
         txnHash = hash.calculateDeployAccountTransactionHash(
             {
                 contractAddress: det.contractAddress,
@@ -97,7 +98,7 @@ export function getBraavosSignature(
         rPoseidon.toString(),
         sPoseidon.toString()
     ];
-    const hexSignature=signature.map(e=> num.toHex(e));
+    const hexSignature = signature.map(e => num.toHex(e));
     return signature
 }
 
@@ -125,7 +126,8 @@ async function buildBraavosAccountDeployPayload(
         constructorCalldata,
         contractAddress: providedContractAddress,
     }: DeployAccountContractPayload,
-    invocationDetails: V2InvocationsSignerDetails | V3InvocationsSignerDetails
+    invocationDetails: V2InvocationsSignerDetails | V3InvocationsSignerDetails,
+    rpcVersion: constants.SupportedRpcVersion,
 ): Promise<DeployAccountContractTransaction> {
     const compiledCalldata = CallData.compile(constructorCalldata ?? []);
     const contractAddress =
@@ -158,7 +160,7 @@ async function buildBraavosAccountDeployPayload(
             addressSalt: addressSalt ?? 0,
             contractAddress,
             ...v2invocation,
-            ...stark.v3Details({},"0.8")
+            ...stark.v3Details({}, rpcVersion)
         };
         const signature = getBraavosSignature(
             details,
@@ -206,9 +208,10 @@ export async function estimateBraavosAccountDeployFee(
                 walletAddress: BraavosAccountAddress,
                 cairoVersion: cairoVersion,
                 tip,
-            } as V3InvocationsSignerDetails
+            } as V3InvocationsSignerDetails,
+            await provider.getSpecVersion()
         );
-        const v3det = stark.v3Details({},"0.8");
+        const v3det = stark.v3Details({}, await provider.getSpecVersion());
         const response: EstimateFeeResponse = await provider.getDeployAccountEstimateFee(
             {
                 classHash: BraavosBaseClassHash,
@@ -230,7 +233,7 @@ export async function estimateBraavosAccountDeployFee(
             l1_gas_consumed: Number(response.l1_gas_consumed),
             l1_gas_price: Number(response.l1_gas_price),
             l2_gas_consumed: Number(response.l2_gas_consumed ?? 0n),
-            l2_gas_price: Number(response.l1_data_gas_price),
+            l2_gas_price: Number(response.l2_gas_price ?? 0n),
             l1_data_gas_consumed: Number(response.l1_data_gas_consumed),
             l1_data_gas_price: Number(response.l1_data_gas_price),
         }
@@ -259,7 +262,8 @@ export async function estimateBraavosAccountDeployFee(
                 walletAddress: BraavosAccountAddress,
                 maxFee: constants.ZERO,
                 cairoVersion: cairoVersion,
-            } as V2InvocationsSignerDetails
+            } as V2InvocationsSignerDetails,
+            await provider.getSpecVersion()
         );
 
         const response = await provider.getDeployAccountEstimateFee(
@@ -309,7 +313,8 @@ export async function deployBraavosAccount(
                 walletAddress: BraavosAccountAddress,
                 cairoVersion: cairoVersion,
                 ...feeDetails
-            } as V3InvocationsSignerDetails
+            } as V3InvocationsSignerDetails,
+            await provider.getSpecVersion()
         );
         return provider.deployAccountContract(
             {
@@ -341,7 +346,8 @@ export async function deployBraavosAccount(
                 walletAddress: BraavosAccountAddress,
                 maxFee: feeDetails.maxFee as BigNumberish,
                 cairoVersion: cairoVersion,
-            }
+            },
+            await provider.getSpecVersion()
         );
         return provider.deployAccountContract(
             {

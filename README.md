@@ -1,6 +1,6 @@
 # Starkware Starknet network ^0.13.5
 # Cairo Accounts and ERC20 Demo 
-# Typescript code, using Starknet.js v7.1.0 and local Starknet-devnet-rs 0.3.0
+# Typescript code, using Starknet.js v7.1.0 and local Starknet-devnet 0.4.0
 ![Starknet.js](/src/img/starknet-js.png)
 
 If you want to implement the Starknet network in your DAPP, you can use starknet.js to interact with it.
@@ -9,7 +9,7 @@ These little scripts shows how to use and test very quickly your starknet.js cod
 
 Even if these codes are very small, it's a good guideline to always write them in Typescript.
 
-Starknet mainnet and testnet are slow. To speed up the execution, we use Starknet-devnet-rs, that creates a local Starknet network.
+Starknet mainnet and testnet are slow. To speed up the execution, we use Starknet-devnet, that creates a local Starknet network.
 
 ## 🛠️ Installation 🛠️
 
@@ -24,7 +24,7 @@ Run `npm install` in this directory.
 
 This repo is configured to be able to perform debugging of your typescript code. Just CTRL+SHIFT+D, then click on the green arrow.
 
-This script has been written with cairo v0.13.5, Starknet-devnet-rs v0.3.0, starknet.js v7.1.0. Due to fast iterations of Starknet and Cairo, these scripts will probably be quickly out-of-date.
+This script has been written with cairo v0.13.5, Starknet-devnet v0.4.0, starknet.js v7.1.0. Due to fast iterations of Starknet and Cairo, these scripts will probably be quickly out-of-date.
 
 
 
@@ -34,9 +34,9 @@ The Account contract used in this workshop is made by [OpenZeppelin](https://git
 
 Open a console, and launch the script :  
 `npx ts-node src/starknet_jsNewAccount.ts` 
-devnet-rs is automatically launched and closed in this script.
+devnet is automatically launched and closed in this script.
 
-More easy : use `npx ts-node src/starknet_jsExistingAccount.ts`, using a preexisting account #0 created automatically at Devnet-rs launch.
+More easy : use `npx ts-node src/starknet_jsExistingAccount.ts`, using a preexisting account #0 created automatically at Devnet launch.
 
 ## 📜 scripts :
 In the folder 'scripts', you can find many pedagogical codes :
@@ -46,7 +46,7 @@ In the folder 'scripts', you can find many pedagogical codes :
     - Create OZ account [script2](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/2.createNewOZaccount.ts)
     - Create ArgentX account [script3](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/3.createNewArgentXaccount.ts)
     - Create Ethereum account [script15](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/15.createNewETHaccount.ts)
-    -  Create Braavos v1.0.0 account [script14](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/14.createNewBraavosAccount.ts)
+    -  Create Braavos v1.2.0 account [script14](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/14.createNewBraavosAccount.ts)
     - Create your abstracted account [script10](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/10.createAccountAbstraction.ts)
 - Connect account
     - Connect pre-deployed account (only on devnet) [script1](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/1.openPredeployedAccount.ts)
@@ -67,21 +67,21 @@ In the folder 'scripts', you can find many pedagogical codes :
     - with a signature : account.execute [workshop](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/starknet_jsExistingAccount.ts#L69)
 
 
-### Devnet-rs :
-Devnet-rs is launched and ended automatically in the main scripts of this tuto, using the `starknet-devnet` library : https://github.com/0xSpaceShard/starknet-devnet-js/blob/master/README.md  
-If you prefer to have a devnet-rs already launched in its own console :
-- To install and launch an instance of the local devnet-rs : https://github.com/0xSpaceShard/starknet-devnet-rs  
-- Open a console, and launch devnet-rs `cargo run --release -- --seed 0`
+### Devnet :
+Devnet is launched and ended automatically in the main scripts of this tuto, using the `starknet-devnet` library : https://github.com/0xSpaceShard/starknet-devnet-js/blob/master/README.md  
+If you prefer to have a devnet already launched in its own console :
+- To install and launch an instance of the local devnet : https://0xspaceshard.github.io/starknet-devnet/docs/running/install  
+- Open a console, and launch devnet `starknet-devnet --seed 0`
 - In all scripts, replace opening of a new Devnet by : 
 ```typescript
 const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
 ```
   and remove `kill` commands.  
-Most of the scripts in the subdirectories are using an already running devnet-rs.
+Most of the scripts in the subdirectories are using an already running devnet.
 
 ### Others :
 
-You can find in this repo tons of other scripts. Dig in and find many useful examples of code (exotic signatures, Ledger Nano, L1L2 messaging, events handling, STRK fees, WebSocket, ...).  
+You can find in this repo tons of other scripts. Dig in and find many useful examples of code (exotic signatures, Ledger Nano, L1L2 messaging, events handling, WebSocket, SNIP-9 outside execution, SNIP-29 paymaster ...).  
 To simplify the test of these scripts, take advantage to install the extension `code runner`. In the code window, right click, then `run code`.
 
 ## Demo DAPPs :
@@ -93,9 +93,9 @@ Explore the code to see how to communicate with the wallet extensions of your br
 
 ## 🤔 Questions?
 
-Have a look in the starknet.js [documentation](https://www.starknetjs.com/docs/next/guides/intro).
+Have a look in the starknet.js [documentation](https://starknetjs.com/docs/next/guides/intro).
 
-Ask in #starknet-js channel in the [Starknet Discord](https://discord.gg/C2JsG2j7Fs)
+Ask in #starknet-js channel in the [Starknet Discord](https://discord.com/channels/793094838509764618/1270119831559078061)
 
 Philippe. ROSTAN @ critical.devs.fr - Phil26#1686 on Discord
 

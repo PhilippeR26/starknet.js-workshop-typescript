@@ -1,6 +1,6 @@
-// create a new abstracted account in devnet-rs
+// create a new abstracted account in Devnet
 // launch with npx ts-node src/scripts/10.createAccountAbstraction.ts
-// Coded with Starknet.js v6.23.0
+// Coded with Starknet.js v7.1.0 & Devnet v0.4.0
 
 import { Account, ec, json, hash, CallData, RpcProvider, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";
@@ -13,7 +13,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 async function main() {
-    // launch devnet-rs with a new console window
+    // launch Devnet with a new console window
     const outputStream = fs.createWriteStream("./src/scripts/devnet-out.txt");
     await events.once(outputStream, "open");
     // the following line is working in Linux. To adapt or remove for other OS
@@ -25,9 +25,12 @@ async function main() {
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
-    console.log("devnet-rs : url =", devnet.provider.url);
-    console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-    console.log("Provider connected to Starknet-devnet-rs");
+    console.log("Devnet : url =", devnet.provider.url);
+    console.log(
+        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        ", rpc", await myProvider.getSpecVersion(),
+        ", SN version =", (await myProvider.getBlock()).starknet_version);
+    console.log("Provider connected to Starknet-Devnet");
 
     // initialize existing predeployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
@@ -47,7 +50,7 @@ async function main() {
     const compiledAAaccount = json.parse(
         fs.readFileSync("./compiledContracts/cairo060/myAccountAbstraction-old.json").toString("ascii")
     );
-//    const AAaccountClashHass = "0x1d926edb81b7ef0efcb67dd4558a6dffc2bf31a8bc9c3fe7832a5ec3d1b70da";
+    //    const AAaccountClashHash = "0x1d926edb81b7ef0efcb67dd4558a6dffc2bf31a8bc9c3fe7832a5ec3d1b70da";
     const { transaction_hash: declTH, class_hash: decCH } = await account0.declare({ contract: compiledAAaccount });
     console.log('Customized account class hash =', decCH);
     await myProvider.waitForTransaction(declTH);
@@ -61,13 +64,13 @@ async function main() {
     await devnet.provider.mint(AAcontractAddress, 100n * 10n ** 18n, "WEI"); // 100 STRK
     // deploy account
     const AAaccount = new Account(myProvider, AAcontractAddress, AAprivateKey);
-    const { transaction_hash, contract_address } = await AAaccount.deployAccount({ classHash: decCH, constructorCalldata: AAaccountConstructorCallData, addressSalt: AAstarkKeyPub }, { maxFee: 9_000_000_000_000_000 });
+    const { transaction_hash, contract_address } = await AAaccount.deployAccount({ classHash: decCH, constructorCalldata: AAaccountConstructorCallData, addressSalt: AAstarkKeyPub });
     console.log('✅ New customized account created.\n   final address =', contract_address);
     await myProvider.waitForTransaction(transaction_hash);
 
     outputStream.end();
     const pid: string[] = await kill(DEVNET_PORT);
-    console.log("Devnet-rs stopped. Pid :", pid, "\nYou can close the log window.");
+    console.log("Devnet stopped. Pid :", pid, "\nYou can close the log window.");
 }
 main()
     .then(() => process.exit(0))

@@ -1,6 +1,6 @@
 // declare & deploy a contract.
 // launch with npx ts-node src/scripts/5.declareDeployContractOZ.ts
-// Coded with Starknet.js v6.23.0
+// Coded with Starknet.js v7.1.0 & Devnet v0.4.0
 
 import { Account, CallData, Contract, json, RpcProvider, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";
@@ -12,7 +12,7 @@ import kill from "cross-port-killer";
 
 
 async function main() {
-    // launch devnet-rs with a new console window
+    // launch Devnet with a new console window
     const outputStream = fs.createWriteStream("./src/scripts/devnet-out.txt");
     await events.once(outputStream, "open");
     // the following line is working in Linux. To adapt or remove for other OS
@@ -24,9 +24,13 @@ async function main() {
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
-    console.log("devnet-rs : url =", devnet.provider.url);
-    console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-    console.log("Provider connected to Starknet-devnet-rs");
+    console.log("Devnet : url =", devnet.provider.url);
+    console.log(
+        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()), 
+        ", rpc", await myProvider.getSpecVersion(),
+        ", SN version =", (await myProvider.getBlock()).starknet_version,
+    );
+    console.log("Provider connected to Starknet-devnet");
 
     // initialize existing predeployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
@@ -50,7 +54,7 @@ async function main() {
     const myTestContract = new Contract(testSierra.abi, deployResponse.deploy.contract_address, myProvider);
     console.log('✅ Test Contract connected at =', myTestContract.address);
 
-    // 👉 Launch script 11 to test the contract & close devnet-rs
+    // 👉 Launch script 11 to test the contract & close Devnet
 }
 main()
     .then(() => process.exit(0))

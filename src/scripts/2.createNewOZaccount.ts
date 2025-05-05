@@ -1,6 +1,6 @@
 // Create a new OZ 17 account in devnet
 // Launch with npx ts-node src/scripts/2.createNewOZaccount.ts
-// Coded with Starknet.js v7.0.1 & Devnet 0.3.0
+// Coded with Starknet.js v7.1.0 & Devnet 0.4.0
 
 import { Account, ec, json, hash, CallData, RpcProvider, stark, shortString, config, ETransactionVersion } from "starknet";
 import { Devnet, DevnetProvider } from "starknet-devnet";
@@ -84,7 +84,7 @@ async function main() {
     await devnet.provider.mint(accountAddress, 100n * 10n ** 18n, "FRI"); // 100 STRK
 
     // deploy account
-    const OZaccount = new Account(myProvider, accountAddress, privateKey, undefined, ETransactionVersion.V2);
+    const OZaccount = new Account(myProvider, accountAddress, privateKey);
     console.log("Deploy account...");
     const { transaction_hash, contract_address } = await OZaccount.deployAccount({
         classHash: contractClassHash,

@@ -1,6 +1,6 @@
 // Deploy and use an ERC20, monetized by a new account
 // Launch with : npx ts-node src/starknet_jsNewAccount.ts
-// Coded with Starknet.js v6.23.0
+// Coded with Starknet.js v7.1.0 & Devnet v0.4.0
 
 import fs from "fs";
 import { Account, Contract, ec, json, hash, CallData, Call, Calldata, RpcProvider, shortString } from "starknet";
@@ -15,7 +15,7 @@ dotenv.config();
 
 
 async function main() {
-    // launch devnet-rs with a new console window
+    // launch Devnet with a new console window
     const outputStream = fs.createWriteStream("./src/scripts/devnet-out.txt");
     await events.once(outputStream, "open");
     // the following line is working in Linux. To adapt or remove for other OS
@@ -27,9 +27,13 @@ async function main() {
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
-    console.log("devnet-rs : url =", devnet.provider.url);
-    console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-    console.log("Provider connected to Starknet-devnet-rs");
+    console.log("Devnet : url =", devnet.provider.url);
+    console.log(
+        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        ", rpc", await myProvider.getSpecVersion(),
+        ", SN version =", (await myProvider.getBlock()).starknet_version,
+    );
+    console.log("Provider connected to Starknet-Devnet");
 
     // initialize existing pre-deployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
@@ -59,8 +63,9 @@ async function main() {
     const accountConstructorCallData: Calldata = accountCallData.compile("constructor", [starkKeyPubC20]);
     const C20contractAddress = hash.calculateContractAddressFromHash(starkKeyPubC20, decCH, accountConstructorCallData, 0);
     console.log('Precalculated account address=', C20contractAddress);
-    // fund account address before account creation (50 ETH)
-    await devnet.provider.mint(C20contractAddress, 50n * 10n ** 18n, "WEI");
+    // fund account address before account creation (10 ETH & 100 STRK)
+    await devnet.provider.mint(C20contractAddress, 10n * 10n ** 18n, "WEI");
+    await devnet.provider.mint(C20contractAddress, 100n * 10n ** 18n, "FRI");
     // deploy account
     const accountC20 = new Account(myProvider, C20contractAddress, privateKeyC20); // with Starknet.js v5.21.0, automatic recognize of the Cairo version of the account
     const { transaction_hash, contract_address } = await accountC20.deployAccount({ classHash: decCH, constructorCalldata: accountConstructorCallData, addressSalt: starkKeyPubC20 });
@@ -116,7 +121,7 @@ async function main() {
 
     // Mint 5 tokens to account address
     console.log("Invoke Tx - Minting 5 tokens to account0...");
-    const { transaction_hash: mintTxHash } = await erc20.mint(account0.address, 500n, { maxFee: 900_000_000_000_000 }); // maxFee optional
+    const { transaction_hash: mintTxHash } = await erc20.mint(account0.address, 500n);
     // Wait for the invoke transaction to be accepted on StarkNet
     console.log(`Waiting for Tx to be Accepted on Starknet - Minting...`);
     await myProvider.waitForTransaction(mintTxHash);
@@ -132,7 +137,7 @@ async function main() {
         amount: 1000
     });
     console.log("Transfer 1...");
-    const { transaction_hash: transferTxHash } = await account0.execute(transferCall, { maxFee: 900_000_000_000_000 });  // maxFee optional
+    const { transaction_hash: transferTxHash } = await account0.execute(transferCall);
     await myProvider.waitForTransaction(transferTxHash);
 
     console.log("Transfer 2...");
@@ -140,7 +145,7 @@ async function main() {
     await myProvider.waitForTransaction(transferTxHash2);
 
     console.log("Transfer 3...");
-    const { transaction_hash: transferTxHash3 } = await erc20.transfer(...transferCall.calldata as string[], { parseRequest: false });
+    const { transaction_hash: transferTxHash3 } = await erc20.withOptions({ parseRequest: false }).transfer(...transferCall.calldata as string[]);
     // Warning message is normal with the ParseRequest option de-activated
     await myProvider.waitForTransaction(transferTxHash3);
 
@@ -163,7 +168,7 @@ async function main() {
 
     outputStream.end();
     const pid: string[] = await kill(DEVNET_PORT);
-    console.log("Devnet-rs stopped. Pid :", pid, "\nYou can close the log window.");
+    console.log("Devnet stopped. Pid :", pid, "\nYou can close the log window.");
 
     console.log("✅ Test completed.");
 }

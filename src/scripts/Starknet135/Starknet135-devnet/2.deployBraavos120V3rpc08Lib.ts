@@ -2,7 +2,7 @@
 // Coded with Starknet.js v7.1.0 & devnet-rs v0.3.0 (rpc0.8) & starknet-devnet.js v0.2.2
 
 import { RpcProvider, Account, ec, json, stark, CallData, hash, type BigNumberish, constants } from "starknet";
-import { deployBraavosAccount, calculateAddressBraavos, estimateBraavosAccountDeployFee } from "../../braavos/3f.deployBraavos120v3rpc08";
+import { deployBraavosAccount, calculateAddressBraavos, estimateBraavosAccountDeployFee } from "../../braavos/3g.deployBraavos120v3rpc08";
 import { DevnetProvider } from "starknet-devnet";
 import fs from "fs";
 import * as dotenv from "dotenv";
@@ -15,7 +15,6 @@ dotenv.config();
 export async function deployAccountBraavos(
   myProvider: RpcProvider,
   account0: Account,
-  version: ETransactionVersion,
 ): Promise<DeployAccountResp> {
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
 
@@ -53,10 +52,10 @@ export async function deployAccountBraavos(
   const myMaxFee = undefined;
   console.log("input maxFee=", { myMaxFee });
 
-  const estimatedFee = await estimateBraavosAccountDeployFee(privateKeyBraavosBase, myProvider, { version });
+  const estimatedFee = await estimateBraavosAccountDeployFee(privateKeyBraavosBase, myProvider, {});
   console.log({ estimatedFee });
 
-  const respDeploy = await deployBraavosAccount(privateKeyBraavosBase, myProvider, myMaxFee, version);
+  const respDeploy = await deployBraavosAccount(privateKeyBraavosBase, myProvider, myMaxFee);
   const txR = await myProvider.waitForTransaction(respDeploy.transaction_hash);
   console.log("Transaction receipt is success =", txR.isSuccess());
   const accountBraavos = new Account(myProvider, accountBraavosAddress, privateKeyBraavosBase);

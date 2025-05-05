@@ -1,7 +1,7 @@
 // Test transactions V 3 in devnet-rs v0.3.0 (rpc0.8
 // ).
-// launch with npx ts-node src/scripts/Starknet13/Starknet13-devnet/1a.transactionV3.ts
-// Coded with Starknet.js v6.0.0 B7
+// launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/6.transactionV3rpc08.ts
+// Coded with Starknet.js v7.1.0
 
 import { constants, Contract, Account, json, shortString, RpcProvider, types, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type EstimateFee } from "starknet";
 import fs from "fs";
@@ -21,14 +21,14 @@ dotenv.config();
 
 async function main() {
     // initialize Provider 
-    const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only starknet-devnet-rs
-        const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
-        if (!(await l2DevnetProvider.isAlive())) {
-            console.log("No l2 devnet.");
-            process.exit();
-        }
-    
-    // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8",specVersion:constants.SupportedRpcVersion.v08 }); // Sepolia Testnet 
+    // const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only starknet-devnet
+    //     const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
+    //     if (!(await l2DevnetProvider.isAlive())) {
+    //         console.log("No l2 devnet.");
+    //         process.exit();
+    //     }
+
+    const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8", specVersion: constants.SupportedRpcVersion.v08 }); // Sepolia Testnet 
     //const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.44:9550/rpc/v0_6" }); // local Sepolia Integration node
     //const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" }); //v0.6.0
 
@@ -41,15 +41,15 @@ async function main() {
 
     //process.exit(5);
     // *** Devnet
-    const accData = await l2DevnetProvider.getPredeployedAccounts();
-    // *** initialize existing predeployed account 0 of Devnet
-    const accountAddress0 = accData[0].address;
-    const privateKey0 = accData[0].private_key;
+    // const accData = await l2DevnetProvider.getPredeployedAccounts();
+    // // *** initialize existing predeployed account 0 of Devnet
+    // const accountAddress0 = accData[0].address;
+    // const privateKey0 = accData[0].private_key;
 
-    
+
     // *** initialize existing Sepolia Testnet account
-    // const accountAddress0 = account1OZSepoliaAddress;
-    // const privateKey0 = account1OZSepoliaPrivateKey;
+    const accountAddress0 = account1OZSepoliaAddress;
+    const privateKey0 = account1OZSepoliaPrivateKey;
     // *** initialize existing Sepolia Integration account
     // const privateKey0 = account1IntegrationOZprivateKey;
     // const accountAddress0 = account1IntegrationOZaddress;
@@ -69,7 +69,7 @@ async function main() {
 
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo210/reject.sierra.json").toString("ascii"));
     const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo210/reject.casm.json").toString("ascii"));
-     const contractAddress = "0x37bfdeb9c262566183211b89e85b871518eb0c32cbcb026dce9a486560a03e0"; //Sepolia Testnet
+    const contractAddress = "0x37bfdeb9c262566183211b89e85b871518eb0c32cbcb026dce9a486560a03e0"; //Sepolia Testnet
     // const contractAddress = "0x33852427be21d24eca46797a31363597f52afcc315763ce32e83e5218eed2e3"; //Sepolia Integration
     //const contractAddress = "0x362c175938ed6d1db7feb4559824d33bc443fdbaab0f3ab0180920a9f2b39f5"; // devnet
     //  const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm });
@@ -86,11 +86,11 @@ async function main() {
     myTestContract.connect(account0);
 
     // ********** transaction V3
-        console.log("Transaction V3 in progress...");
+    console.log("Transaction V3 in progress...");
     const myCall = myTestContract.populate("test_fail", [100]);
-     const { transaction_hash: txH0 } = await account0.execute(myCall, {version:3});
-     const txR0 = await myProvider.waitForTransaction(txH0);
-     console.log("tx0 OK.");
+    const { transaction_hash: txH0 } = await account0.execute(myCall, { version: 3 });
+    const txR0 = await myProvider.waitForTransaction(txH0);
+    console.log("tx0 OK.");
     // const fee: EstimateFee = await account0.estimateInvokeFee(myCall, { version: 3 });
     //             // type EstimateFee {
     //             //     gas_consumed: bigint;
@@ -109,8 +109,8 @@ async function main() {
     // });
     // const txR1 = await myProvider.waitForTransaction(txH1);
     // console.log("tx1 OK.");
-    
-    
+
+
 
     // *********** declare V3
 

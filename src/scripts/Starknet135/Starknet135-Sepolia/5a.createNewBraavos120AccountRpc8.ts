@@ -1,9 +1,9 @@
-// Deploy a new braavos 1.2.0 account in Sepolia Testnet.
-// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/5.createNewBraavos120Account.ts
+// Deploy a new braavos 1.2.0 account in Sepolia Testnet, using rpc0.8.
+// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/5a.createNewBraavos120AccountRpc8.ts
 // Use Starknet.js v7.1.0.
 
 import { Account, cairo, CallData, Contract, ec, hash, json, num, RpcProvider, shortString, stark, type BigNumberish } from "starknet";
-import { calculateAddressBraavos, deployBraavosAccount, estimateBraavosAccountDeployFee } from "../../braavos/3f.deployBraavos120v3rpc08";
+import { calculateAddressBraavos, deployBraavosAccount, estimateBraavosAccountDeployFee } from "../../braavos/3g.deployBraavos120v3rpc08";
 import { account1BraavosSepoliaAddress, account1BraavosSepoliaPrivateKey, account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { ethAddress, strkAddress } from "../../utils/constants";
 

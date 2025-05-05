@@ -1,6 +1,6 @@
-// interact with a contract that is already deployed on devnet-rs.
+// interact with a contract that is already deployed on Devnet.
 // launch with npx ts-node src/scripts/11.CallInvokeContract.ts
-// Coded with Starknet.js v6.23.0 
+// Coded with Starknet.js v7.1.0 & Devnet v0.4.0
 
 import { Contract, Account, json, RpcProvider } from "starknet";
 import fs from "fs";
@@ -15,11 +15,11 @@ dotenv.config();
 // 🚨🚨🚨 Before execution of this script, launch the script 9 then the script 4.
 //          👆👆👆
 async function main() {
-    const devnet = new DevnetProvider({ url: "http://127.0.0.1:" + DEVNET_PORT }); // running devnet-rs
+    const devnet = new DevnetProvider({ url: "http://127.0.0.1:" + DEVNET_PORT }); // running Devnet
     const myProvider = new RpcProvider({ nodeUrl: devnet.url });
-    console.log("Provider connected to Starknet-devnet-rs");
+    console.log("Provider connected to Starknet-devnet");
 
-    // initialize existing predeployed account 0 of Devnet-rs
+    // initialize existing predeployed account 0 of Devnet
     console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
     console.log('OZ_ACCOUNT_PRIVATE_KEY=', process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY);
     const privateKey0 = process.env.OZ_ACCOUNT0_DEVNET_PRIVATE_KEY ?? "";
@@ -27,11 +27,11 @@ async function main() {
     const account0 = new Account(myProvider, accountAddress0, privateKey0);
     console.log("Account 0 connected.\n");
 
-    // Connect the deployed Test instance in devnet-rs
+    // Connect the deployed Test instance in Devnet
 
     //          👇👇👇
     // 🚨🚨🚨 modify in accordance with result of script 4 or 5
-    const testAddress = "0x3d53a8dca668f794184faf138339fa06a0d9cadd6c27eb830dc58d27d9d8c52";
+    const testAddress = "0x2a843f4719d17b03be9fcdaa8d97e96f869e904fc68a271bf178e64ec155554";
     
     const compiledTest = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.sierra.json").toString("ascii"));
     const myTestContract = new Contract(compiledTest.abi, testAddress, myProvider);
@@ -52,7 +52,7 @@ async function main() {
     console.log("Final balance =", bal2);
     
     const pid: string[] = await kill(DEVNET_PORT);
-    console.log("Devnet-rs stopped. Pid :", pid,"\nYou can close the log window.");
+    console.log("Devnet stopped. Pid :", pid,"\nYou can close the log window.");
     console.log('✅ Test completed.');
 }
 main()

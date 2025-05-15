@@ -16,7 +16,7 @@ dotenv.config();
 //          👆👆👆
 
 async function main() {
-    const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: constants.SupportedRpcVersion.v08 });
+    const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
     const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
     // **** local Sepolia Testnet node
     //const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); 

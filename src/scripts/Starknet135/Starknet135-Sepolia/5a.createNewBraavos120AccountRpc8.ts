@@ -24,7 +24,7 @@ async function main() {
     // }
     // *** Sepolia testnet
     // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_7", specVersion: "0.7" });
-     const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8", specVersion: "0.8" });
+     const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8", specVersion: "0.8.1" });
     //  const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:6070/rpc/v0_8" }); // juno testnet local
 
     console.log(

@@ -32,7 +32,7 @@ export function getBraavosSignature(
 ): string[] {
     let txnHash: string = "";
     const det = details as V3DeployAccountSignerDetails;
-    const v3det = stark.v3Details(det, "0.8");
+    const v3det = stark.v3Details(det, "0.8.1");
     txnHash = hash.calculateDeployAccountTransactionHash(
         {
             contractAddress: det.contractAddress,
@@ -156,7 +156,7 @@ export async function estimateBraavosAccountDeployFee(
             tip,
         } as V3InvocationsSignerDetails
     );
-    const v3det = stark.v3Details({}, await provider.getSpecVersion());
+    const v3det = stark.v3Details({}, (await provider.getSpecVersion())as constants.SupportedRpcVersion);
     const response: EstimateFeeResponse = await provider.getDeployAccountEstimateFee(
         {
             classHash: BraavosBaseClassHash,

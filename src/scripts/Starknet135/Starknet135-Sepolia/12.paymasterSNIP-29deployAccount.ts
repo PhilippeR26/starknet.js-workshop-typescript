@@ -1,15 +1,15 @@
-// Use SNIP-29 paymaster
-// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/9.paymasterSNIP-29.ts
-// Coded with Starknet.js v7.1.0 +experimental
+// Deploy a contract with SNIP-29 paymaster  
+// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/12.paymasterSNIP-29deployAccount.ts
+// Coded with Starknet.js v7.1.0 + experimental
 
-import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, RPC07, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate } from "starknet";
+import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, RPC07, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, hash, ec, stark, CallData, type DeployTransaction, type ExecutableDeployTransaction, type PreparedTransaction } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
 import { ethAddress, strkAddress, USDCaddressTestnet } from "../../utils/constants";
 import axios from "axios";
 import { formatBalance } from "../../utils/formatBalance";
-import {displayBalances} from "./10.getBalance"
+import { displayBalances } from "./10.getBalance"
 dotenv.config();
 
 function displayFees(
@@ -17,12 +17,12 @@ function displayFees(
   tokenName: string,
   decimals: number) {
   const priceTokenInSTRK = formatBalance(BigInt(fees.gas_token_price_in_strk), 18);
-  console.log("Price of 1",tokenName,"=", priceTokenInSTRK, "STRK");
+  console.log("Price of 1", tokenName, "=", priceTokenInSTRK, "STRK");
   console.log("Price of 1 STRK =", 1 / Number(priceTokenInSTRK), tokenName);
   console.log("estimated fees (in STRK)", formatBalance(BigInt(fees.estimated_fee_in_strk), 18));
-  console.log("estimated fees (in",tokenName,")", formatBalance(BigInt(fees.estimated_fee_in_gas_token), decimals));
+  console.log("estimated fees (in", tokenName, ")", formatBalance(BigInt(fees.estimated_fee_in_gas_token), decimals));
   console.log("suggested max fees (estim x5 in STRK)", formatBalance(BigInt(fees.suggested_max_fee_in_strk), 18));
-  console.log("suggested max fees (estim x5 in",tokenName,")", formatBalance(BigInt(fees.suggested_max_fee_in_gas_token), decimals));
+  console.log("suggested max fees (estim x5 in", tokenName, ")", formatBalance(BigInt(fees.suggested_max_fee_in_gas_token), decimals));
 }
 
 async function main() {
@@ -83,32 +83,10 @@ async function main() {
   const versionSNIP9 = await account0.getSnip9Version();
   console.log("Account SNIP-9 compatibility :", versionSNIP9 === OutsideExecutionVersion.UNSUPPORTED ? "UNSUPPORTED" : versionSNIP9);
 
-  // const { data: answer } = await axios.post(
-  //   "https://sepolia.paymaster.avnu.fi",
-  //   {
-  //     id: 7,
-  //     jsonrpc: "2.0",
-  //     method: "paymaster_isAvailable",
-  //     params: {},
-  //   },
-  //   { headers: { "Content-Type": "application/json" } }
-  // );
-  // console.log('Answer axios paymaster_isAvailable =', answer);
   await displayBalances(account0.address, myProvider);
   const res = await account0.paymaster.isAvailable()
   console.log("url:", account0.paymaster.nodeUrl, ", isAvailable=", res);
 
-  // const { data: respSupported } = await axios.post(
-  //   "https://sepolia.paymaster.avnu.fi",
-  //   {
-  //     id: 7,
-  //     jsonrpc: "2.0",
-  //     method: "paymaster_getSupportedTokens",
-  //     params: {},
-  //   },
-  //   { headers: { "Content-Type": "application/json" } }
-  // );
-  // console.log('Answer axios paymaster_getSupportedTokens =', respSupported);
   const supported: TokenData[] = await account0.paymaster.getSupportedTokens();
   console.log("supported =", supported);
   const isETHsupported = supported.some((token: TokenData) =>
@@ -118,80 +96,74 @@ async function main() {
     num.toHex64(token.address) === USDCaddressTestnet);
   console.log("isUSDCsupported =", isUSDCsupported);
 
-  const strkSierra = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20mintableDecimalsOZ081.sierra.json").toString("ascii"));
-  const strkContract = new Contract(strkSierra.abi, strkAddress, account0);
-  const myCall = strkContract.populate("transfer",
-    {
-      recipient: accountETHoz17snip9Address,
-      amount: 1n * 10n ** 3n,
-    });
+  // const compiled260Sierra = json.parse(fs.readFileSync("./compiledContracts/cairo260/hello.sierra.json").toString("ascii"));
+  // const compiled260Casm = json.parse(fs.readFileSync("./compiledContracts/cairo260/hello.casm.json").toString("ascii"));
+  //const contractClassH = hash.computeContractClassHash(compiled260Sierra);
+  const newAccountClassH = "0x0540d7f5ec7ecf317e68d48564934cb99259781b1ee3cedbbc37ec5337f8e688";// OZ 17 SNIP-9
+  console.log("Class Hash of new account =", newAccountClassH);
+  // const deploy260Response = await account0.deployContract({ classHash: contractClassH });
+  // const contract260Address = deploy260Response.address;
+  // console.log({ contract260Address });
+  // process.exit(5);
+  const privateKey = stark.randomAddress();
+  console.log('New OZ account:\nprivateKey=', privateKey);
+  const starkKeyPub = ec.starkCurve.getStarkKey(privateKey);
+  console.log('publicKey=', starkKeyPub);
+
+
+  // const strkSierra = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20mintableDecimalsOZ081.sierra.json").toString("ascii"));
+  // const strkContract = new Contract(strkSierra.abi, strkAddress, account0);
+  // const myCall = strkContract.populate("transfer",
+  //   {
+  //     recipient: accountETHoz17snip9Address,
+  //     amount: 1n * 10n ** 3n,
+  //   });
   // const typed = await account0.paymaster.buildTypedData(account0.address, [myCall]);
   // console.log("typedData", typed);
 
   // const gasToken = "0x30058f19ed447208015f6430f0102e8ab82d6c291566d7e73fe8e613c3d2ed"  // SWAY
   // const gasToken = "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";  // ETH
   // const gasToken = "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"  // STRK
-   const gasToken = "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080"  // USDC
-  const built = await account0.paymaster.buildTransaction({
-    type: 'invoke',
-    invoke: {
-      userAddress: account0.address,
-      calls: [myCall],
+  const gasToken = "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080"  // USDC
+
+  const OZaccountConstructorCallData = CallData.compile({ publicKey: starkKeyPub });
+  const OZcontractAddress = hash.calculateContractAddressFromHash(
+    starkKeyPub,
+    newAccountClassH,
+    OZaccountConstructorCallData,
+    0
+  );
+  const deployTx: DeployTransaction = {
+    type: 'deploy',
+    deployment: {
+      class_hash: newAccountClassH,
+      calldata: [starkKeyPub],
+      address: OZcontractAddress,
+      salt: starkKeyPub,
+      version: 1,
     }
-  }, {
+  };
+  const builtUSDC: PreparedTransaction = await paymasterRpc.buildTransaction(deployTx, {
     version: '0x1',
     feeMode: { mode: 'default', gasToken },
     // timeBounds?: PaymasterTimeBounds;
   });
-  const builtUSDC = await account0.paymaster.buildTransaction({
-    type: 'invoke',
-    invoke: {
-      userAddress: account0.address,
-      calls: [myCall],
-    }
-  }, {
-    version: '0x1',
-    feeMode: { mode: 'default', gasToken: "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080" }, // USDC
-    // timeBounds?: PaymasterTimeBounds;
-  });
 
-  const builtSWAY = await account0.paymaster.buildTransaction({
-    type: 'invoke',
-    invoke: {
-      userAddress: account0.address,
-      calls: [myCall],
-    }
-  }, {
-    version: '0x1',
-    feeMode: { mode: 'default', gasToken: "0x30058f19ed447208015f6430f0102e8ab82d6c291566d7e73fe8e613c3d2ed" }, // SWAY
-    // timeBounds?: PaymasterTimeBounds;
-  });
 
-  console.log("builtTransactionETH", built.fee);
-  console.log("builtTransactionUSDC", builtUSDC.fee);
-  console.log("builtTransactionSWAY", builtSWAY.fee);
-  console.log("\nETH:");
-  displayFees(built.fee, "ETH", 18);
+
+  console.log("builtTransactionUSDC", builtUSDC);
   console.log("\nUSDC:");
   displayFees(builtUSDC.fee, "USDC", 6);
-  console.log("\nSWAY:");
-  displayFees(builtSWAY.fee, "SWAY", 6);
 
-  // process.exit(5);
-  console.log(("Processing with USDC..."));
-  const res2 = await account0.execute(
-    myCall,
-    {
-      paymaster: {
-        feeMode: { mode: "default", gasToken },
-        // feeMode:{mode:"sponsored"},
-        maxEstimatedFeeInGasToken: builtUSDC.fee.suggested_max_fee_in_gas_token,
-      }
-    }
-  );
-  const txR2 = await myProvider.waitForTransaction(res2.transaction_hash);
-  console.log("Transaction hash :", res2.transaction_hash);
-  console.log("Transaction receipt :", txR2.statusReceipt);
+   process.exit(5);
+  const deploy2Tx: ExecutableDeployTransaction = deployTx;
+  const executeResp = await paymasterRpc.executeTransaction(deploy2Tx, {
+    version: '0x1',
+    feeMode: { mode: 'default', gasToken },
+    // timeBounds?: PaymasterTimeBounds;
+  });
+  console.log("executeResp", executeResp);
+
   await displayBalances(account0.address, myProvider);
 
   console.log("✅ Test performed.");

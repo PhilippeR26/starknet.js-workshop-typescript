@@ -1,34 +1,52 @@
 // Calculate private key from ArgentX seed phrase.
-// Coded with Starknet.js v5.19.5, starknet-devnet 0.6.1
+// Coded with Starknet.js v7.2.0, starknet-Devnet 0.4.0
 // launch with npx ts-node src/scripts/argentX/4.getPrivFromArgentXSeed.ts
-import { CallData, ec, hash } from "starknet";
+import { CairoCustomEnum, CairoOption, CairoOptionVariant, CallData, ec, hash, type BigNumberish } from "starknet";
 import * as mStarknet from '@scure/starknet';
 import * as bip32 from "@scure/bip32";
 import * as bip39 from '@scure/bip39';
 
 const mnemonic = "inquiry tuition toe harvest vanish dress doctor maid divorce mystery cross loyal";
-const contractAXclassHash = "0x029927c8af6bccf3f6fda035981e765a7bdbf18a2dc0d630494f8758aa908e2b";
+const contractAXclassHash = "0x036078334509b514626504edc9fb252328d1a240e4e948bef8d0c08dff45927f"; // v0.4.0
 
 const masterSeed = bip39.mnemonicToSeedSync(mnemonic);
 const hdKey1 = bip32.HDKey.fromMasterSeed(masterSeed).derive("m/44'/60'/0'/0/0");
 const hdKey2 = bip32.HDKey.fromMasterSeed(hdKey1.privateKey!)
 const pathBase = "m/44'/9004'/0'/0/";
 
-for (let i = 0; i < 5; i++) {
+for (let i = 0; i < 10; i++) {
     const path = pathBase + String(i);
     const hdKeyi = hdKey2.derive(path);
     console.log("path =", path);
     const starknetPrivateKey = "0x" + mStarknet.grindKey(hdKeyi.privateKey!);
     console.log("privateKey =", starknetPrivateKey);
+
     const starkKeyPubAX = ec.starkCurve.getStarkKey(starknetPrivateKey);
-    const constructorAXCallData=CallData.compile([starkKeyPubAX,0]);
+    // ****** up until v0.3.1:
+    // const constructorAXCallData=CallData.compile([starkKeyPubAX,0]); 
+    // ****** from v0.4.0:
+    type StarknetSigner = {
+        pubkey: BigNumberish
+    };
+    const accountSigner: StarknetSigner = { pubkey: starkKeyPubAX };
+    const axSigner = new CairoCustomEnum({ Starknet: accountSigner });
+    const axGuardian = new CairoOption<unknown>(CairoOptionVariant.None)
+    const constructorAXCallData = CallData.compile({
+        owner: axSigner,
+        guardian: axGuardian
+    });
+
     const accountAXAddress = hash.calculateContractAddressFromHash(starkKeyPubAX, contractAXclassHash, constructorAXCallData, 0);
     console.log('Account address=', accountAXAddress);
 }
+
+// 0x0739D69A3877Fa6E759eAa7d1024e2F9cB643D6c7f5B08FFeFcD84D3C8CbcB4E
+
 // The addresses calculation is valid only for the accounts created after the release of the new Cairo 1 account contract (v0.3.0). For accounts created earlier, you have to try with older classes : 
 
 // |version|                   class hash                                       |
 // | ----- | ------------------------------------------------------------------ |
+// |v0.4.0 |0x036078334509b514626504edc9fb252328d1a240e4e948bef8d0c08dff45927f |
 // |v0.3.1|0x029927c8af6bccf3f6fda035981e765a7bdbf18a2dc0d630494f8758aa908e2b|
 // |v0.3.0 |0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003   |
 // |v0.2.3.1|0x033434ad846cdd5f23eb73ff09fe6fddd568284a0fb7d1be20ee482f044dabe2 |

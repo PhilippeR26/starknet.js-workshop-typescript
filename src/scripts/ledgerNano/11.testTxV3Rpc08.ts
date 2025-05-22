@@ -1,7 +1,7 @@
 // Use a Ledger Nano S+/X Starknet APP 2.3.1 to sign a transaction in a node rpc 0.8.
 // Use of a Starknet.js signer
 // Launch with npx ts-node src/scripts/ledgerNano/11.testTxV3Rpc08.ts
-// Coded with Starknet.js v7.0.0-beta.3 + experimental & devnet-rs v0.3.0 & starknet-devnet.js v0.2.2
+// Coded with Starknet.js v7.3.0 & devnet-rs v0.4.1 & starknet-devnet.js v0.4.0
 
 import { RpcProvider, Account, Contract, json, shortString, LedgerSigner221, constants, type V2InvocationsSignerDetails, type Call, hash, type V3InvocationsSignerDetails, getLedgerPathBuffer111, type TypedData, getLedgerPathBuffer221, type BigNumberish, CallData, stark, ec, ETransactionVersion, config, logger, LedgerSigner231 } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
@@ -34,7 +34,7 @@ async function main() {
   // The blind signing parameter must be activated.
   // The ledger shall not be locked when launching this script.
   //          👆👆👆
-  const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: "0.8" });
+  const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: "0.8.1" });
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   if (!(await l2DevnetProvider.isAlive())) {
     console.log("No l2 devnet.");

@@ -30,7 +30,7 @@ async function main() {
   // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_8" });
   // ********* Sepolia Testnet **************
   // local pathfinder Sepolia Testnet node
-  const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8", specVersion: "0.8" });
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8", specVersion: "0.8.1" });
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
   // local Juno Sepolia Testnet node
@@ -113,10 +113,10 @@ async function main() {
   const supported: TokenData[] = await accountEthOZ17.paymaster.getSupportedTokens();
   console.log("supported =", supported);
   const isETHsupported = supported.some((token: TokenData) =>
-    num.toHex64(token.address) === ethAddress);
+    num.toHex64(token.token_address) === ethAddress);
   console.log("isETHsupported =", isETHsupported);
   const isUSDCsupported = supported.some(token =>
-    num.toHex64(token.address) === USDCaddressTestnet);
+    num.toHex64(token.token_address) === USDCaddressTestnet);
   console.log("isUSDCsupported =", isUSDCsupported);
 
   const strkSierra = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20mintableDecimalsOZ081.sierra.json").toString("ascii"));
@@ -133,48 +133,53 @@ async function main() {
   // const gasToken = "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";  // ETH
   // const gasToken = "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"  // STRK
   const gasToken = "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080"  // USDC
-  const built = await accountEthOZ17.paymaster.buildTransaction({
-    type: 'invoke',
-    invoke: {
-      userAddress: accountEthOZ17.address,
-      calls: [myCall],
-    }
-  }, {
-    version: '0x1',
-    feeMode: { mode: 'default', gasToken: "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7" }, // ETH
-    // timeBounds?: PaymasterTimeBounds;
-  });
-  const builtUSDC = await accountEthOZ17.paymaster.buildTransaction({
-    type: 'invoke',
-    invoke: {
-      userAddress: accountEthOZ17.address,
-      calls: [myCall],
-    }
-  }, {
-    version: '0x1',
-    feeMode: { mode: 'default', gasToken: "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080" }, // USDC
-    // timeBounds?: PaymasterTimeBounds;
-  });
+  // const built = await accountEthOZ17.paymaster.buildTransaction({
+  //   type: 'invoke',
+  //   invoke: {
+  //     userAddress: accountEthOZ17.address,
+  //     calls: [myCall],
+  //   }
+  // }, {
+  //   version: '0x1',
+  //   feeMode: { mode: 'default', gasToken: "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7" }, // ETH
+  //   // timeBounds?: PaymasterTimeBounds;
+  // });
+  // const builtUSDC = await accountEthOZ17.paymaster.buildTransaction({
+  //   type: 'invoke',
+  //   invoke: {
+  //     userAddress: accountEthOZ17.address,
+  //     calls: [myCall],
+  //   }
+  // }, {
+  //   version: '0x1',
+  //   feeMode: { mode: 'default', gasToken: "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080" }, // USDC
+  //   // timeBounds?: PaymasterTimeBounds;
+  // });
 
-  console.log("builtTransactionETH", built.fee);
-  console.log("builtTransactionUSDC", builtUSDC.fee);
-  console.log("\nETH:");
-  displayFees(built.fee, "ETH", 18);
-  console.log("\nUSDC:");
-  displayFees(builtUSDC.fee, "USDC", 6);
+  // console.log("builtTransactionETH", built.fee);
+  // console.log("builtTransactionUSDC", builtUSDC.fee);
+  // console.log("\nETH:");
+  // displayFees(built.fee, "ETH", 18);
+  // console.log("\nUSDC:");
+  // displayFees(builtUSDC.fee, "USDC", 6);
 
   // process.exit(5);
   const multiplyFees = 100n;
-  const maxFee = BigInt(builtUSDC.fee.suggested_max_fee_in_gas_token) * multiplyFees;
-  console.log("maxFee =", formatBalance(maxFee, 6), "USDC");
+  // const maxFee = BigInt(builtUSDC.fee.suggested_max_fee_in_gas_token) * multiplyFees;
+  // console.log("maxFee =", formatBalance(maxFee, 6), "USDC");
   console.log(("Processing with USDC..."));
+
+  const feeEstimation = await accountEthOZ17.estimatePaymasterTransactionFee([myCall], { feeMode: { mode: "default", gasToken } });
+  console.log("feeEstimation USDC =", feeEstimation);
+
+
   const res2 = await accountEthOZ17.execute(
     myCall,
     {
       paymaster: {
         feeMode: { mode: "default", gasToken },
         // feeMode:{mode:"sponsored"},
-        maxEstimatedFeeInGasToken: BigInt(builtUSDC.fee.suggested_max_fee_in_gas_token) * multiplyFees,
+        // maxEstimatedFeeInGasToken: BigInt(builtUSDC.fee.suggested_max_fee_in_gas_token) * multiplyFees,
       }
     }
   );

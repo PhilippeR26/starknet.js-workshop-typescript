@@ -1,7 +1,7 @@
 // decode an event
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/3.testDecodeEvent.ts
-// Coded with Starknet.js v7.0.1 & Devnet 0.3.0
-import { RpcProvider, Account, shortString, json, Contract, cairo, logger, config, type RPC08, Provider, type SuccessfulTransactionReceiptResponse, num, hash, type constants } from "starknet";
+// Coded with Starknet.js v7.2.0 & Devnet 0.4.0
+import { RpcProvider, Account, shortString, json, Contract, cairo, logger, config, Provider, type SuccessfulTransactionReceiptResponse, num, hash, type constants, type GetTransactionReceiptResponse } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { ethAddress, strkAddress } from "../../utils/constants";
@@ -13,13 +13,16 @@ dotenv.config();
 
 async function main() {
   // ********* Sepolia Testnet **************
+  // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8"});
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8" });
+
   // local pathfinder Sepolia Testnet node
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://192.168.1.78:9545/rpc/v0_8" });
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
   // local Juno Sepolia Testnet node
-  // const myProvider = await RpcProvider.create({ nodeUrl: "http://192.168.1.78:6070/rpc/v0_8" });
-  const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:6070/rpc/v0_8" });
+  // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.78:6070/rpc/v0_8" });
+  // const myProvider = new RpcProvider({ nodeUrl: "http://localhost:6070/rpc/v0_8" });
   // ******** Sepolia Integration **************
   // const myProvider = new RpcProvider({ nodeUrl: "http://localhost:9550/rpc/v0_8" }); // local pathfinder Sepolia Integration node
   // const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.0:6095/rpc/v0_8" }); // local Juno Sepolia Integration node
@@ -46,9 +49,25 @@ async function main() {
   const sierraContract = await myProvider.getClassAt(contractAddress);
   const myContract = new Contract(sierraContract.abi, contractAddress, myProvider);
   const txH = "0x6ad75e507f4266d160bdafd2e59b1079d0f0add150886c1404381fe69bf961c";
-  const txR = await myProvider.getTransactionReceipt(txH);
-  const events = myContract.parseEvents(txR);
-  console.log("Ids :", events[0]["openzeppelin_token::erc1155::erc1155::ERC1155Component::TransferBatch"].ids);
+  const txR: GetTransactionReceiptResponse = await myProvider.getTransactionReceipt(txH);
+  if (txR.isSuccess()) {
+    const listEvents = txR.value.events;
+    console.log("Events :", listEvents);
+  }
+  console.log("Transaction receipt R0 :", txR);
+  txR.match({
+    success: (txRm) => {
+      console.log('Success0', (txR.value as SuccessfulTransactionReceiptResponse).events);
+      console.log('Success1', txRm.events);
+      const events = myContract.parseEvents(txR);
+      console.log("Events :", events)
+    },
+    _: () => {
+      console.log('Unsuccess');
+    },
+  });
+  const events2 = myContract.parseEvents(txR);
+  console.log("Ids :", events2[0]["openzeppelin_token::erc1155::erc1155::ERC1155Component::TransferBatch"].ids);
 
   console.log("✅ Test performed.");
 }

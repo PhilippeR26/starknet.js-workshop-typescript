@@ -125,6 +125,11 @@ async function main() {
       recipient: accountETHoz17snip9Address,
       amount: 1n * 10n ** 3n,
     });
+const myCall2 = strkContract.populate("transfer",
+    {
+      recipient: account3ArgentXSepoliaAddress,
+      amount: 1n * 10n ** 3n,
+    });
   // const typed = await account0.paymaster.buildTypedData(account0.address, [myCall]);
   // console.log("typedData", typed);
 

@@ -7,8 +7,8 @@ import { type DeployContractResponse, type Calldata, type DeployAccountContractP
 import { EDAMode, EDataAvailabilityMode, ETransactionVersion, ETransactionVersion3, type ResourceBounds } from "@starknet-io/types-js";
 
 
-const BraavosBaseClassHash = "0x3d16c7a9a60b0593bd202f660a28c5d76e0403601d9ccc7e4fa253b6a70c201";
-const BraavosAccountClassHash = "0x3957f9f5a1cbfe918cedc2015c85200ca51a5f7506ecb6de98a5207b759bf8a"; // v1.2.0
+export const BraavosBaseClassHash = "0x3d16c7a9a60b0593bd202f660a28c5d76e0403601d9ccc7e4fa253b6a70c201";
+export const BraavosAccountClassHash = "0x3957f9f5a1cbfe918cedc2015c85200ca51a5f7506ecb6de98a5207b759bf8a"; // v1.2.0
 
 
 type CalcV3DeployAccountTxHashArgs = {
@@ -77,7 +77,7 @@ export function getBraavosSignature(
     return signature
 }
 
-const BraavosConstructor = (starkKeyPubBraavos: string) => CallData.compile({ public_key: starkKeyPubBraavos });
+export const BraavosConstructor = (starkKeyPubBraavos: string) => CallData.compile({ public_key: starkKeyPubBraavos });
 
 export function calculateAddressBraavos(
     privateKeyBraavos: BigNumberish,
@@ -91,7 +91,7 @@ export function calculateAddressBraavos(
         0);
 }
 
-async function buildBraavosAccountDeployPayload(
+export async function buildBraavosAccountDeployPayload(
     privateKeyBraavos: BigNumberish,
     {
         classHash,

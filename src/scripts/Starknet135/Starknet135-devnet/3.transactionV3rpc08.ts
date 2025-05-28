@@ -1,9 +1,8 @@
-// Test transactions V 3 in devnet-rs v0.3.0 (rpc0.8
-// ).
-// launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/6.transactionV3rpc08.ts
-// Coded with Starknet.js v7.1.0
+// Test transactions V 3 in rpc0.8, with new txR.
+// launch with npx ts-node src/scripts/Starknet135/Starknet135-devnet/3.transactionV3rpc08.ts
+// Coded with Starknet.js v7.1.0+experimental & Devnet v0.4.1 & starknet-devnet.js v0.4.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, types, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type EstimateFee } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, types, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type EstimateFee, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -89,12 +88,35 @@ async function main() {
 
     // ********** transaction V3
     console.log("Transaction V3 in progress...");
-    const myCall = myTestContract.populate("test_fail", [100]);
+    const myCall = myTestContract.populate("test_fail", [100]); // will succeed
+    // const fees = await account0.estimateInvokeFee(myCall, { version: 3 });
+    // console.log("Estimated fees:", fees);
     const { transaction_hash: txH0 } = await account0.execute(myCall, { version: 3 });
     const txR0 = await myProvider.waitForTransaction(txH0);
-    console.log("tx0 OK. txR=", txR0);
-    const txTrace= await myProvider.getTransactionTrace(txH0);
-    console.log("txTrace=",txTrace);
+    // console.log("txR=", txR0);
+    if (txR0.isSuccess()) { console.log("txSuccess", txR0.value.transaction_hash); }
+
+    const myCall2 = myTestContract.populate("test_fail", [110]);// will fail
+    const { transaction_hash: txH2 } = await account0.execute(myCall2, {
+        version: 3,
+        resourceBounds: {
+            l2_gas: { max_amount: '0x11fb20', max_price_per_unit: '0x59682f00' },
+            l1_gas: { max_amount: '0x0', max_price_per_unit: '0x59682f00' },
+            l1_data_gas: { max_amount: '0x1b0', max_price_per_unit: '0x59682f00' }
+        },
+    });
+    const txR2 = await myProvider.waitForTransaction(txH2, { successStates: ["ACCEPTED_ON_L2", "ACCEPTED_ON_L1", "REVERTED"] });
+    if (txR2.isSuccess()) { console.log("txSuccess", txR2.value.transaction_hash); }
+    if (txR2.isReverted()) { console.log("txReverted", txR2.value.revert_reason); }
+    txR2.match({
+        success: (txRs: SuccessfulTransactionReceiptResponse) => {console.log("Success reason:", txRs.transaction_hash); },
+        reverted: (txRr:RevertedTransactionReceiptResponse) => {
+            console.log("Reverted reason:", txRr.revert_reason);
+        },
+        _: () => { console.log(('Other state')); }
+    });
+
+
 
     const finalEth = await contractETH.balanceOf(account0.address);
     const finalStrk = await contractSTRK.balanceOf(account0.address);

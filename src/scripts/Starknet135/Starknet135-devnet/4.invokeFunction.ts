@@ -1,4 +1,4 @@
-// Test provider.invokeFunction, to use an external signature.
+// Test provider.invokeFunction (only rpc0.8), to use an external signature.
 // launch with npx ts-node src/scripts/Starknet135/Starknet135-devnet/4.invokeFunction.ts
 // Coded with Starknet.js v7.3.0 & Devnet v0.4.1 & starknet-devnet.js v0.4.0
 
@@ -82,7 +82,12 @@ async function main() {
     const signature = await account0Signer.signTransaction([myCall], details);
 
     const calldataTx: Calldata = transaction.getExecuteCalldata([myCall], "1");
-    const functionInvocation: Invocation = { signature, ...myCall, contractAddress: account0.address, calldata: calldataTx };
+    const functionInvocation: Invocation = { 
+        signature, 
+        ...myCall, 
+        contractAddress: account0.address, 
+        calldata: calldataTx 
+    };
     const detailsInvoke: InvocationsDetailsWithNonce = {
         nonce: details.nonce,
         version: details.version,

@@ -1,9 +1,9 @@
-// Deploy a contract with SNIP-29 paymaster  
-// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/12.paymasterSNIP-29deployAccount.ts
-// Coded with Starknet.js v7.1.0 + experimental
-// 🚨🚨🚨 Do not work
+// Deploy an ArgentX account with SNIP-29 paymaster.
+// Needs some USDC in the account.
+// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/13a.paymasterSNIP-29deployAccountAXtx.ts
+// Coded with Starknet.js v7.3.0 + experimental
 
-import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, RPC07, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, hash, ec, stark, CallData, type DeployTransaction, type ExecutableDeployTransaction, type PreparedTransaction } from "starknet";
+import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, RPC07, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, hash, ec, stark, CallData, type DeployTransaction, type ExecutableDeployTransaction, type PreparedTransaction, type Call, type BigNumberish, CairoOption, CairoCustomEnum, CairoOptionVariant } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
@@ -90,7 +90,7 @@ async function main() {
   console.log("url:", account0.paymaster.nodeUrl, ", isAvailable=", res);
 
   const supported: TokenData[] = await account0.paymaster.getSupportedTokens();
-  console.log("supported =", supported);
+  // console.log("supported =", supported);
   const isETHsupported = supported.some((token: TokenData) =>
     num.toHex64(token.token_address) === ethAddress);
   console.log("isETHsupported =", isETHsupported);
@@ -98,61 +98,81 @@ async function main() {
     num.toHex64(token.token_address) === USDCaddressTestnet);
   console.log("isUSDCsupported =", isUSDCsupported);
 
-    const newAccountClassH = "0x0540d7f5ec7ecf317e68d48564934cb99259781b1ee3cedbbc37ec5337f8e688";// OZ 17 SNIP-9
+  // const newAccountClassH = "0x0540d7f5ec7ecf317e68d48564934cb99259781b1ee3cedbbc37ec5337f8e688";// OZ 17 SNIP-9
+  const newAccountClassH = "0x036078334509b514626504edc9fb252328d1a240e4e948bef8d0c08dff45927f"; // ArgentX v0.4.0
   console.log("Class Hash of new account =", newAccountClassH);
-     const privateKey = stark.randomAddress();
+  const privateKey = stark.randomAddress();
   console.log('New OZ account:\nprivateKey=', privateKey);
   const starkKeyPub = ec.starkCurve.getStarkKey(privateKey);
   console.log('publicKey=', starkKeyPub);
 
 
-  
   // const gasToken = "0x30058f19ed447208015f6430f0102e8ab82d6c291566d7e73fe8e613c3d2ed"  // SWAY
   // const gasToken = "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";  // ETH
   // const gasToken = "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"  // STRK
   const gasToken = "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080"  // USDC
 
-  const OZaccountConstructorCallData = CallData.compile({ publicKey: starkKeyPub });
-  const OZcontractAddress = hash.calculateContractAddressFromHash(
+  type StarknetSigner = {
+    pubkey: BigNumberish
+  };
+  const accountAXsierra = json.parse(fs.readFileSync("./compiledContracts/cairo263/ArgentXAccount040.sierra.json").toString("ascii"));
+  const calldataAX = new CallData(accountAXsierra.abi);
+  const accountSigner: StarknetSigner = {
+    pubkey: starkKeyPub
+  };
+  const axSigner = new CairoCustomEnum({ Starknet: accountSigner });
+  const axGuardian = new CairoOption<CairoCustomEnum>(CairoOptionVariant.None);
+  const AXaccountConstructorCallData = calldataAX.compile("constructor", {
+    owner: axSigner,
+    guardian: axGuardian
+  });
+  console.log("constructor =", AXaccountConstructorCallData,
+  );
+  //const OZaccountConstructorCallData = CallData.compile({ publicKey: starkKeyPub });
+
+
+  const AXcontractAddress = hash.calculateContractAddressFromHash(
     starkKeyPub,
     newAccountClassH,
-    OZaccountConstructorCallData,
+    AXaccountConstructorCallData,
     0
   );
-  console.log("OZcontractAddress =", OZcontractAddress);
-  const resp0 = await account0.execute({ contractAddress: gasToken, entrypoint: "transfer", calldata: [OZcontractAddress, 2n * 10n ** 5n, 0n] });
-  const txR = await account0.waitForTransaction(resp0.transaction_hash);
-  console.log("txR", txR);
-  const deployTx: DeployTransaction = {
-    type: 'deploy',
-    deployment: {
-      class_hash: newAccountClassH,
-      calldata: [starkKeyPub],
-      address: OZcontractAddress,
-      salt: starkKeyPub,
-      version: 1,
-    }
-  };
-  const builtUSDC: PreparedTransaction = await paymasterRpc.buildTransaction(deployTx, {
-    version: '0x1',
-    feeMode: { mode: 'default', gasToken },
-    // timeBounds?: PaymasterTimeBounds;
-  });
-
-
-
-  console.log("builtTransactionUSDC", builtUSDC);
-  console.log("\nUSDC:");
-  displayFees(builtUSDC.fee, "USDC", 6);
+  console.log("AXcontractAddress =", AXcontractAddress);
 
   // process.exit(5);
-  const deploy2Tx: ExecutableDeployTransaction = deployTx;
-  const executeResp = await paymasterRpc.executeTransaction(deploy2Tx, {
-    version: '0x1',
-    feeMode: { mode: 'default', gasToken },
-    // timeBounds?: PaymasterTimeBounds;
+  const myCall: Call = {
+
+    contractAddress: constants.UDC.ADDRESS,
+    entrypoint: constants.UDC.ENTRYPOINT,
+    calldata: CallData.compile({
+      classHash: newAccountClassH,
+      salt: starkKeyPub,
+      unique: "0",
+      calldata: AXaccountConstructorCallData,
+    }),
+  };
+
+  const feeEstimation = await account0.estimatePaymasterTransactionFee([myCall], { feeMode: { mode: "default", gasToken } });
+  console.log("feeEstimation USDC =", feeEstimation);
+  console.log(displayFees(feeEstimation, "USDC", 6));
+
+  const respO = await account0.executePaymasterTransaction([myCall], { feeMode: { mode: "default", gasToken } }, feeEstimation.suggested_max_fee_in_gas_token
+  );
+  const txR = await account0.waitForTransaction(respO.transaction_hash);
+  console.log("txR =", txR);
+  const ContractDeployedSelector = num.toHex64(hash.getSelectorFromName("ContractDeployed"));
+  let deployedAddress: string = "";
+  txR.match({
+    success: (txR) => {
+      const events = txR.events;
+      const udcEvent = events.filter((event) => (num.toHex64(event.from_address) === constants.UDC.ADDRESS) && (num.toHex64(event.keys[0]) === ContractDeployedSelector));
+      deployedAddress = num.toHex64(udcEvent[0].data[0]);
+    },
+    _: () => {
+      console.log('Unsuccess');
+    }
   });
-  console.log("executeResp", executeResp);
+  console.log("deployedAddress =", deployedAddress);
 
   await displayBalances(account0.address, myProvider);
 
@@ -165,3 +185,5 @@ main()
     process.exit(1);
   });
 
+// txH= 0x3899703b88a0e4155711392dde5ac7824a7181023761d152d6abc97c2be5978
+// txH= 0x2634191493cbccfc4ab905d100aba1293ac8b221d04512ee19fa07db25e566b

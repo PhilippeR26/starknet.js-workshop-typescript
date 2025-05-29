@@ -136,12 +136,12 @@ async function main() {
     version: 1 as 1,
   };
   console.log("parameters in estimate=", deploymentData);
-  const estimatedFees: PaymasterFeeEstimate = await account0.estimatePaymasterTransactionFee([], {
+  const newAccount = new Account(myProvider, OZcontractAddress, privateKey, undefined, undefined, paymasterRpc);
+  const estimatedFees: PaymasterFeeEstimate = await newAccount.estimatePaymasterTransactionFee([], {
     deploymentData,
     feeMode: { mode: 'default', gasToken },
   });
 
-  const newAccount = new Account(myProvider, OZcontractAddress, privateKey, undefined, undefined, paymasterRpc);
   const resp = await newAccount.executePaymasterTransaction([], {
     deploymentData,
     feeMode: { mode: 'default', gasToken },

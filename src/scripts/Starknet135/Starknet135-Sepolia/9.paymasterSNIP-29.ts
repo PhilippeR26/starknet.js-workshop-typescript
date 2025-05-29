@@ -2,7 +2,7 @@
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/9.paymasterSNIP-29.ts
 // Coded with Starknet.js v7.3.0 +experimental
 
-import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, RPC07, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate } from "starknet";
+import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, RPC07, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, type PaymasterDetails } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
@@ -75,9 +75,9 @@ async function main() {
   // const privateKey0 = account4MainnetPrivateKey;
   // const accountAddress0 = account4MainnetAddress
 
-  const paymasterRpc = new PaymasterRpc({ default: true });
+  const myPaymaster = new PaymasterRpc({ nodeUrl:"https://sepolia.paymaster.avnu.fi" , });
 
-  const account0 = new Account(myProvider, accountAddress0, privateKey0, "1", constants.TRANSACTION_VERSION.V3, paymasterRpc);
+  const account0 = new Account(myProvider, accountAddress0, privateKey0, "1", constants.TRANSACTION_VERSION.V3, myPaymaster);
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   console.log('existing account connected.\n');
   const versionSNIP9 = await account0.getSnip9Version();
@@ -109,7 +109,9 @@ async function main() {
   //   { headers: { "Content-Type": "application/json" } }
   // );
   // console.log('Answer axios paymaster_getSupportedTokens =', respSupported);
-  const supported: TokenData[] = await account0.paymaster.getSupportedTokens();
+  const supported: TokenData[] = await myPaymaster.getSupportedTokens();
+  // or
+  // const supported: TokenData[] = await account0.paymaster.getSupportedTokens();
   // console.log("supported =", supported);
   const isETHsupported = supported.some((token: TokenData) =>
     num.toHex64(token.token_address) === ethAddress);
@@ -125,7 +127,7 @@ async function main() {
       recipient: accountETHoz17snip9Address,
       amount: 1n * 10n ** 3n,
     });
-const myCall2 = strkContract.populate("transfer",
+  const myCall2 = strkContract.populate("transfer",
     {
       recipient: account3ArgentXSepoliaAddress,
       amount: 2n * 10n ** 3n,
@@ -182,27 +184,21 @@ const myCall2 = strkContract.populate("transfer",
   // console.log("\nSWAY:");
   // displayFees(builtSWAY.fee, "SWAY", 6);
 
-  const feeEstimation = await account0.estimatePaymasterTransactionFee([myCall], { feeMode: { mode: "default", gasToken } });
+  const feesDetails: PaymasterDetails = {
+    feeMode: { mode: "default", gasToken },
+    timeBounds:{
+      executeBefore: new Date(Date.now()+60_000),
+      executeAfter: new Date(Date.now()),
+    }
+  };
+  const feeEstimation = await account0.estimatePaymasterTransactionFee([myCall], feesDetails);
   console.log("feeEstimation USDC =", feeEstimation);
-
   console.log(("Processing with USDC..."));
   const res2 = await account0.executePaymasterTransaction(
     [myCall],
-    {
-        feeMode: { mode: "default", gasToken },
-        // feeMode:{mode:"sponsored"},
-    },
+    feesDetails,
     feeEstimation.suggested_max_fee_in_gas_token
   );
-  // const res2 = await account0.execute(
-  //   [myCall],
-  //   {paymaster:{
-  //       feeMode: { mode: "default", gasToken },
-
-  //       // feeMode:{mode:"sponsored"},
-  //   }
-  //   }
-  // );
   const txR2 = await myProvider.waitForTransaction(res2.transaction_hash);
   console.log("Transaction hash :", res2.transaction_hash);
   console.log("Transaction receipt :", txR2.statusReceipt);

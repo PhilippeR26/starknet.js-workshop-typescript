@@ -1,4 +1,4 @@
-// Deploy a contract with SNIP-29 paymaster.
+// Deploy an OZ contract with SNIP-29 paymaster.
 // Needs some USDC in the account.
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/14.paymasterSNIP-29DeployAccountOZWallet.ts
 // Coded with Starknet.js v7.3.0 + experimental

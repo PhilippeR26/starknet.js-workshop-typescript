@@ -1,19 +1,18 @@
-// Deploy a Braavos account with SNIP-29 paymaster.
+// Deploy a Braavos account (created in the wallet, but not deployed) with SNIP-29 paymaster.
 // Needs some USDC in the account.
+// Needs also to know the private key of the account.
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/14b.paymasterSNIP-29DeployAccountBrWallet.ts
-// Coded with Starknet.js v7.3.0 + experimental
-// 🚨🚨🚨 Do not work
+// Coded with Starknet.js v7.4.0 + experimental
 
 import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, RPC07, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, hash, ec, stark, CallData, type DeployTransaction, type ExecutableDeployTransaction, type PreparedTransaction, type ExecutableUserTransaction, type DeployAccountContractTransaction, ETransactionVersion, type CairoVersion, type V3InvocationsSignerDetails, type UniversalDetails, type Signature, type ArraySignatureType, type EstimateFeeDetails } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
-import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
+import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address, newAccountPrivateKey } from "../../../A1priv/A1priv";
 import { ethAddress, strkAddress, USDCaddressTestnet } from "../../utils/constants";
 import axios from "axios";
 import { formatBalance } from "../../utils/formatBalance";
 import { displayBalances } from "./10.getBalance"
 import type { AccountDeploymentData } from "@starknet-io/types-js";
-import { BraavosBaseClassHash, BraavosConstructor, buildBraavosAccountDeployPayload, estimateBraavosAccountDeployFee } from "../../braavos/3g.deployBraavos120v3rpc08"
 dotenv.config();
 
 function displayFees(
@@ -101,114 +100,37 @@ async function main() {
     num.toHex64(token.token_address) === USDCaddressTestnet);
   console.log("isUSDCsupported =", isUSDCsupported);
 
-  const newAccountClassH = "0x0540d7f5ec7ecf317e68d48564934cb99259781b1ee3cedbbc37ec5337f8e688";// OZ 17 SNIP-9
-  console.log("Class Hash of new account =", newAccountClassH);
-  const privateKey = stark.randomAddress();
-  console.log('New OZ account:\nprivateKey=', privateKey);
-  const starkKeyPub = ec.starkCurve.getStarkKey(privateKey);
-  console.log('publicKey=', starkKeyPub);
-
-
-
   // const gasToken = "0x30058f19ed447208015f6430f0102e8ab82d6c291566d7e73fe8e613c3d2ed"  // SWAY
   // const gasToken = "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";  // ETH
   // const gasToken = "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"  // STRK
   const gasToken = "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080"  // USDC
 
-  const OZaccountConstructorCallData = CallData.compile({ publicKey: starkKeyPub });
-  const OZcontractAddress = hash.calculateContractAddressFromHash(
-    starkKeyPub,
-    newAccountClassH,
-    OZaccountConstructorCallData,
-    0
-  );
-  console.log("OZcontractAddress =", OZcontractAddress);
-  const resp0 = await account0.execute({ contractAddress: gasToken, entrypoint: "transfer", calldata: [OZcontractAddress, 2n * 10n ** 5n, 0n] });
-  const txR = await account0.waitForTransaction(resp0.transaction_hash);
-  // console.log("txR", txR);
-
-  // *** simulate the response of a wallet: 
-  // const deploymentData = wallet.deploymentData(StarknetWalletObject)
-  const nonce = constants.ZERO;
-  const txVersion = ETransactionVersion.V3;
-  const cairoVersion: CairoVersion = "1"; // dummy value, not used but mandatory
-  // Problem: to calculate signature, resourceBounds is needed, but not provided by SNIP-29 estimatePaymasterTransactionFee
-  const feeDetails: EstimateFeeDetails = { resourceBounds: {} }; // oops. Not available
-
-  const payload: DeployAccountContractTransaction = await buildBraavosAccountDeployPayload(
-    privateKey,
-    {
-      classHash: BraavosBaseClassHash.toString(),
-      addressSalt: starkKeyPub,
-      constructorCalldata: BraavosConstructor(starkKeyPub),
-      contractAddress: OZcontractAddress
-    },
-    {
-      chainId: await myProvider.getChainId(),
-      nonce,
-      version: txVersion,
-      walletAddress: OZcontractAddress,
-      cairoVersion: cairoVersion,
-      ...feeDetails
-    } as V3InvocationsSignerDetails
-  );
-  const sigdata: ArraySignatureType = stark.formatSignature(payload.signature!);
-  const deploymentData: AccountDeploymentData = {
-    address: OZcontractAddress,
-    calldata: [starkKeyPub],
-    salt: starkKeyPub,
-    class_hash: newAccountClassH,
-    sigdata,
-    version: 1
+  // *** response of the Braavos wallet: 
+  // result of frontend wallet.deploymentData(StarknetWalletObject);
+  const deploymentData = {
+    address: "0x1c1560e3e43972f9f87a2245a3c9e8fd73d4868017103a57d62547366eb7f18",
+    calldata: ["0x1f9d4d9bff5f7fb46ecbc44d806af3f8e1b36771c1bcc38cb484a3425d53ba"],
+    salt: "0x1f9d4d9bff5f7fb46ecbc44d806af3f8e1b36771c1bcc38cb484a3425d53ba",
+    class_hash: "0x03d16c7a9a60b0593bd202f660a28c5d76e0403601d9ccc7e4fa253b6a70c201",
+    sigdata: ["0x03957f9f5a1cbfe918cedc2015c85200ca51a5f7506ecb6de98a5207b759bf8a", "0x0", "0", "0", "0", "0", "0x0", "0x0", "0x0", "0x0", "0x534e5f5345504f4c4941", "0x35be8fa01889389d8a94821b2cc8e0f38467f2cbec5f88d85fbeda2a6d39e87", "0x7d6a85a276c5493dc5fa5c9f29152dfbd9b301afb8458ada5923652ff777d61"].map(num.toHex),
+    version: 1 as 1
   };
 
-
-  const deployTx: DeployTransaction = {
-    type: 'deploy',
-    deployment: {
-      class_hash: newAccountClassH,
-      calldata: [starkKeyPub],
-      address: OZcontractAddress,
-      salt: starkKeyPub,
-      version: 1,
-    }
-  };
-
-  const parameters = {
-    ...deploymentData,
-    sigdata: deploymentData.sigdata?.map((sig: any) => sig.startsWith("0x") ? sig : `0x${sig}`),
-    version: deploymentData.version as 1,
-  };
-  console.log("parameters in estimate=", parameters);
-  const build = await account0.estimatePaymasterTransactionFee([], {
-    deploymentData: parameters,
+  const BRcontractAddress = deploymentData.address;
+  console.log("parameters in estimate=", deploymentData);
+  // Problem to deploy a Braavos account in the backend : the server needs to have the private key of this account. So it needs user manual work in the Wallet... 
+  const newAccount = new Account(myProvider, BRcontractAddress, newAccountPrivateKey, undefined, undefined, paymasterRpc);
+  const estimatedFees: PaymasterFeeEstimate = await newAccount.estimatePaymasterTransactionFee([], {
+    deploymentData,
     feeMode: { mode: 'default', gasToken },
-  })
-
-
-  const builtUSDC: PreparedTransaction = await paymasterRpc.buildTransaction(deployTx, {
-    version: '0x1',
-    feeMode: { mode: 'default', gasToken },
-    // timeBounds?: PaymasterTimeBounds;
   });
 
-
-
-  console.log("builtTransactionUSDC", builtUSDC);
-  console.log("\nUSDC:");
-  displayFees(builtUSDC.fee, "USDC", 6);
-
-  const deploy3Tx: ExecutableUserTransaction = await account0.preparePaymasterTransaction(builtUSDC);
-  const executeResp = await paymasterRpc.executeTransaction(deploy3Tx, {
-    version: '0x1',
+  const resp = await newAccount.executePaymasterTransaction([], {
+    deploymentData,
     feeMode: { mode: 'default', gasToken },
-    // timeBounds?: PaymasterTimeBounds;
-  });
-  console.log("executeResp", executeResp);
-  await myProvider.waitForTransaction(executeResp.transaction_hash);
-
-  await displayBalances(account0.address, myProvider);
-
+  }, estimatedFees.suggested_max_fee_in_gas_token);
+  const txR2 = await newAccount.waitForTransaction(resp.transaction_hash);
+  console.log("txR2", txR2);
   console.log("✅ Test performed.");
 }
 main()

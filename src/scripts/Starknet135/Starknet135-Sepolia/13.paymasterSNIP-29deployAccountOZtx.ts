@@ -1,4 +1,4 @@
-// Deploy an account with SNIP-29 paymaster.
+// Deploy an OpenZeppelin account with SNIP-29 paymaster.
 // Needs some USDC in the account.
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/13.paymasterSNIP-29deployAccountOZtx.ts
 // Coded with Starknet.js v7.1.0 + experimental

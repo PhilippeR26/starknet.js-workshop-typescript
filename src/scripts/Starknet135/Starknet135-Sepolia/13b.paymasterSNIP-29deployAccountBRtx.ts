@@ -1,6 +1,8 @@
-// Deploy a contract with SNIP-29 paymaster  
-// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/12.paymasterSNIP-29deployAccount.ts
-// Coded with Starknet.js v7.1.0 + experimental
+// Use an existing account to deploy a Braavos account with SNIP-29 paymaster.
+// An existing account is paying the fees in USDC.
+// Needs some USDC in account0.
+// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/13b.paymasterSNIP-29deployAccountBRtx.ts
+// Coded with Starknet.js v7.4.0 + experimental
 
 import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, RPC07, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, hash, ec, stark, CallData, type DeployTransaction, type ExecutableDeployTransaction, type PreparedTransaction, type Call } from "starknet";
 import fs from "fs";
@@ -10,6 +12,7 @@ import { ethAddress, strkAddress, USDCaddressTestnet } from "../../utils/constan
 import axios from "axios";
 import { formatBalance } from "../../utils/formatBalance";
 import { displayBalances } from "./10.getBalance"
+import { calculateAddressBraavos, getBraavosConstructor, getBraavosSignatureData } from "../../braavos/3h.deployBraavos120rpc08SNIP29";
 dotenv.config();
 
 function displayFees(
@@ -81,22 +84,75 @@ async function main() {
   const account0 = new Account(myProvider, accountAddress0, privateKey0, "1", constants.TRANSACTION_VERSION.V3, paymasterRpc);
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   console.log('existing account connected.\n');
+  const versionSNIP9 = await account0.getSnip9Version();
+  console.log("Account SNIP-9 compatibility :", versionSNIP9 === OutsideExecutionVersion.UNSUPPORTED ? "UNSUPPORTED" : versionSNIP9);
 
-  // const accountAddress = "0x0739d69a3877fa6e759eaa7d1024e2f9cb643d6c7f5b08ffefcd84d3c8cbcb4e"; //braavos
-  // const accountAddress = "0x07c615fe23225386cfaf64b0e25ab3270cdfb63a4dcd457240673a75b046a30e"; // argentX
-   const accountAddress = "0x060715c876b0ebf7bbf157f2c8ba65dfcbb69dc413b0346f0a964a7b61bb63e4"; // OZ
-  const myCall: Call = {
-    contractAddress: accountAddress,
-    entrypoint: "supports_interface",
-    calldata: [0]
+  await displayBalances(account0.address, myProvider);
+  const res = await account0.paymaster.isAvailable()
+  console.log("url:", account0.paymaster.nodeUrl, ", isAvailable=", res);
+
+  const supported: TokenData[] = await account0.paymaster.getSupportedTokens();
+  // console.log("supported =", supported);
+  const isETHsupported = supported.some((token: TokenData) =>
+    num.toHex64(token.token_address) === ethAddress);
+  console.log("isETHsupported =", isETHsupported);
+  const isUSDCsupported = supported.some(token =>
+    num.toHex64(token.token_address) === USDCaddressTestnet);
+  console.log("isUSDCsupported =", isUSDCsupported);
+
+
+  const newAccountPrivateKey = stark.randomAddress();
+  console.log('New Braavos account:\nprivateKey=', newAccountPrivateKey);
+  const starkKeyPub = ec.starkCurve.getStarkKey(newAccountPrivateKey);
+  console.log('publicKey=', starkKeyPub);
+
+
+  // const gasToken = "0x30058f19ed447208015f6430f0102e8ab82d6c291566d7e73fe8e613c3d2ed"  // SWAY
+  // const gasToken = "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";  // ETH
+  // const gasToken = "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"  // STRK
+  const gasToken = "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080"  // USDC
+
+  const BRaccountConstructorCallData = getBraavosConstructor(starkKeyPub);
+  const BRcontractAddress = calculateAddressBraavos(starkKeyPub);
+  console.log("BRcontractAddress =", BRcontractAddress);
+  const sigData = getBraavosSignatureData(newAccountPrivateKey, await myProvider.getChainId());
+
+  // Transfer of 0.1 USDC from account 0 to newAccount.
+  // They will not be used for deployment (account0 USDC will pay), it's necessary to avoid an error during estimate fees.
+  const resp0 = await account0.execute({ contractAddress: gasToken, entrypoint: "transfer", calldata: [BRcontractAddress, 1n * 10n ** 5n, 0n] });
+  const txR0 = await account0.waitForTransaction(resp0.transaction_hash);
+  console.log("txR fund account", txR0);
+
+
+  const newAccount = new Account(myProvider, BRcontractAddress, newAccountPrivateKey, undefined, undefined, paymasterRpc);
+
+  const deploymentData = {
+    address: BRcontractAddress,
+    calldata: BRaccountConstructorCallData.map(num.toHex),
+    salt: starkKeyPub,
+    class_hash: "0x03d16c7a9a60b0593bd202f660a28c5d76e0403601d9ccc7e4fa253b6a70c201",
+    sigdata: sigData.map(num.toHex),
+    version: 1 as 1
   };
-  console.log("myCall =", myCall);
-  const res = await account0.callContract(myCall);
-  console.log("supports_interface =", res);
+  console.log("deploymentData=", deploymentData);
 
+  const estimatedFees: PaymasterFeeEstimate = await account0.estimatePaymasterTransactionFee([], {
+    deploymentData,
+    feeMode: { mode: 'default', gasToken },
+  });
+  console.log(estimatedFees);
+  //process.exit(5);
 
+  const respO = await account0.executePaymasterTransaction([], {
+    deploymentData,
+    feeMode: { mode: "default", gasToken }
+  },
+    estimatedFees.suggested_max_fee_in_gas_token
+  );
+  const txR = await account0.waitForTransaction(respO.transaction_hash);
+  console.log("txR =", txR);
 
-
+  await displayBalances(account0.address, myProvider);
 
   console.log("✅ Test performed.");
 }
@@ -107,3 +163,5 @@ main()
     process.exit(1);
   });
 
+// txH= 0x3899703b88a0e4155711392dde5ac7824a7181023761d152d6abc97c2be5978
+// txH= 0x2634191493cbccfc4ab905d100aba1293ac8b221d04512ee19fa07db25e566b

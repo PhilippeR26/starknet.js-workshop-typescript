@@ -1,6 +1,6 @@
-// Use SNIP-29 paymaster
-// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/9.paymasterSNIP-29.ts
-// Coded with Starknet.js v7.3.0 +experimental
+// Use SNIP-29 paymaster with time range allowed.
+// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/16.paymasterSNIP-29-timeBounds.ts
+// Coded with Starknet.js v7.4.0 +experimental
 
 import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, RPC07, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, type PaymasterDetails } from "starknet";
 import fs from "fs";
@@ -10,6 +10,7 @@ import { ethAddress, strkAddress, USDCaddressTestnet } from "../../utils/constan
 import axios from "axios";
 import { formatBalance } from "../../utils/formatBalance";
 import { displayBalances } from "./10.getBalance"
+import { wait } from "../../utils/utils";
 dotenv.config();
 
 function displayFees(
@@ -75,7 +76,7 @@ async function main() {
   // const privateKey0 = account4MainnetPrivateKey;
   // const accountAddress0 = account4MainnetAddress
 
-  const myPaymaster = new PaymasterRpc({ nodeUrl:"https://sepolia.paymaster.avnu.fi" , });
+  const myPaymaster = new PaymasterRpc({ nodeUrl: "https://sepolia.paymaster.avnu.fi", });
 
   const account0 = new Account(myProvider, accountAddress0, privateKey0, "1", constants.TRANSACTION_VERSION.V3, myPaymaster);
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
@@ -83,32 +84,10 @@ async function main() {
   const versionSNIP9 = await account0.getSnip9Version();
   console.log("Account SNIP-9 compatibility :", versionSNIP9 === OutsideExecutionVersion.UNSUPPORTED ? "UNSUPPORTED" : versionSNIP9);
 
-  // const { data: answer } = await axios.post(
-  //   "https://sepolia.paymaster.avnu.fi",
-  //   {
-  //     id: 7,
-  //     jsonrpc: "2.0",
-  //     method: "paymaster_isAvailable",
-  //     params: {},
-  //   },
-  //   { headers: { "Content-Type": "application/json" } }
-  // );
-  // console.log('Answer axios paymaster_isAvailable =', answer);
   await displayBalances(account0.address, myProvider);
   const res = await account0.paymaster.isAvailable()
   console.log("url:", account0.paymaster.nodeUrl, ", isAvailable=", res);
 
-  // const { data: respSupported } = await axios.post(
-  //   "https://sepolia.paymaster.avnu.fi",
-  //   {
-  //     id: 7,
-  //     jsonrpc: "2.0",
-  //     method: "paymaster_getSupportedTokens",
-  //     params: {},
-  //   },
-  //   { headers: { "Content-Type": "application/json" } }
-  // );
-  // console.log('Answer axios paymaster_getSupportedTokens =', respSupported);
   const supported: TokenData[] = await myPaymaster.getSupportedTokens();
   // or
   // const supported: TokenData[] = await account0.paymaster.getSupportedTokens();
@@ -139,56 +118,18 @@ async function main() {
   // const gasToken = "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";  // ETH
   // const gasToken = "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"  // STRK
   const gasToken = "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080"  // USDC
-  // const built = await account0.paymaster.buildTransaction({
-  //   type: 'invoke',
-  //   invoke: {
-  //     userAddress: account0.address,
-  //     calls: [myCall],
-  //   }
-  // }, {
-  //   version: '0x1',
-  //   feeMode: { mode: 'default', gasToken },
-  //   // timeBounds?: PaymasterTimeBounds;
-  // });
-  // const builtUSDC = await account0.paymaster.buildTransaction({
-  //   type: 'invoke',
-  //   invoke: {
-  //     userAddress: account0.address,
-  //     calls: [myCall],
-  //   }
-  // }, {
-  //   version: '0x1',
-  //   feeMode: { mode: 'default', gasToken: "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080" }, // USDC
-  //   // timeBounds?: PaymasterTimeBounds;
-  // });
-
-  // const builtSWAY = await account0.paymaster.buildTransaction({
-  //   type: 'invoke',
-  //   invoke: {
-  //     userAddress: account0.address,
-  //     calls: [myCall],
-  //   }
-  // }, {
-  //   version: '0x1',
-  //   feeMode: { mode: 'default', gasToken: "0x30058f19ed447208015f6430f0102e8ab82d6c291566d7e73fe8e613c3d2ed" }, // SWAY
-  //   // timeBounds?: PaymasterTimeBounds;
-  // });
-
-  // console.log("builtTransactionETH", built.fee);
-  // console.log("builtTransactionUSDC", builtUSDC.fee);
-  // console.log("builtTransactionSWAY", builtSWAY.fee);
-  // console.log("\nETH:");
-  // displayFees(built.fee, "ETH", 18);
-  // console.log("\nUSDC:");
-  // displayFees(builtUSDC.fee, "USDC", 6);
-  // console.log("\nSWAY:");
-  // displayFees(builtSWAY.fee, "SWAY", 6);
 
   const feesDetails: PaymasterDetails = {
     feeMode: { mode: "default", gasToken },
+    timeBounds: {
+      executeBefore: Math.floor(Date.now() / 1000) + 20, // 6 sec
+      executeAfter: 0,
+    }
   };
   const feeEstimation = await account0.estimatePaymasterTransactionFee([myCall], feesDetails);
   console.log("feeEstimation USDC =", feeEstimation);
+  // console.log(("waiting some time..."));
+  // await wait(6000); // 6 sec
   console.log(("Processing with USDC..."));
   const res2 = await account0.executePaymasterTransaction(
     [myCall],

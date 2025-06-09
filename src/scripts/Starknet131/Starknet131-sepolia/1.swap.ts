@@ -34,7 +34,7 @@ async function main() {
     const provider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
     // to be sure to be connected :
     console.log("chain Id =", shortString.decodeShortString(await provider.getChainId()), ", rpc", await provider.getSpecVersion());
-     process.exit(5);
+    // process.exit(5);
     // testnet
     const account0Address = account1OZSepoliaAddress;
     const privateKey0 = account1OZSepoliaPrivateKey;

@@ -611,6 +611,125 @@
     ]
   },
   {
+    "type": "impl",
+    "name": "VotesImpl",
+    "interface_name": "openzeppelin::governance::utils::interfaces::votes::IVotes"
+  },
+  {
+    "type": "interface",
+    "name": "openzeppelin::governance::utils::interfaces::votes::IVotes",
+    "items": [
+      {
+        "type": "function",
+        "name": "get_votes",
+        "inputs": [
+          {
+            "name": "account",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_past_votes",
+        "inputs": [
+          {
+            "name": "account",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "timepoint",
+            "type": "core::integer::u64"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_past_total_supply",
+        "inputs": [
+          {
+            "name": "timepoint",
+            "type": "core::integer::u64"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "delegates",
+        "inputs": [
+          {
+            "name": "account",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "delegate",
+        "inputs": [
+          {
+            "name": "delegatee",
+            "type": "core::starknet::contract_address::ContractAddress"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "delegate_by_sig",
+        "inputs": [
+          {
+            "name": "delegator",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "delegatee",
+            "type": "core::starknet::contract_address::ContractAddress"
+          },
+          {
+            "name": "nonce",
+            "type": "core::felt252"
+          },
+          {
+            "name": "expiry",
+            "type": "core::integer::u64"
+          },
+          {
+            "name": "signature",
+            "type": "core::array::Array::<core::felt252>"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      }
+    ]
+  },
+  {
     "type": "constructor",
     "name": "constructor",
     "inputs": [
@@ -670,14 +789,14 @@
   },
   {
     "type": "function",
-    "name": "decrease_allowance",
+    "name": "increaseAllowance",
     "inputs": [
       {
         "name": "spender",
         "type": "core::starknet::contract_address::ContractAddress"
       },
       {
-        "name": "subtracted_value",
+        "name": "addedValue",
         "type": "core::integer::u256"
       }
     ],
@@ -690,14 +809,14 @@
   },
   {
     "type": "function",
-    "name": "increaseAllowance",
+    "name": "decrease_allowance",
     "inputs": [
       {
         "name": "spender",
         "type": "core::starknet::contract_address::ContractAddress"
       },
       {
-        "name": "addedValue",
+        "name": "subtracted_value",
         "type": "core::integer::u256"
       }
     ],
@@ -729,19 +848,85 @@
     "state_mutability": "external"
   },
   {
+    "type": "function",
+    "name": "nonces",
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "core::starknet::contract_address::ContractAddress"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "core::felt252"
+      }
+    ],
+    "state_mutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "num_checkpoints",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "core::starknet::contract_address::ContractAddress"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "core::integer::u32"
+      }
+    ],
+    "state_mutability": "view"
+  },
+  {
+    "type": "struct",
+    "name": "openzeppelin::utils::structs::checkpoints::Checkpoint",
+    "members": [
+      {
+        "name": "key",
+        "type": "core::integer::u64"
+      },
+      {
+        "name": "value",
+        "type": "core::integer::u256"
+      }
+    ]
+  },
+  {
+    "type": "function",
+    "name": "checkpoints",
+    "inputs": [
+      {
+        "name": "account",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "name": "pos",
+        "type": "core::integer::u32"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "openzeppelin::utils::structs::checkpoints::Checkpoint"
+      }
+    ],
+    "state_mutability": "view"
+  },
+  {
     "type": "event",
-    "name": "openzeppelin::token::erc20_v070::erc20::ERC20::Transfer",
+    "name": "openzeppelin::token::erc20::erc20::ERC20::Transfer",
     "kind": "struct",
     "members": [
       {
         "name": "from",
         "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
+        "kind": "key"
       },
       {
         "name": "to",
         "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
+        "kind": "key"
       },
       {
         "name": "value",
@@ -752,23 +937,101 @@
   },
   {
     "type": "event",
-    "name": "openzeppelin::token::erc20_v070::erc20::ERC20::Approval",
+    "name": "openzeppelin::token::erc20::erc20::ERC20::Approval",
     "kind": "struct",
     "members": [
       {
         "name": "owner",
         "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
+        "kind": "key"
       },
       {
         "name": "spender",
         "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "data"
+        "kind": "key"
       },
       {
         "name": "value",
         "type": "core::integer::u256",
         "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin::token::erc20::erc20::ERC20::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "Transfer",
+        "type": "openzeppelin::token::erc20::erc20::ERC20::Transfer",
+        "kind": "nested"
+      },
+      {
+        "name": "Approval",
+        "type": "openzeppelin::token::erc20::erc20::ERC20::Approval",
+        "kind": "nested"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin::token::erc20::extensions::erc20votes::ERC20Votes::DelegateChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "delegator",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "from_delegate",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "to_delegate",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin::token::erc20::extensions::erc20votes::ERC20Votes::DelegateVotesChanged",
+    "kind": "struct",
+    "members": [
+      {
+        "name": "delegate",
+        "type": "core::starknet::contract_address::ContractAddress",
+        "kind": "data"
+      },
+      {
+        "name": "previous_votes",
+        "type": "core::integer::u256",
+        "kind": "data"
+      },
+      {
+        "name": "new_votes",
+        "type": "core::integer::u256",
+        "kind": "data"
+      }
+    ]
+  },
+  {
+    "type": "event",
+    "name": "openzeppelin::token::erc20::extensions::erc20votes::ERC20Votes::Event",
+    "kind": "enum",
+    "variants": [
+      {
+        "name": "DelegateChanged",
+        "type": "openzeppelin::token::erc20::extensions::erc20votes::ERC20Votes::DelegateChanged",
+        "kind": "nested"
+      },
+      {
+        "name": "DelegateVotesChanged",
+        "type": "openzeppelin::token::erc20::extensions::erc20votes::ERC20Votes::DelegateVotesChanged",
+        "kind": "nested"
       }
     ]
   },
@@ -956,18 +1219,18 @@
   },
   {
     "type": "event",
-    "name": "openzeppelin::token::erc20_v070::erc20::ERC20::Event",
+    "name": "openzeppelin::token::erc20::presets::erc20votes::ERC20VotesPreset::Event",
     "kind": "enum",
     "variants": [
       {
-        "name": "Transfer",
-        "type": "openzeppelin::token::erc20_v070::erc20::ERC20::Transfer",
-        "kind": "nested"
+        "name": "ERC20Event",
+        "type": "openzeppelin::token::erc20::erc20::ERC20::Event",
+        "kind": "flat"
       },
       {
-        "name": "Approval",
-        "type": "openzeppelin::token::erc20_v070::erc20::ERC20::Approval",
-        "kind": "nested"
+        "name": "ERC20VotesEvent",
+        "type": "openzeppelin::token::erc20::extensions::erc20votes::ERC20Votes::Event",
+        "kind": "flat"
       },
       {
         "name": "ImplementationAdded",

@@ -1,6 +1,11 @@
 import { provider as providerUtil } from "starknet";
 import type { RpcProvider } from "starknet";
 
+/**
+ * 
+ * @param delay unit is millisecond
+ * @returns 
+ */
 export function wait(delay: number) { // ms
     return new Promise((res) => {
         setTimeout(res, delay);

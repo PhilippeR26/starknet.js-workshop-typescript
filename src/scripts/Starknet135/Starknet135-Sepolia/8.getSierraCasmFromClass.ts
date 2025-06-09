@@ -11,7 +11,7 @@ dotenv.config();
 async function main() {
   // ********* Sepolia Testnet **************
   // local pathfinder Sepolia Testnet node
-  const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8" });
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8", specVersion: "0.8.1" });
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
   // local Juno Sepolia Testnet node
@@ -33,7 +33,7 @@ async function main() {
 
 
   //const classHash = await myProvider.getClassHashAt(strkAddress);
-  const classHash = "0x3957f9f5a1cbfe918cedc2015c85200ca51a5f7506ecb6de98a5207b759bf8a"; // BraavosAccountClassHash v1.2.0
+  const classHash = "0x076791ef97c042f81fbf352ad95f39a22554ee8d7927b2ce3c681f3418b5206a"; 
   const sierra = await myProvider.getClassByHash(classHash);
   fs.writeFileSync('./compiledContracts/sierra.json', json.stringify(sierra, undefined, 2));
   const casm = await myProvider.getCompiledCasm(classHash);

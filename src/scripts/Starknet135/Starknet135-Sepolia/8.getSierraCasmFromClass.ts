@@ -10,9 +10,9 @@ dotenv.config();
 
 async function main() {
   // ********* Sepolia Testnet **************
+  // const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8", specVersion: "0.8.1" });
   // local pathfinder Sepolia Testnet node
-  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8", specVersion: "0.8.1" });
-  // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
+   const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
   // local Juno Sepolia Testnet node
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://192.168.1.78:6070/rpc/v0_8" });
@@ -33,7 +33,7 @@ async function main() {
 
 
   //const classHash = await myProvider.getClassHashAt(strkAddress);
-  const classHash = "0x076791ef97c042f81fbf352ad95f39a22554ee8d7927b2ce3c681f3418b5206a"; 
+  const classHash = "0x06e7226605869c2bd8cb86a647b451adc0b90e1e4f00b1c45d502dcd2ba6d41e"; 
   const sierra = await myProvider.getClassByHash(classHash);
   fs.writeFileSync('./compiledContracts/sierra.json', json.stringify(sierra, undefined, 2));
   const casm = await myProvider.getCompiledCasm(classHash);

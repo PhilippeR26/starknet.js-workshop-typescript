@@ -35,7 +35,7 @@ async function main() {
   // The ledger shall not be locked when launching this script.
   // Once the Starknet APP selected, you have 2 minutes to proceed, before the APP is locked.
   //          👆👆👆
-  const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: "0.7" });
+  const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: "0.8.1" });
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   if (!(await l2DevnetProvider.isAlive())) {
     console.log("No l2 devnet.");

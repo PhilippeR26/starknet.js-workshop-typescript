@@ -1,16 +1,16 @@
 
 // Test rpc 0.8 new websocket IP.
 // Launch with npx ts-node src/scripts/webSocket/5.testWSconnect.ts
-// Coded with Starknet.js v7.0.0-beta.3
+// Coded with Starknet.js v7.5.0 + experimental
 
-import { json, WebSocketChannel, WSSubscriptions } from "starknet";
+import { json, WebSocketChannel } from "starknet";
 import { formatBalance } from "../utils/formatBalance";
 // import WebSocket from 'ws';
 import { keypress, wait } from "../utils/utils";
 import { SubscriptionNewHeadsResponse } from "@starknet-io/types-js";
 import { WebSocket } from "isows";
-// import * as dotenv from "dotenv";
-// dotenv.config();
+import * as dotenv from "dotenv";
+dotenv.config({ path: "./.env.local" });
 
 //        👇👇👇
 // 🚨🚨🚨 launch first a Pathfinder/Juno node with webSocket activated.
@@ -18,9 +18,10 @@ import { WebSocket } from "isows";
 
 async function main() {
     // pathfinder Testnet
-    //const wsUrl = "ws://localhost:9545/rpc/v0_8";
+    const wsUrl = "ws://localhost:9545/rpc/v0_8";
     // juno Testnet
-     const wsUrl = "ws://localhost:6071/ws/rpc/v0_8";
+    // const wsUrl = process.env.NEXT_PUBLIC_WS_PROVIDER ?? "";
+    console.log("wsUrl =", wsUrl);
     const myWS = new WebSocketChannel({ nodeUrl: wsUrl });
     try {
         await myWS.waitForConnection();

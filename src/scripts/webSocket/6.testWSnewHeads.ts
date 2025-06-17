@@ -1,48 +1,48 @@
 
 // Test rpc 0.8 new websocket with Starknet.js.
 // Launch with npx ts-node src/scripts/webSocket/6.testWSnewHeads.ts
-// Coded with Starknet.js v7.0.0-beta.3
+// Coded with Starknet.js v7.5.0 + experimental
 
-import { json, WebSocketChannel, WSSubscriptions } from "starknet";
-import { formatBalance } from "../utils/formatBalance";
+import { json, WebSocketChannel, type Subscription } from "starknet";
 // import WebSocket from 'ws';
 import { keypress, wait } from "../utils/utils";
-import { SubscriptionNewHeadsResponse } from "@starknet-io/types-js";
-import { WebSocket } from "isows";
-// import * as dotenv from "dotenv";
-// dotenv.config();
+import { SubscriptionNewHeadsResponse, type BLOCK_HEADER } from "@starknet-io/types-js";
+import * as dotenv from "dotenv";
+dotenv.config({ path: "./.env.local" });
 
 //        👇👇👇
 // 🚨🚨🚨 launch first a Pathfinder/Juno node with webSocket activated.
 //        👆👆👆
 
 async function main() {
-    // pathfinder Testnet
+    // *** pathfinder Testnet
      const wsUrl = "ws://localhost:9545/rpc/v0_8";
+    // const wsUrl = process.env.NEXT_PUBLIC_WS_PROVIDER ?? "";
     // const wsUrl = "wss://starknet-mainnet.public.blastapi.io/rpc/v0_8";
-    // juno Testnet
+    // *** juno Testnet
     // const wsUrl = "ws://localhost:6071/ws/rpc/v0_8";
     // const wsUrl = "wss://free-rpc.nethermind.io/sepolia-juno/rpc/v0_8";
+    console.log("wsUrl =", wsUrl);
 
     const myWS = new WebSocketChannel({ nodeUrl: wsUrl });
     try {
-        const conn=await myWS.waitForConnection();
+        const conn = await myWS.waitForConnection();
         console.log("connected0 =", myWS.isConnected());
     } catch (error: any) {
         console.log("Err1", error.message);
         process.exit(1);
     }
 
-    // subscribe newHeads
+    // subscribe newHeads 
     console.log("subscribe newHeads...");
-    const newHeadsID = await myWS.subscribeNewHeads();
-    console.log("subscribe newHead response =", newHeadsID);
-    if (!newHeadsID) {
+    const newHeadsSubscription = await myWS.subscribeNewHeads();
+    console.log("subscribe newHead response =", newHeadsSubscription);
+    if (!newHeadsSubscription) {
         throw new Error("newHead subscription failed");
     }
-    myWS.onNewHeads = async function (newHead: SubscriptionNewHeadsResponse) {
-        console.log("newHead event =", newHead);
-    };
+    newHeadsSubscription.on(function (newHead: BLOCK_HEADER) {
+        console.log("newHead event =", newHead, newHead.block_number);
+    });
 
 
 
@@ -51,9 +51,9 @@ async function main() {
     await keypress();
 
     console.log("unsubscribe newHead...");
-    const statusUnsubscribeNewHeads = await myWS.unsubscribeNewHeads();
+    const statusUnsubscribeNewHeads = await newHeadsSubscription.unsubscribe();
     console.log({ statusUnsubscribeNewHeads }); // true/false
-    const expectedId = myWS.subscriptions.get(WSSubscriptions.NEW_HEADS);
+    // const expectedId = myWS.subscriptions.get(WSSubscriptions.NEW_HEADS);
     //console.log("wait for newHeads unsubscribed , ID", expectedId, "...");
     // const subscriptionId = await myWS.waitForUnsubscription(newHeadsID); // to use if unsubscription occurred somewhere else in the code
     // console.log("Done for new Heads...", subscriptionId);

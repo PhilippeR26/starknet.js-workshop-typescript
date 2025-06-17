@@ -1,27 +1,29 @@
 
 // Test rpc 0.8 new websocket with Starknet.js.
 // Launch with npx ts-node src/scripts/webSocket/9.testWSpendingTx.ts
-// Coded with Starknet.js v7.0.0-beta.3
+// Coded with Starknet.js v7.5.0 + experimental
 
-import { json, WebSocketChannel, WSSubscriptions } from "starknet";
+import { json, WebSocketChannel, type TXN_HASH } from "starknet";
 import { formatBalance } from "../utils/formatBalance";
 // import WebSocket from 'ws';
 import { keypress, wait } from "../utils/utils";
-import { SubscriptionNewHeadsResponse, type SubscriptionEventsResponse, type SubscriptionPendingTransactionsResponse } from "@starknet-io/types-js";
+import { SubscriptionNewHeadsResponse, type SubscriptionEventsResponse, type SubscriptionPendingTransactionsResponse, type TXN_WITH_HASH } from "@starknet-io/types-js";
 import { WebSocket } from "isows";
 import { strkAddress } from "../utils/constants";
-// import * as dotenv from "dotenv";
-// dotenv.config();
+import * as dotenv from "dotenv";
+dotenv.config({ path: "./.env.local" });
 
 //        👇👇👇
 // 🚨🚨🚨 launch first a Pathfinder/Juno node with webSocket activated.
 //        👆👆👆
 
 async function main() {
-    // pathfinder Testnet
-    // const wsUrl = "ws://localhost:9545/rpc/v0_8";
-    // juno Testnet
-    const wsUrl = "ws://localhost:6071/ws/rpc/v0_8";
+    // *** pathfinder Testnet
+    const wsUrl = "ws://localhost:9545/rpc/v0_8";
+    // const wsUrl = process.env.NEXT_PUBLIC_WS_PROVIDER ?? "";
+    // *** juno Testnet
+    // const wsUrl = "ws://localhost:6071/ws/rpc/v0_8";
+    console.log("wsUrl =", wsUrl);
     const myWS = new WebSocketChannel({ nodeUrl: wsUrl });
     try {
         await myWS.waitForConnection();
@@ -39,34 +41,22 @@ async function main() {
         throw new Error("pending tx subscription failed");
     }
 
-    /// SHOULD FAIL
-    const txStatusID2 = await myWS.subscribePendingTransaction();
-    console.log("subscribe pending tx 2 response =", txStatusID2);
-    if (!txStatusID2) {
-        throw new Error("pending tx 2 subscription failed");
-    }
-
-    const subscriptions = myWS.subscriptions;
-    console.log({ subscriptions });
-    // console.log("get tx status =", myWS.subscriptions.get(WSSubscriptions.PENDING_TRANSACTION));
+     // console.log("get tx status =", myWS.subscriptions.get(WSSubscriptions.PENDING_TRANSACTION));
 
     let i: number = 0;
-    myWS.onPendingTransaction = function (pendingTx: SubscriptionPendingTransactionsResponse) {
+    txStatusID.on (function (pendingTx: TXN_HASH | TXN_WITH_HASH) {
         i++
         console.log("pending tx event", i, "=", pendingTx);
     }
+)
 
 
     console.log("press a key to stop to wait messages.");
     await keypress();
 
-    const expectedId2 = myWS.subscriptions.get(WSSubscriptions.PENDING_TRANSACTION);
-    console.log("Unsubscribe pending tx", expectedId2, "...");
-    const statusTxStatus = await myWS.unsubscribePendingTransaction();
+     console.log("Unsubscribe pending tx...");
+    const statusTxStatus = await txStatusID.unsubscribe();
     console.log({ statusTxStatus });
-    // const subscriptionId2 = await myWS.waitForUnsubscription(expectedId2); // to use if unsubscription occurred somewhere else in the code
-    // console.log("Done for pending tx...", subscriptionId2);
-
 
 
     console.log("Disconnect...");

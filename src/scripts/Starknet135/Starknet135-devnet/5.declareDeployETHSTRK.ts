@@ -1,5 +1,4 @@
 // declare & deploy ETH & STRK mintable tokens.
-// use of standard deployer
 // launch with npx ts-node src/scripts/Starknet135/Starknet135-devnet/5.declareDeployETHSTRK.ts
 // Coded with Starknet.js v7.5.0 & devnet v0.4.2
 

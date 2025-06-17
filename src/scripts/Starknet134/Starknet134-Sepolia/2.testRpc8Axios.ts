@@ -36,33 +36,35 @@ async function keypress(): Promise<void> {
 }
 
 async function main() {
+  // *** Devnet
   //   const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" }); // only starknet-devnet-rs
   // const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
+  // if (!(await l2DevnetProvider.isAlive())) {
+  //     console.log("No l2 devnet.");
+  //     process.exit();
+  //   }
   // ****  Sepolia Testnet 
   // const url="https://free-rpc.nethermind.io/sepolia-juno/v0_8";
-  // const url = "https://starknet-mainnet.public.blastapi.io/rpc/v0_8";
+  const url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_8";
 
   // == pathfinder Testnet
   // const url = "http://192.168.1.11:9545/rpc/v0_8";
   // const url = "http://localhost:9545/rpc/v0_8";
   // == juno Testnet
   // const url = "http://192.168.1.11:6070/v0_8";
-   const url = "http://localhost:6070/v0_8"; 
+  // const url = "http://localhost:6070/v0_8"; 
 
+  // **** Mainnet
+  // const url = "https://starknet-mainnet.public.blastapi.io/rpc/v0_8";
   // **** Sepolia integration
   // == Pathfinder Sepolia Integration
   // const url = "http://localhost:9550/rpc/v0_8";
   // == Juno Sepolia Integration
   // const url = "http://localhost:6095/rpc/v0_8";
 
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8", specVersion: "0.8.1" });
 
-  const myProvider = await RpcProvider.create({ nodeUrl: url });
-  // const myProvider = new RpcProvider({ nodeUrl: url }); // local pathfinder testnet node
-  // const provider = new RpcProvider({ nodeUrl: junoNMtestnet }); // local pathfinder testnet node
-  // if (!(await l2DevnetProvider.isAlive())) {
-  //     console.log("No l2 devnet.");
-  //     process.exit();
-  //   }
+
 
   console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion(), ", SN version =", (await myProvider.getBlock()).starknet_version);
   console.log("Provider connected to Starknet");

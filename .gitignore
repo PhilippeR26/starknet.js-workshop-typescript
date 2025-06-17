@@ -26,6 +26,8 @@ src/A1priv/
 src/A2priv/
 src/A-MainPriv/
 .env
+.env.local
+# Build output
 src/A1priv/A1priv.ts
 src/A2priv/A1priv.ts
 src/A-MainPriv/mainPriv.ts

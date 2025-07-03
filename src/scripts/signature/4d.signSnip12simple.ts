@@ -83,6 +83,13 @@ async function main() {
       ]
     }
   }
+  const encodedType=typedData.encodeType(myTypedData.types,"Message",TypedDataRevision.ACTIVE);
+  // const replacement=String.fromCharCode(92)+String.fromCharCode(92)+String.fromCharCode(34);
+  const replacement='\\"';
+  console.log({encodedType,replacement}, "\\");
+  const formattedEncodedType=encodedType.replace('"',replacement);
+  console.log({formattedEncodedType});
+  // process.exit(5);
   console.log("selector domain0=", hash.getSelectorFromName("\"StarknetDomain\"(\"name\":\"shortstring\",\"chainId\":\"shortstring\",\"version\":\"shortstring\")"));
   console.log("selector Message=", hash.getSelectorFromName("\"Message\"(\"date_start\":\"felt\",\"gift_id\":\"u128\")"));
 

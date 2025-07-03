@@ -25,7 +25,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/webSocket/7.testWStransactionStatus.ts",
+            "program": "${workspaceFolder}/src/scripts/signature/6.signSNIP12.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

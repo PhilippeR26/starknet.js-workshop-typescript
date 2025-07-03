@@ -25,6 +25,8 @@ function displayFees(
   console.log("suggested max fees (estim x5 in", tokenName, ")", formatBalance(BigInt(fees.suggested_max_fee_in_gas_token), decimals));
 }
 
+// 🚨 do not work. Pb of fees.
+
 async function main() {
   // ********* Mainnet **************
   // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_8" });

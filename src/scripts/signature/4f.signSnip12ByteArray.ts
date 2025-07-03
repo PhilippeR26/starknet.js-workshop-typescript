@@ -1,6 +1,6 @@
-// test signature message snip-12 (SNIP-12 old version). 
+// test signature message snip-12. 
 // launch with npx ts-node src/scripts/signature/4f.signSnip12ByteArray.ts
-// coded with Starknet.js v6.14.1, devnet-rs 0.2.0
+// coded with Starknet.js v7.6.2, devnet 0.4.3
 
 import { Account, ec, hash, json, Contract, encode, shortString, WeierstrassSignatureType, ArraySignatureType, stark, RpcProvider, Signature, num, type TypedData, constants, TypedDataRevision, typedData, type BigNumberish, CallData } from "starknet";
 import * as dotenv from "dotenv";
@@ -10,7 +10,7 @@ import { DevnetProvider } from "starknet-devnet";
 dotenv.config();
 
 //          👇👇👇
-// 🚨🚨🚨 launch 'cargo run --release -- --seed 0' in devnet-rs directory before using this script
+// 🚨🚨🚨 launch Starknet-devnet before using this script
 //          👆👆👆
 
 function nbCar(inp: string): number {
@@ -25,25 +25,17 @@ function nbCar(inp: string): number {
 }
 
 async function main() {
-  console.log("65&", num.toBigInt("0x65") & num.toBigInt("0xff00000000000000000000000000000000000000000000000000000000000000"));
-  console.log("31 char&", num.toBigInt("0x4c696b6520696d6d757461626c65207661726961626c65732c20636f6e7374") & num.toBigInt("0xff000000000000000000000000000000000000000000000000000000000000"));
-  console.log("0x7365 / 0x100", num.toHex(num.toBigInt("0x7365") / num.toBigInt(0x100)));
-  console.log("nb31 =", nbCar("0x4c696b6520696d6d757461626c65207661726961626c65732c20636f6e7374"));
-  console.log("nb4 =", nbCar("0x4c696b65"));
-  console.log("nb1 =", nbCar("0x65"));
-  console.log("nb0 =", nbCar("0x00"));
-
-  // process.exit();
-
   const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
   const l2DevnetProvider = new DevnetProvider();
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545" }); // local Sepolia Testnet node
   //  const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_7" }); // Sepolia Testnet 
   // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_7" }); // Mainnet
-  console.log("Provider connected");
 
-  console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-  console.log("Provider connected to Starknet-devnet-rs");
+  console.log(
+    "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+    ", rpc", await myProvider.getSpecVersion(),
+    ", SN version =", (await myProvider.getBlock()).starknet_version);
+  console.log("Provider connected");
 
   // initialize existing predeployed account 0 of Devnet
   const devnetAccounts = await l2DevnetProvider.getPredeployedAccounts();
@@ -112,7 +104,7 @@ async function main() {
   const isValid3 = await myProvider.verifyMessageInStarknet(myTypedData, signature2, account0.address);
   const isValid4 = await myProvider.verifyMessageInStarknet(msgHash, signature2, account0.address);
   console.log({ isValid, isValid1, isValid2, isValid3, isValid4 });
-  // console.log("deployment of contract in progress...");
+  console.log("deployment of contract in progress...");
 
   const snip12Sierra = json.parse(fs.readFileSync("./compiledContracts/cairo282/build_bytearray_test_bytearray.contract_class.json").toString("ascii"));
   const snip12Casm = json.parse(fs.readFileSync("./compiledContracts/cairo282/build_bytearray_test_bytearray.compiled_contract_class.json").toString("ascii"));
@@ -161,7 +153,7 @@ async function main() {
   console.log({ myCalldataL2 });
   console.log("len bytes31[2] =", await snip12Contract.call("bytes31_len", myCalldataL2));
 
-  const str1="e";
+  const str1 = "e";
   console.log("0x65 =", shortString.encodeShortString(str1));
   console.log("0x65 len =", await snip12Contract.call("bytes31_len", [str1]));
   console.log("testdiv 0x65 =", num.toHex((await snip12Contract.call("test_div", ["0x65"])) as bigint));

@@ -1,5 +1,7 @@
-// test signature message snip-12 with Cairo 2.8.2
-// launch with npx ts-node src/scripts/signature/4f.signSnip12ByteArray.ts
+// Test signature message snip-12 with Cairo 2.11.4.
+// Cairo 2.11 is no more able to append bytes31 to create a ByteArray.
+// So a new contract has been created.
+// Launch with npx ts-node src/scripts/signature/4f.signSnip12ByteArray.ts
 // coded with Starknet.js v7.6.2, devnet 0.4.3
 
 import { Account, ec, hash, json, Contract, encode, shortString, WeierstrassSignatureType, ArraySignatureType, stark, RpcProvider, Signature, num, type TypedData, constants, TypedDataRevision, typedData, type BigNumberish, CallData } from "starknet";
@@ -10,19 +12,8 @@ import { DevnetProvider } from "starknet-devnet";
 dotenv.config();
 
 //          👇👇👇
-// 🚨🚨🚨 launch Starknet-devnet before using this script
+// 🚨🚨🚨 Launch Starknet-devnet before using this script
 //          👆👆👆
-
-function nbCar(inp: string): number {
-  let val: bigint = num.toBigInt(inp);
-  let nbCar: number = 0;
-  if (val > 0) nbCar += 1;
-  while (val / num.toBigInt("0x100") > 0) {
-    nbCar += 1;
-    val /= num.toBigInt("0x100");
-  }
-  return nbCar;
-}
 
 async function main() {
   const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
@@ -52,7 +43,7 @@ async function main() {
   // creation of message signature 
   // EIP712
   type LongString = { to_store: BigNumberish[] };
-  const irlText: string = "Like immutable variables, constants are values that are bound to a name.";
+  const irlText: string = "Quae bene cognita si teneas, natura videtur libera continuo, dominis privata superbis, ipsa sua per se sponte omnia dis agere expers. Nam pro sancta deum tranquilla pectora pace, quae placidum degunt aevom vitamque serenam, quis regere immensi summam, quis habere profundi indu manu validas potis est moderanter habenas, quis pariter caelos omnis convertere, et omnis ignibus aetheriis terras suffire feracis.";
   const longString: LongString = { to_store: shortString.splitLongString(irlText) };
   console.log({ longString });
 
@@ -106,10 +97,10 @@ async function main() {
   console.log({ isValid, isValid1, isValid2, isValid3, isValid4 });
   console.log("deployment of contract in progress...");
 
-  const snip12Sierra = json.parse(fs.readFileSync("./compiledContracts/cairo282/build_bytearray_test_bytearray.contract_class.json").toString("ascii"));
-  const snip12Casm = json.parse(fs.readFileSync("./compiledContracts/cairo282/build_bytearray_test_bytearray.compiled_contract_class.json").toString("ascii"));
-  // // class hash = 0x3ad8ba2088fa51a2bb8fbf8ca7688546bbe107a2c3f61385372aad1b3634853
-  // // addr in Sepolia Testnet = 0xa836bc7b9d9c94885289d49f543b3bed06c9df6f4a12bba4a662fe9390af5a
+  const snip12Sierra = json.parse(fs.readFileSync("./compiledContracts/cairo2114/snip12_bytearray_test_bytearray.contract_class.json").toString("ascii"));
+  const snip12Casm = json.parse(fs.readFileSync("./compiledContracts/cairo2114/snip12_bytearray_test_bytearray.compiled_contract_class.json").toString("ascii"));
+  // class hash = 
+  // addr in Sepolia Testnet = 
   const deployResponse = await account0.declareAndDeploy({ contract: snip12Sierra, casm: snip12Casm });
   console.log("class=", deployResponse.declare.class_hash);
   console.log("addr=", deployResponse.deploy.address);
@@ -120,7 +111,7 @@ async function main() {
 
   const hashDomain = typedData.getStructHash(myTypedData.types, 'StarknetDomain', myTypedData.domain, TypedDataRevision.ACTIVE);
   console.log("SNJS hash domain :", { hashDomain });
-  const myCalldata = snipCallData.compile("get_hash_domain", { name: appName, chain: constants.StarknetChainId.SN_SEPOLIA });
+  const myCalldata = snipCallData.compile("get_hash_domain", { name: appName });
   console.log({ myCalldata });
   const domainHash = await snip12Contract.call("get_hash_domain", myCalldata);
   console.log("Starknet: domainHash", num.toHex(domainHash as bigint), num.toHex(domainHash as bigint) == hashDomain ? "is valid ✅" : "is wrong ❌");
@@ -141,29 +132,14 @@ async function main() {
   await myProvider.waitForTransaction(res1.transaction_hash);
   console.log("initial irl = '" + (await snip12Contract.get_storage()) as string + "'");
 
-  const myCalldataL0 = snipCallData.compile("bytes31_len", {
-    inp: shortString.splitLongString(irlText)[0]
+  const myCalldataT = snipCallData.compile("to_byte_array", {
+    inp: { to_store: shortString.splitLongString(irlText) }
   });
-  console.log({ myCalldataL: myCalldataL0 });
-  console.log("len bytes31[0] =", await snip12Contract.call("bytes31_len", myCalldataL0));
-
-  const myCalldataL2 = snipCallData.compile("bytes31_len", {
-    inp: shortString.splitLongString(irlText)[2]
-  });
-  console.log({ myCalldataL2 });
-  console.log("len bytes31[2] =", await snip12Contract.call("bytes31_len", myCalldataL2));
-
-  const str1 = "e";
-  console.log("0x65 =", shortString.encodeShortString(str1));
-  console.log("0x65 len =", await snip12Contract.call("bytes31_len", [str1]));
-  console.log("testdiv 0x65 =", num.toHex((await snip12Contract.call("test_div", ["0x65"])) as bigint));
-  console.log("testdiv 0x7365 =", num.toHex((await snip12Contract.call("test_div", ["0x7365"])) as bigint));
-
-
-  const myCalldataT = snipCallData.compile("bytes31_array_to_byte_array", [shortString.splitLongString(irlText)]
-  );
   console.log({ myCalldataT });
-  console.log("text = '" + await snip12Contract.call("bytes31_array_to_byte_array", myCalldataT) + "'");
+  const converted = (await snip12Contract.call("to_byte_array", myCalldataT)) as string;
+  console.log("irlT = '" +irlText + "'");
+  console.log(irlText.length,converted.length);
+  console.log("text = '" +converted + "'", converted == irlText ? "is valid ✅" : "is wrong ❌");
 
   console.log("process a valid message...");
   const myCall = snip12Contract.populate("process_message", {
@@ -177,19 +153,6 @@ async function main() {
   console.log("Result irl = '" + resultIrl + "'", resultIrl == irlText ? "is valid ✅" : "is wrong ❌");
 
 
-
-
-  // console.log("process a wrong message (should fail with 0 value)...");
-  // const myCall1=snip12Contract.populate("process_message", {
-  //   message: {date_start:myGift.date_start,gift_id: num.toBigInt(myGift.gift_id)+1n},
-  //   signature: stark.formatSignature( signature2)
-  // })
-  // const res1=await account0.execute(myCall1);
-  // const txR1=await myProvider.waitForTransaction(res1.transaction_hash);
-  // const current1=await snip12Contract.get_current_gift();
-  // console.log("current gift =",current1, num.toBigInt(current1)==num.toBigInt (myGift.gift_id) ? "is valid ✅" : "is wrong ❌");
-
-
   console.log('✅ Test completed.');
 
 }
@@ -199,4 +162,3 @@ main()
     console.error(error);
     process.exit(1);
   });
-

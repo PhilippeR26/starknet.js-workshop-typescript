@@ -1,14 +1,17 @@
-// Read gas prices.
-// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/19.getGasPrices.ts
+// Get STRK transfer events in a block.
+// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/21.eventsLastBlock.ts
 // Coded with Starknet.js v7.6.2
 
-import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, type BlockIdentifier, type TXN_HASH, provider, BlockTag, } from "starknet";
+import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, type BlockIdentifier, type TXN_HASH, provider, BlockTag, type CompiledSierra, type GetTransactionReceiptResponse, type TransactionStatusReceiptSets, ReceiptTx, type GetTxReceiptResponseWithoutHelper, } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
 import axios from "axios";
-import type { BlockWithTxHashes, BlockWithTxs, INVOKE_TXN_V3 } from "@starknet-io/types-js";
+import { formatBalance } from "../../utils/formatBalance";
+import { displayBalances } from "./10.getBalance"
+import { wait } from "../../utils/utils";
 import { assert } from "../../utils/assert";
+import { strkAddress } from "../../utils/constants";
 dotenv.config();
 
 
@@ -66,35 +69,19 @@ async function main() {
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   console.log('existing account connected.\n');
 
-  type GasPrices = {
-    l1DataGasPrice: bigint,
-    l1GasPrice: bigint,
-    l2GasPrice: bigint,
+  const { abi: strkAbi } = (await myProvider.getClassAt(strkAddress)) as CompiledSierra;
+  const strkContract = new Contract(strkAbi, strkAddress, myProvider);
+  const block = await myProvider.getBlockWithReceipts("latest");
+  console.log("txs number=", block.transactions.length);
+  if (block.transactions.length > 0) {
+    const res = block.transactions.flatMap((transaction) => {
+      const rawReceipt = transaction.receipt as GetTxReceiptResponseWithoutHelper;
+      const txReceipt = new ReceiptTx(rawReceipt) as GetTransactionReceiptResponse;
+      return strkContract.parseEvents(txReceipt);
+    });
+    console.log(res);
   }
 
-  /**
-   * Get the gas prices related to a block.
-   * @param {BlockIdentifier} [blockIdentifier = this.identifier] - Optional. Can be 'pending', 'latest' or a block number (an integer type).
-   * @returns {Promise<GasPrices>} an object with l1DataGasPrice, l1GasPrice, l2GasPrice properties (all bigint type).
-   * @example
-   * ```ts
-   * const result = await myProvider.getGasPrices();
-   * // result = { l1DataGasPrice: 3039n, l1GasPrice: 55590341542890n, l2GasPrice: 8441845008n }
-   * ```
-   */
-  async function getGasPrices(blockIdentifier: BlockIdentifier=BlockTag.PENDING) : Promise<GasPrices>
-  // BlockIdentifier = this.blockIdentifier
-  {
-    const bl = (await myProvider.getBlockWithTxHashes(blockIdentifier)) as BlockWithTxHashes;
-    // console.log(bl);
-    return {
-      l1DataGasPrice: BigInt(bl.l1_data_gas_price.price_in_fri),
-      l1GasPrice: BigInt(bl.l1_gas_price.price_in_fri),
-      l2GasPrice: BigInt(bl.l2_gas_price.price_in_fri),
-    } as GasPrices;
-  }
-  const res = await getGasPrices();
-  console.log(res);
 
   console.log("✅ Test performed.");
 }

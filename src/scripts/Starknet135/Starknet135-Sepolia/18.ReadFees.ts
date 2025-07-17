@@ -1,4 +1,4 @@
-// Read   actual fees.
+// Read actual fees.
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/18.ReadFees.ts
 // Coded with Starknet.js v7.6.2
 

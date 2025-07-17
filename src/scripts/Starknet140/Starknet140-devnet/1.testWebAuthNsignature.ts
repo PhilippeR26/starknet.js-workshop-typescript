@@ -1,14 +1,14 @@
-// Read gas prices.
-// Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/19.getGasPrices.ts
-// Coded with Starknet.js v7.6.2
+// test format WebAuthN signature.
+// Launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/1.testWebAuthNsignature.ts
+// Coded with Starknet.js v8 experimental
 
-import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, type BlockIdentifier, type TXN_HASH, provider, BlockTag, } from "starknet";
+import { RpcProvider, shortString, Account, type BlockIdentifier, BlockTag, json, Contract, stark, type FeeEstimate, type ResourceBounds, num, type CompiledSierra, CallData, CairoCustomEnum, type BigNumberish, parseCalldataField, type AbiEntry } from "starknet";
 import fs from "fs";
-import * as dotenv from "dotenv";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
 import axios from "axios";
-import type { BlockWithTxHashes, BlockWithTxs, INVOKE_TXN_V3 } from "@starknet-io/types-js";
-import { assert } from "../../utils/assert";
+import type { BlockWithTxHashes } from "@starknet-io/types-js";
+import { strkAddress } from "../../utils/constants";
+import * as dotenv from "dotenv";
 dotenv.config();
 
 
@@ -16,11 +16,11 @@ async function main() {
   // ********* Mainnet **************
   // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_8" });
   // ********* Sepolia Testnet **************
-  // local pathfinder Sepolia Testnet node
+  // *** local pathfinder Sepolia Testnet node
   const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8" });
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
-  // local Juno Sepolia Testnet node
+  // *** local Juno Sepolia Testnet node
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://192.168.1.78:6070/rpc/v0_8" });
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:6070/rpc/v0_8" });
   // ******** Sepolia Integration **************
@@ -31,6 +31,7 @@ async function main() {
 
   // logger.setLogLevel("ERROR");
   // config.set("legacyMode",true);
+  console.log("ert");
   console.log(
     "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
     ", rpc", await myProvider.getSpecVersion(),
@@ -66,35 +67,36 @@ async function main() {
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   console.log('existing account connected.\n');
 
-  type GasPrices = {
-    l1DataGasPrice: bigint,
-    l1GasPrice: bigint,
-    l2GasPrice: bigint,
-  }
+  // Main code
+  const ReadySierra = json.parse(fs.readFileSync("./compiledContracts/cairo263/ArgentXAccount040.sierra.json").toString("ascii")) as CompiledSierra;
+  const ReadyCallData = new CallData(ReadySierra.abi);
+  type WebAuthNSignature = {
+    cross_origin: boolean,
+    client_data_json_outro: BigNumberish[],
+    flags: number,
+    sign_count: number,
+    ec_signature: { r: BigNumberish; s: BigNumberish; y_parity: boolean },
+    sha256_implementation: CairoCustomEnum;
+  };
+  const sierraSignature: WebAuthNSignature = {
+    cross_origin: false,
+    client_data_json_outro: [10, 20],
+    flags: 2,
+    sign_count: 100,
+    ec_signature: { r: 200, s: 300, y_parity: true },
+    sha256_implementation: new CairoCustomEnum({ Cairo0: {} }),
+  };
 
-  /**
-   * Get the gas prices related to a block.
-   * @param {BlockIdentifier} [blockIdentifier = this.identifier] - Optional. Can be 'pending', 'latest' or a block number (an integer type).
-   * @returns {Promise<GasPrices>} an object with l1DataGasPrice, l1GasPrice, l2GasPrice properties (all bigint type).
-   * @example
-   * ```ts
-   * const result = await myProvider.getGasPrices();
-   * // result = { l1DataGasPrice: 3039n, l1GasPrice: 55590341542890n, l2GasPrice: 8441845008n }
-   * ```
-   */
-  async function getGasPrices(blockIdentifier: BlockIdentifier=BlockTag.PENDING) : Promise<GasPrices>
-  // BlockIdentifier = this.blockIdentifier
-  {
-    const bl = (await myProvider.getBlockWithTxHashes(blockIdentifier)) as BlockWithTxHashes;
-    // console.log(bl);
-    return {
-      l1DataGasPrice: BigInt(bl.l1_data_gas_price.price_in_fri),
-      l1GasPrice: BigInt(bl.l1_gas_price.price_in_fri),
-      l2GasPrice: BigInt(bl.l2_gas_price.price_in_fri),
-    } as GasPrices;
-  }
-  const res = await getGasPrices();
-  console.log(res);
+  const params = [sierraSignature];
+  const selectedType = "argent::signer::webauthn::WebauthnSignature";
+  const iter = params[Symbol.iterator]();
+  const structs = CallData.getAbiStruct(ReadySierra.abi);
+  const enums = CallData.getAbiEnum(ReadySierra.abi);
+  const abiExtract = ReadySierra.abi.find((abiItem) => abiItem.name === selectedType);
+  const inputAbi: AbiEntry = { name: abiExtract.type, type: abiExtract.name };
+  const encoded = parseCalldataField(iter, inputAbi, structs, enums);
+
+  console.log(encoded);
 
   console.log("✅ Test performed.");
 }

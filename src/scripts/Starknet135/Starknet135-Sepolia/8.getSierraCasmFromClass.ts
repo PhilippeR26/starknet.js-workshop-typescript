@@ -33,7 +33,7 @@ async function main() {
 
 
   //const classHash = await myProvider.getClassHashAt(strkAddress);
-  const classHash = "0x076791ef97c042f81fbf352ad95f39a22554ee8d7927b2ce3c681f3418b5206a"; 
+  const classHash = "0x01b2df6d8861670d4a8ca4670433b2418d78169c2947f46dc614e69f333745c8"; 
   const sierra = await myProvider.getClassByHash(classHash);
   fs.writeFileSync('./compiledContracts/sierra.json', json.stringify(sierra, undefined, 2));
   const casm = await myProvider.getCompiledCasm(classHash);

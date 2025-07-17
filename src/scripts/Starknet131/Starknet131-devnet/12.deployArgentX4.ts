@@ -95,7 +95,7 @@ export async function deployAccountArgentX4(myProvider: RpcProvider, account0: A
   const accountGuardian: StarknetSigner = { pubkey: guardianAddress }
   const axSigner = new CairoCustomEnum({ Starknet: accountSigner }); // Starknet || Secp256k1Signer || Secp256r1Signer || Eip191Signer || WebauthnSigner
   // const axGuardian = new CairoOption<CairoCustomEnum>(CairoOptionVariant.Some, new CairoCustomEnum({ Starknet: accountGuardian })); // Starknet || Secp256k1Signer || Secp256r1Signer || Eip191Signer || WebauthnSigner
-  const axGuardian = new CairoOption<CairoCustomEnum>(CairoOptionVariant.None);
+  const axGuardian = new CairoOption(CairoOptionVariant.None);
   const constructorAXCallData = calldataAX.compile("constructor", {
     owner: axSigner,
     guardian: axGuardian

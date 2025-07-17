@@ -79,7 +79,7 @@ async function main() {
    * Get Statistics of `tip` values in a range of blocks.
    * Calculation starts from `blockIdentifier` and go backwards, 
    * up until `maxBlocks` blocks are processed, 
-   * or at least 10 INVOKE V3 transactions are processed.
+   * or at least `minTxsNecessary` INVOKE V3 transactions are processed.
    * @param {BlockIdentifier} [blockIdentifier = 'latest'] higher block scanned. Can be 'pending', 'latest' or a block number (an integer type).
    * @param {number} [maxBlocks = 3] Maximum number of blocks scanned.
    * @param {number} [minTxsNecessary = 10] Minimum number of Invoke V3 transactions scanned.
@@ -89,7 +89,7 @@ async function main() {
    * const result = await getTipStatsFromBlock(BlockTag.PENDING);
    * // result = { minTip: 0n, maxTip: 2000000000n, averageTip: 608695652n } 
    */
-  async function getTipStatsFromBlock(blockIdentifier: BlockIdentifier = "latest", maxBlocks: number = 3, minTxsNecessary: number = 10): Promise<TipStats | undefined>
+  async function getTipStatsFromBlocks(blockIdentifier: BlockIdentifier = "latest", maxBlocks: number = 3, minTxsNecessary: number = 10): Promise<TipStats | undefined>
   // BlockIdentifier = this.blockIdentifier
   {
     assert(Number.isInteger(maxBlocks), "maxBlocks parameter must be an integer.");
@@ -145,7 +145,7 @@ async function main() {
   // const stats = await getTipStatsFromBlock(BlockTag.LATEST);
   // const stats = await getTipStatsFromBlock(892623);
   // const stats = await getTipStatsFromBlock(892623, 10);
-  const stats = await getTipStatsFromBlock(892623, 10, 3);
+  const stats = await getTipStatsFromBlocks(892623, 10, 3);
   console.log("result is", stats, "\n");
 
   const bounds = {

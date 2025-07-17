@@ -1,6 +1,6 @@
 // Test the status of transactions in Rpc0.9
 // launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/1.testSpeedTx.ts
-// Coded with Starknet.js v8 experimental
+// Coded with Starknet.js v8.0.0-beta.1
 
 import { RpcProvider, Account,  json,   Contract, shortString,  type CompiledSierra, type CairoAssembly } from "starknet";
 import fs from "fs";
@@ -40,7 +40,7 @@ async function main() {
 
     // *** local 
     // const url = "http://192.168.1.34:6070/rpc/v0_9"; // juno
-     const url = "http://192.168.1.34:9545/rpc/v0_9"; // Pathfinder
+    const url = "http://192.168.1.34:9545/rpc/v0_9"; // Pathfinder
     const myProvider = new RpcProvider({ nodeUrl: url, specVersion: "0.9.0" }); // my local Juno Sepolia Testnet node (Starlink network)
     // const myProvider = new RpcProvider({ nodeUrl: url, specVersion: "0.9.0" }); // my local Pathfinder Sepolia Testnet node (Starlink network)
     // const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.0:9545/rpc/v0_9", specVersion: "0.9.0" }); // local Pathfinder Sepolia Testnet node
@@ -73,7 +73,7 @@ async function main() {
     //  const accountAddress0 = account1BraavosMainnetAddress;
     //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
-    const account0 = new Account(myProvider, accountAddress0, privateKey0);
+    const account0 = new Account({provider:myProvider,address: accountAddress0, signer:privateKey0});
     console.log("Account 0 connected.\n");
 
     // ***** main code : 
@@ -94,7 +94,7 @@ async function main() {
         const finality = new Date().getTime();
         console.log("Finality in (s) =", (finality - start) / 1000);
         let isReceipt: boolean = false
-        // necessary only for Pathfinder.
+        // ********* necessary only for Pathfinder.
         while (!isReceipt) {
             try {
                 const txR = await myProvider.getTransactionReceipt(txH);
@@ -106,7 +106,7 @@ async function main() {
         }
         const txRTime = new Date().getTime();
         console.log("txR in (s) =", (txRTime - start) / 1000, "nonce=", await axiosGetNonce(url));
-        // await wait (1000);
+        // *********
     }
 
     // 
@@ -116,25 +116,20 @@ async function main() {
     if (nonce === undefined) {
         process.exit()
     };
-    // process.exit(5);
     const account1Address = account3ArgentXSepoliaAddress;
-    // const test = await myProvider.getNonceForAddress(account0.address);
-    // console.log({test});
-
-    // test a big multiCall
+        // test a big multiCall
     const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo264/openZeppelin14/openzeppelin_ERC20Upgradeable.sierra.json").toString("ascii"));
-    const strkContract = new Contract(compiledERC20Contract.abi, strkAddress, account0);
+    const strkContract = new Contract({abi:compiledERC20Contract.abi,address: strkAddress, providerOrAccount:account0});
     const transferCall = strkContract.populate("transfer", [account1Address, 1n * 10n ** 2n]);
     let start = new Date().getTime();
     const respTransfer = await account0.execute([transferCall, transferCall, transferCall, transferCall, transferCall, transferCall, transferCall, transferCall, transferCall, transferCall,], {
         nonce,
-        tip: 1n * 10n ** 3n,
+        tip: 1n * 10n ** 9n,
     });
     await followTransaction(respTransfer.transaction_hash);
 
     // *********************************
     console.log("Try second tx...");
-    // await wait(2000);
     const nonce2 = await axiosGetNonce(url);
     console.log("Axios nonce2:", nonce2);
     if (BigInt(nonce2) !== (BigInt(nonce) + 1n)) {
@@ -147,7 +142,6 @@ async function main() {
     }).transfer(account1Address, 2n * 10n ** 3n);
     console.log(respTransfer2);
     await followTransaction(respTransfer2.transaction_hash);
-    // await myProvider.waitForTransaction(respTransfer2.transaction_hash);
 
 
     console.log('✅ Test completed.');

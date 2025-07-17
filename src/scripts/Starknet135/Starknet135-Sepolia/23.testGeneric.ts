@@ -5,7 +5,7 @@
 import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, type BlockIdentifier, type TXN_HASH, provider, BlockTag, } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
-// import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
+import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
 import axios from "axios";
 import type { BlockWithTxs, INVOKE_TXN_V3 } from "@starknet-io/types-js";
 import { assert } from "../../utils/assert";
@@ -46,8 +46,8 @@ async function main() {
 
   // *** initialize existing Sepolia Testnet account
   // non SNIP-9 account:
-  // const accountAddress0 = account1OZSepoliaAddress;
-  // const privateKey0 = account1OZSepoliaPrivateKey;
+  const accountAddress0 = account1OZSepoliaAddress;
+  const privateKey0 = account1OZSepoliaPrivateKey;
 
   // SNIP-9 compatible accounts:
   // const accountAddress0 = account3ArgentXSepoliaAddress;
@@ -62,8 +62,8 @@ async function main() {
   // const privateKey0 = account4MainnetPrivateKey;
   // const accountAddress0 = account4MainnetAddress
 
-  const account0 = new Account(myProvider, "0x1234", "0x1345345");
-  //console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
+  const account0 = new Account(myProvider, accountAddress0, privateKey0);
+  console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   console.log('existing account connected.\n');
 
   // *** main code
@@ -73,22 +73,26 @@ async function main() {
 
   const testContract = new Contract(sierra.abi, contractAddress, myProvider);
   console.log(testContract.functions);
-  const myCall = testContract.populate("linked_nostr_default_account", {
-    request: {
-      public_key: 2345n,
-      created_at: 370,
-      kind: 17,
-      tags: "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345AAADEFGHIJKLMNOPQRSTUVWXYZ12345A",
-      content: {
-        starknet_address: "0x575467457"
-      },
-      sig: {
-        s: "0x789",
-        r: "0xabcdef",
-      }
+  const requestArgs = {
+    public_key: "0x5b2b830f2778075ab3befb5a48c9d8138aef017fab2b26b5c31a2742a901afcc",
+    created_at: 1716285235,
+    kind: 1,
+    tags: "[]",
+    content: {
+      starknet_address: 123,
+    },
+    sig: {
+      r: "0x557361f9ccd492f1b07cd2a509c748a6241ad7fe41a6b29dafb9b8f84734809e",
+      s: "0x0dd6809914687a652f991f2478a57d4b4242efa14d8b2f3009d3cfb330fd7070",
     }
+  };
+  const myCall = testContract.populate("linked_nostr_default_account", {
+    request: requestArgs
   });
   console.log(myCall);
+  const res = await account0.execute(myCall);
+  console.log(res);
+
 
   console.log("✅ Test performed.");
 }

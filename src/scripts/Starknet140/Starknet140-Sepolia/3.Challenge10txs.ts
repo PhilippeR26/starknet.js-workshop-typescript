@@ -20,7 +20,9 @@ async function main() {
 
     // *** local 
     // const url = "http://192.168.1.34:6070/rpc/v0_9"; // my local Juno Sepolia Testnet node (Starlink network)
-     const url = "http://192.168.1.34:9545/rpc/v0_9"; // local Pathfinder
+    // 🚨🚨🚨 Put here the url of your node.
+    //          👇👇👇
+    const url = "http://192.168.1.34:9545/rpc/v0_9"; // local Pathfinder
     // const url = equilibriumPathfinderTestnetUrl; // Pathfinder testnet from Equilibrium team
     // const url = spaceShardPathfinderTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
 
@@ -55,6 +57,8 @@ async function main() {
     // const accountAddress0 = account3IntegrationOZ17address;
     // const privateKey0 = account3IntegrationOZ17privateKey;
     // **** Sepolia
+    // 🚨🚨🚨 Put here the address & the private key of your account.
+    //          👇👇👇
     const accountAddress0 = account2TestBraavosSepoliaAddress;
     const privateKey0 = account2TestBraavosSepoliaPrivateKey;
     // **** Mainnet
@@ -127,7 +131,7 @@ async function main() {
         console.log("tx in", (end - start0) / 1000, "s.");
     }
     response.forEach((resp, i) => {
-        console.log("tx#", i, "at", (resp.end - start) / 1000+ "s.");
+        console.log("tx#", i, "at", (resp.end - start) / 1000 + "s.");
     })
     const finalWeapons = (await gameContract.get_qty_weapons()) as bigint;
     console.log("Final quantity of weapons (should be 45) :", finalWeapons);

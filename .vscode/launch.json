@@ -25,7 +25,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/signature/6.signSNIP12.ts",
+            "program": "${workspaceFolder}/src/scripts/Starknet140/Starknet140-Sepolia/2.fastWait.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

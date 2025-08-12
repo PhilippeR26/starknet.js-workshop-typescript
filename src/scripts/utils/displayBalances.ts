@@ -18,7 +18,7 @@ export async function displayBalances(addr: BigNumberish, myProv: RpcProvider) {
     try {
         balUSDC = await usdcContract.call("balanceOf", [addr]) as bigint;
     } catch { };
-    console.log("Account 0 has a balance of :", formatBalance(balSTRK, 18), "STRK");
-    console.log("Account 0 has a balance of :", formatBalance(balETH, 18), "ETH");
-    console.log("Account 0 has a balance of :", formatBalance(balUSDC, 6), "USDC");
+    console.log("Account has a balance of :", formatBalance(balSTRK, 18), "STRK");
+    console.log("Account has a balance of :", formatBalance(balETH, 18), "ETH");
+    console.log("Account has a balance of :", formatBalance(balUSDC, 6), "USDC");
 }

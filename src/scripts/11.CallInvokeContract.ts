@@ -2,7 +2,7 @@
 // Launch with npx ts-node src/scripts/11.CallInvokeContract.ts
 // Coded with Starknet.js v8.1.2 & Devnet 0.5.0
 
-import { Contract, Account, json, RpcProvider, config, stark } from "starknet";
+import { Contract, Account, json, RpcProvider, config, stark, type ResourceBounds, type EstimateFeeResponseOverhead, type ResourceBoundsBN } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
@@ -48,10 +48,12 @@ async function main() {
     console.log("Initial balance =", bal1);
     console.log("Initial balance =", bal1b);
     // estimate fee
-    const suggestedMaxFeeBN = await account0.estimateInvokeFee({ contractAddress: testAddress, entrypoint: "increase_counter", calldata: [10] });
-    const suggestedFee=stark.resourceBoundsToHexString(suggestedMaxFeeBN.resourceBounds);
-    const increasedFees=stark.toOverheadResourceBounds(suggestedFee,{});
-    const resu = await myTestContract.invoke("increase_counter", [10], { resourceBounds: suggestedMaxFee.resourceBounds });
+    const suggestedMaxFeeBN: EstimateFeeResponseOverhead = await account0.estimateInvokeFee({ contractAddress: testAddress, entrypoint: "increase_counter", calldata: [10] });
+    // const estimatedResourcesBN: ResourceBoundsBN=suggestedMaxFeeBN.resourceBounds;
+    // const estimatedResources: EstimateFeeResponseOverhead = stark.resourceBoundsToEstimateFeeResponse(estimatedResourcesBN);
+    // const suggestedFee: ResourceBounds=stark.resourceBoundsToHexString(suggestedMaxFeeBN.resourceBounds);
+    // const increasedFees=stark.toOverheadResourceBounds({...suggestedFee, overall_fee:0, unit:"FRI"},{});
+    const resu = await myTestContract.invoke("increase_counter", [10], { resourceBounds: suggestedMaxFeeBN.resourceBounds });
     await myProvider.waitForTransaction(resu.transaction_hash);
     const bal2 = await myTestContract.get_balance();
     console.log("Final balance =", bal2);

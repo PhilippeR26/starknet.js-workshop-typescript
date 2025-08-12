@@ -70,7 +70,8 @@ In the folder 'scripts', you can find many pedagogical codes :
 An account can pay a transaction fees on behalf of an other account. Explore this directory [here](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/Starknet131/Starknet131-sepolia/5.executeFromOutsideTimeBound.ts).
 
 ### SNIP-29 paymaster
-You can pay your fees with alternate tokens. See scripts 9 to 14 [here](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/Starknet135/Starknet135-Sepolia/9.paymasterSNIP-29.ts).
+You can pay your fees with alternate tokens. See scripts 9 to 14 [here](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/Starknet135/Starknet135-Sepolia/9.paymasterSNIP-29.ts).  
+A demo DAPP is [here](https://github.com/PhilippeR26/starknet-paymaster-SNIP-29).
 
 ### Devnet :
 Devnet is launched and ended automatically in the main scripts of this tuto, using the `starknet-devnet` library : https://github.com/0xSpaceShard/starknet-devnet-js/blob/master/README.md  

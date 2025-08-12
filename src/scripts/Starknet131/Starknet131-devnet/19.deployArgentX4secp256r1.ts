@@ -2,7 +2,7 @@
 // Launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/19.deployArgentX4secp256r1.ts
 // Coded with Starknet.js v6.11.0 & devnet-rs v0.1.2 & starknet-devnet.js v0.0.4
 
-import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo, CairoCustomEnum, CairoOption, CairoOptionVariant, type Call } from "starknet";
+import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, cairo, CairoCustomEnum, CairoOption, CairoOptionVariant, type Call } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
 import fs from "fs";
 import * as dotenv from "dotenv";

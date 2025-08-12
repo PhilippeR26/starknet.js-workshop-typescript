@@ -1,8 +1,8 @@
 // Use SNIP-29 paymaster
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/9.paymasterSNIP-29.ts
-// Coded with Starknet.js v7.3.0 +experimental
+// Coded with Starknet.js v8.1.0
 
-import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, RPC07, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, type PaymasterDetails } from "starknet";
+import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, type PaymasterDetails } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
@@ -77,7 +77,13 @@ async function main() {
 
   const myPaymaster = new PaymasterRpc({ nodeUrl:"https://sepolia.paymaster.avnu.fi" , });
 
-  const account0 = new Account(myProvider, accountAddress0, privateKey0, "1", constants.TRANSACTION_VERSION.V3, myPaymaster);
+  console.log(myPaymaster, myPaymaster.nodeUrl, await myPaymaster.isAvailable());
+  const account0 = new Account({
+    provider: myProvider, 
+     address: accountAddress0, 
+     signer: privateKey0,
+     paymaster: myPaymaster
+    });
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   console.log('existing account connected.\n');
   const versionSNIP9 = await account0.getSnip9Version();
@@ -121,7 +127,10 @@ async function main() {
   console.log("isUSDCsupported =", isUSDCsupported);
 
   const strkSierra = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20mintableDecimalsOZ081.sierra.json").toString("ascii"));
-  const strkContract = new Contract(strkSierra.abi, strkAddress, account0);
+  const strkContract = new Contract({
+    abi: strkSierra.abi, 
+    address: strkAddress, 
+    providerOrAccount: account0});
   const myCall = strkContract.populate("transfer",
     {
       recipient: accountETHoz17snip9Address,

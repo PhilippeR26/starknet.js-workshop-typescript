@@ -1,8 +1,8 @@
 // create a new abstracted account in Devnet
 // launch with npx ts-node src/scripts/10.createAccountAbstraction.ts
-// Coded with Starknet.js v7.1.0 & Devnet v0.4.0
+// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
 
-import { Account, ec, json, hash, CallData, RpcProvider, shortString } from "starknet";
+import { Account, ec, json, hash, CallData, RpcProvider, shortString, config } from "starknet";
 import { Devnet } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
@@ -25,6 +25,7 @@ async function main() {
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
+    config.set("logLevel","FATAL");
     console.log("Devnet : url =", devnet.provider.url);
     console.log(
         "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
@@ -34,7 +35,11 @@ async function main() {
 
     // initialize existing predeployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
-    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
+    const account0 = new Account({
+        provider: myProvider,
+        address: devnetAccounts[0].address,
+        signer: devnetAccounts[0].private_key
+    });
     console.log("Account 0 connected.\nAddress =", account0.address, "\n");
 
     // my customized Cairo 0 account, with administrators :
@@ -51,7 +56,7 @@ async function main() {
         fs.readFileSync("./compiledContracts/cairo060/myAccountAbstraction-old.json").toString("ascii")
     );
     //    const AAaccountClashHash = "0x1d926edb81b7ef0efcb67dd4558a6dffc2bf31a8bc9c3fe7832a5ec3d1b70da";
-    const { transaction_hash: declTH, class_hash: decCH } = await account0.declare({ contract: compiledAAaccount });
+    const { transaction_hash: declTH, class_hash: decCH } = await account0.declare({contract : compiledAAaccount, casm: TBD });
     console.log('Customized account class hash =', decCH);
     await myProvider.waitForTransaction(declTH);
 

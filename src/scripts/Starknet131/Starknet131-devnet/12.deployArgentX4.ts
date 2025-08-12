@@ -1,7 +1,7 @@
 // Deploy an Account 0.4.0 account in devnet.
-// Coded with Starknet.js v6.11.0 & devnet-rs v0.1.1 & starknet-devnet.js v0.0.4
+// Coded with Starknet.js v8.1.2 & devnet-rs v0.5.0
 
-import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo, CairoCustomEnum, CairoOption, CairoOptionVariant } from "starknet";
+import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, cairo, CairoCustomEnum, CairoOption, CairoOptionVariant } from "starknet";
 import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature } from "../../braavos/3b.deployBraavos1";
 import { DevnetProvider } from "starknet-devnet";
 //import { OutsideExecution, OutsideExecutionOptions } from 'starknet';
@@ -91,7 +91,7 @@ export async function deployAccountArgentX4(myProvider: RpcProvider, account0: A
 
   const calldataAX = new CallData(accountAXsierra.abi);
   const accountSigner: StarknetSigner = { pubkey: starkKeyPubAX };
-  const guardianAddress="0x123653467456745654";
+  const guardianAddress = "0x123653467456745654";
   const accountGuardian: StarknetSigner = { pubkey: guardianAddress }
   const axSigner = new CairoCustomEnum({ Starknet: accountSigner }); // Starknet || Secp256k1Signer || Secp256r1Signer || Eip191Signer || WebauthnSigner
   // const axGuardian = new CairoOption<CairoCustomEnum>(CairoOptionVariant.Some, new CairoCustomEnum({ Starknet: accountGuardian })); // Starknet || Secp256k1Signer || Secp256r1Signer || Eip191Signer || WebauthnSigner
@@ -109,7 +109,7 @@ export async function deployAccountArgentX4(myProvider: RpcProvider, account0: A
   await l2DevnetProvider.mint(accountAXAddress, 100n * 10n ** 18n, "FRI");
 
   // deploy ArgentX account
-  const accountAX = new Account(myProvider, accountAXAddress, privateKeyAX);
+  const accountAX = new Account({ provider: myProvider, address: accountAXAddress, signer: privateKeyAX });
   const deployAccountPayload = {
     classHash: contractAXclassHash,
     constructorCalldata: constructorAXCallData,

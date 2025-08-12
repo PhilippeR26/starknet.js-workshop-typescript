@@ -1,9 +1,9 @@
 // Collection of functions for Braavos account v1.2.0 creation.
-// Coded with Starknet.js v7.1.0
+// Coded with Starknet.js v8.1.2
 // Handle Rpc0.8V3
 
-import { ec, hash, num, constants, CallData, stark, BigNumberish, type RpcProvider, type DeployAccountSignerDetails, type V3DeployAccountSignerDetails, type V3InvocationsSignerDetails, type UniversalDetails, type V3TransactionDetails, type EstimateFeeResponse } from "starknet";
-import { type DeployContractResponse, type Calldata, type DeployAccountContractPayload, type EstimateFeeDetails, type CairoVersion, type DeployAccountContractTransaction, } from "starknet";
+import { ec, hash, num, constants, CallData, stark, BigNumberish, type RpcProvider, type DeployAccountSignerDetails, type V3DeployAccountSignerDetails, type V3InvocationsSignerDetails, type UniversalDetails, type V3TransactionDetails, type ApiEstimateFeeResponse, type EstimateFeeResponseBulkOverhead, type EstimateFeeResponseOverhead, type EstimateFeeBulk, type ResourceBoundsBN } from "starknet";
+import { type DeployContractResponse, type Calldata, type DeployAccountContractPayload, type CairoVersion, type DeployAccountContractTransaction, } from "starknet";
 import { EDAMode, EDataAvailabilityMode, ETransactionVersion, ETransactionVersion3, type ResourceBounds } from "@starknet-io/types-js";
 
 
@@ -21,7 +21,7 @@ type CalcV3DeployAccountTxHashArgs = {
     nonce: BigNumberish;
     nonceDataAvailabilityMode: EDAMode;
     feeDataAvailabilityMode: EDAMode;
-    resourceBounds: ResourceBounds;
+    resourceBounds: ResourceBoundsBN;
     tip: BigNumberish;
     paymasterData: BigNumberish[];
 };
@@ -32,7 +32,7 @@ export function getBraavosSignature(
 ): string[] {
     let txnHash: string = "";
     const det = details as V3DeployAccountSignerDetails;
-    const v3det = stark.v3Details(det, "0.8.1");
+    const v3det = stark.v3Details(det);
     txnHash = hash.calculateDeployAccountTransactionHash(
         {
             contractAddress: det.contractAddress,
@@ -46,7 +46,7 @@ export function getBraavosSignature(
             feeDataAvailabilityMode: stark.intDAM(v3det.feeDataAvailabilityMode),
             tip: v3det.tip,
             paymasterData: v3det.paymasterData,
-            resourceBounds: v3det.resourceBounds,
+            resourceBounds: det.resourceBounds,
         } as CalcV3DeployAccountTxHashArgs
     );
 
@@ -127,7 +127,7 @@ export async function buildBraavosAccountDeployPayload(
 export async function estimateBraavosAccountDeployFee(
     privateKeyBraavos: BigNumberish,
     provider: RpcProvider,
-    { blockIdentifier, skipValidate, tip: tip0 }: EstimateFeeDetails
+    { blockIdentifier, skipValidate, tip: tip0 }: UniversalDetails
 ): Promise<UniversalDetails> {
     const tip = tip0 ?? 0n;
     const EstimateVersion = ETransactionVersion.F3;
@@ -156,8 +156,8 @@ export async function estimateBraavosAccountDeployFee(
             tip,
         } as V3InvocationsSignerDetails
     );
-    const v3det = stark.v3Details({}, (await provider.getSpecVersion())as constants.SupportedRpcVersion);
-    const response: EstimateFeeResponse = await provider.getDeployAccountEstimateFee(
+    const v3det = stark.v3Details({});
+    const suggestedMaxFee: EstimateFeeResponseOverhead = await provider.getDeployAccountEstimateFee(
         {
             classHash: BraavosBaseClassHash,
             addressSalt: starkKeyPubBraavos,
@@ -172,19 +172,19 @@ export async function estimateBraavosAccountDeployFee(
         blockIdentifier,
         skipValidate
     );
-    const suggestedMaxFee = stark.estimateFeeToBounds({
-        ...response,
-        overall_fee: Number(response.overall_fee),
-        l1_gas_consumed: Number(response.l1_gas_consumed),
-        l1_gas_price: Number(response.l1_gas_price),
-        l2_gas_consumed: Number(response.l2_gas_consumed ?? 0n),
-        l2_gas_price: Number(response.l2_gas_price ?? 0n),
-        l1_data_gas_consumed: Number(response.l1_data_gas_consumed),
-        l1_data_gas_price: Number(response.l1_data_gas_price),
-    }
-    );
+    // const suggestedMaxFee = stark.estimateFeeToBounds({
+    //     ...response,
+    //     overall_fee: Number(response.overall_fee),
+    //     l1_gas_consumed: Number(response.l1_gas_consumed),
+    //     l1_gas_price: Number(response.l1_gas_price),
+    //     l2_gas_consumed: Number(response.l2_gas_consumed ?? 0n),
+    //     l2_gas_price: Number(response.l2_gas_price ?? 0n),
+    //     l1_data_gas_consumed: Number(response.l1_data_gas_consumed),
+    //     l1_data_gas_price: Number(response.l1_data_gas_price),
+    // }
+    // );
     return {
-        resourceBounds: suggestedMaxFee,
+        resourceBounds: suggestedMaxFee.resourceBounds,
         feeDataAvailabilityMode: EDataAvailabilityMode.L1,
         nonceDataAvailabilityMode: EDataAvailabilityMode.L1,
         tip: 10 ** 13, // not handled in Starknet 0.13.5

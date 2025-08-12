@@ -1,5 +1,5 @@
 // Execute transactions (Strk transfer) as fast as possible in Rpc0.9
-// Launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/3a.Challenge10txs.ts
+// Launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/3a.Challenge10txsRpcStrk.ts
 // Coded with Starknet.js v8.0.0-beta.4 + experimental
 
 import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce } from "starknet";
@@ -32,8 +32,6 @@ async function axiosGetNonce(url: string): Promise<string> {
     return nonce;
 }
 
-
-
 async function main() {
     // *** devnet
     const url="http://127.0.0.1:5050/rpc";
@@ -55,7 +53,6 @@ async function main() {
     // const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.0:9545/rpc/v0_9", specVersion: "0.9.0" }); // local Pathfinder Sepolia Testnet node
     // public node
     // const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_9", specVersion: "0.9.0" }); // Sepolia Testnet 
-    // https://rpc.pathfinder.equilibrium.co/testnet-sepolia/rpc/v0_9
 
 
     // if (!(await l2DevnetProvider.isAlive())) {

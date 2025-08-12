@@ -1,8 +1,8 @@
 // Deploy a new ArgentX wallet (Cairo1, v0.4.0).
 // launch with : npx ts-node ssrc/scripts/3.createNewArgentXaccount.ts
-// Coded with Starknet.js v7.1.0, Devnet v0.4.0
+// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
 
-import { RpcProvider, Account, ec, json, hash, CallData, CairoOption, CairoOptionVariant, CairoCustomEnum, shortString } from "starknet";
+import { RpcProvider, Account, ec, json, hash, CallData, CairoOption, CairoOptionVariant, CairoCustomEnum, shortString, config } from "starknet";
 import { Devnet } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
@@ -23,10 +23,11 @@ async function main() {
         keepAlive: false,
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
-    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url, specVersion: "0.8" });
+    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url, specVersion: "0.9.0" });
+    config.set("logLevel", "FATAL");
     console.log("devnet url =", devnet.provider.url);
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()), 
+        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version,
     );
@@ -34,7 +35,11 @@ async function main() {
 
     // initialize existing predeployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
-    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
+    const account0 = new Account({
+        provider: myProvider,
+        address: devnetAccounts[0].address,
+        signer: devnetAccounts[0].private_key
+    });
     console.log("Account 0 connected.\nAddress =", account0.address, "\n");
 
     // create account
@@ -74,7 +79,7 @@ async function main() {
     await devnet.provider.mint(accountAXAddress, 100n * 10n ** 18n, "FRI"); // 100 STRK
 
     // deploy ArgentX account
-    const accountAX = new Account(myProvider, accountAXAddress, privateKeyAX);
+    const accountAX = new Account({ provider: myProvider, address: accountAXAddress, signer: privateKeyAX });
     const deployAccountPayload = {
         classHash: contractAXclassHash,
         constructorCalldata: constructorAXCallData,

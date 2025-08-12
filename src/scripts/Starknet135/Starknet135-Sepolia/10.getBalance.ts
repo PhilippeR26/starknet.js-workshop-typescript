@@ -8,9 +8,9 @@ import { ethAddress, strkAddress, USDCaddressTestnet } from "../../utils/constan
 
 export async function displayBalances(addr: BigNumberish, myProv: RpcProvider) {
   const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));
-  const EthContract = new Contract(compiledERC20Contract.abi, ethAddress, myProv);
-  const strkContract = new Contract(compiledERC20Contract.abi, strkAddress, myProv);
-  const usdcContract = new Contract(compiledERC20Contract.abi, USDCaddressTestnet, myProv);
+  const EthContract = new Contract({ abi: compiledERC20Contract.abi, address: ethAddress, providerOrAccount: myProv });
+  const strkContract = new Contract({ abi: compiledERC20Contract.abi, address: strkAddress, providerOrAccount: myProv });
+  const usdcContract = new Contract({ abi: compiledERC20Contract.abi, address: USDCaddressTestnet, providerOrAccount: myProv });
   const balETH = await EthContract.call("balanceOf", [addr]) as bigint;
   const balSTRK = await strkContract.call("balanceOf", [addr]) as bigint;
   const balUSDC = await usdcContract.call("balanceOf", [addr]) as bigint;

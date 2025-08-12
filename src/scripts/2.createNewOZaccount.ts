@@ -1,6 +1,6 @@
 // Create a new OZ 17 account in devnet
 // Launch with npx ts-node src/scripts/2.createNewOZaccount.ts
-// Coded with Starknet.js v7.1.0 & Devnet 0.4.0
+// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
 
 import { Account, ec, json, hash, CallData, RpcProvider, stark, shortString, config, ETransactionVersion } from "starknet";
 import { Devnet, DevnetProvider } from "starknet-devnet";
@@ -23,7 +23,8 @@ async function main() {
         keepAlive: false,
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
-    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url, specVersion: "0.8" });
+    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url, specVersion: "0.9.0" });
+    config.set("logLevel","FATAL");
     // already running Devnet
     // const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: "0.8" });
     // const devnet = new DevnetProvider({ timeout: 40_000 });
@@ -43,7 +44,11 @@ async function main() {
 
     // initialize existing predeployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
-    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
+    const account0 = new Account({
+        provider: myProvider,
+        address: devnetAccounts[0].address,
+        signer: devnetAccounts[0].private_key
+    });
     console.log("Account 0 connected.\nAddress =", account0.address, "\n");
 
     // new Open Zeppelin account v0.17.0 (Cairo 1) :
@@ -84,7 +89,11 @@ async function main() {
     await devnet.provider.mint(accountAddress, 100n * 10n ** 18n, "FRI"); // 100 STRK
 
     // deploy account
-    const OZaccount = new Account(myProvider, accountAddress, privateKey);
+    const OZaccount = new Account({
+        provider: myProvider,
+        address: accountAddress,
+        signer: privateKey
+    });
     console.log("Deploy account...");
     const { transaction_hash, contract_address } = await OZaccount.deployAccount({
         classHash: contractClassHash,
@@ -92,7 +101,7 @@ async function main() {
         addressSalt: starkKeyPub,
         contractAddress: accountAddress
     });
-    console.log('✅ New OpenZeppelin account created.\n   final address =', contract_address);
+    console.log('✅ New OpenZeppelin account created.\n   Final address =', contract_address);
     await myProvider.waitForTransaction(transaction_hash);
 
     outputStream.end();

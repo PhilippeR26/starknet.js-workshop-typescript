@@ -20,7 +20,7 @@ async function main() {
     const myProvider = new RpcProvider({ nodeUrl: devnet.url });
     console.log("Provider connected to Starknet-Devnet");
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()), 
+        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version,
     );
@@ -29,12 +29,12 @@ async function main() {
     // Connect the deployed Test instance in devnet
     //          👇👇👇
     // 🚨🚨🚨 modify in accordance with result of script 5
-    const testAddress = "0x2a843f4719d17b03be9fcdaa8d97e96f869e904fc68a271bf178e64ec155554";
+    const testAddress = "0x76b387224c1ba560031fd53f9ace0130027ee97234641406f52f4b3b51b0ad4";
     const testSierra = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.sierra.json").toString("ascii"));
-    const myTestContract = new Contract(testSierra.abi, testAddress, myProvider);
-    
+    const myTestContract = new Contract({ abi: testSierra.abi, address: testAddress, providerOrAccount: myProvider });
+
     const pid: string[] = await kill(DEVNET_PORT);
-        console.log("Devnet stopped. Pid :", pid,"\nYou can close the log window.");
+    console.log("Devnet stopped. Pid :", pid, "\nYou can close the log window.");
     console.log('✅ Test Contract connected at =', myTestContract.address);
 
 }

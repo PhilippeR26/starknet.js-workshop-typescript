@@ -1,8 +1,8 @@
 // Declare a contract.
 // launch with npx ts-node src/scripts/9.declareContract.ts
-// Coded with Starknet.js v7.1.0 & Devnet 0.4.0
+// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
 
-import { Account, config, json, RpcProvider, shortString, stark, type EstimateFee, type FeeEstimate, type ResourceBoundsOverhead, type SuccessfulTransactionReceiptResponse } from "starknet";
+import { Account, config, json, RpcProvider, shortString, stark, type EstimateFeeResponseOverhead, type FeeEstimate, type ResourceBoundsOverhead, type SuccessfulTransactionReceiptResponse } from "starknet";
 import { Devnet } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
@@ -22,7 +22,8 @@ async function main() {
         keepAlive: true,
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
-    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url, specVersion: "0.8" });
+    const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url, specVersion: "0.9.0" });
+    config.set("logLevel","FATAL");
     console.log("devnet url =", devnet.provider.url);
     console.log(
         "chain Id =", shortString.decodeShortString(await myProvider.getChainId()), 
@@ -33,13 +34,17 @@ async function main() {
 
     // initialize existing pre-deployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
-    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
+    const account0 = new Account({
+        provider: myProvider,
+        address: devnetAccounts[0].address,
+        signer: devnetAccounts[0].private_key
+    });
     console.log("Account 0 connected.\n");
 
     // Declare Test contract in devnet
     const testSierra = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.sierra.json").toString("ascii"));
     const testCasm = json.parse(fs.readFileSync("./compiledContracts/cairo240/counter.casm.json").toString("ascii"));
-    const fees: EstimateFee = await account0.estimateDeclareFee({ contract: testSierra, casm: testCasm });
+    const fees: EstimateFeeResponseOverhead = await account0.estimateDeclareFee({ contract: testSierra, casm: testCasm });
     console.log("fees :", fees);
     // If fees are not sufficient, you can increase them for all next transactions (values are additional percentage):
     config.set('feeMarginPercentage', {

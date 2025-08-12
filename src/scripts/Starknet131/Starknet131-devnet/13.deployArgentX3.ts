@@ -1,22 +1,16 @@
 // Deploy an Account 0.3.0 account in devnet.
-// Coded with Starknet.js v6.11.0 & devnet-rs v0.1.1 & starknet-devnet.js v0.0.4
+// Coded with Starknet.js v8.1.2 & devnet-rs v0.5.0 
 
-import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo, CairoCustomEnum, CairoOption, CairoOptionVariant } from "starknet";
-import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature } from "../../braavos/3b.deployBraavos1";
+import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
-//import { OutsideExecution, OutsideExecutionOptions } from 'starknet';
-
-
 import fs from "fs";
 import * as dotenv from "dotenv";
-import { formatBalance } from "../../utils/formatBalance";
-import { ethAddress, strkAddress } from "../../utils/constants";
 import type { DeployAccountResp } from "../../utils/types";
 dotenv.config();
 
-export async function deployAccountArgentX3(myProvider: RpcProvider, account0: Account):Promise<DeployAccountResp> {
+export async function deployAccountArgentX3(myProvider: RpcProvider, account0: Account): Promise<DeployAccountResp> {
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
-  
+
   //
   // *********** Deploy ArgentX 0.3.0 account *************
   //
@@ -38,9 +32,9 @@ export async function deployAccountArgentX3(myProvider: RpcProvider, account0: A
     console.log("ArgentX Cairo 1 contract declared");
   } else { console.log("Already declared.") };
 
-  const contractAXclassHash=respDecl.class_hash;
+  const contractAXclassHash = respDecl.class_hash;
   const calldataAX = new CallData(accountAXsierra.abi);
-  const axSigner = starkKeyPubAX ;
+  const axSigner = starkKeyPubAX;
   const axGuardian = 0;
   const constructorAXCallData = calldataAX.compile("constructor", {
     owner: axSigner,
@@ -55,7 +49,7 @@ export async function deployAccountArgentX3(myProvider: RpcProvider, account0: A
   await l2DevnetProvider.mint(accountAXAddress, 100n * 10n ** 18n, "FRI");
 
   // deploy ArgentX account
-  const accountAX = new Account(myProvider, accountAXAddress, privateKeyAX);
+  const accountAX = new Account({ provider: myProvider, address: accountAXAddress, signer: privateKeyAX });
   const deployAccountPayload = {
     classHash: contractAXclassHash,
     constructorCalldata: constructorAXCallData,

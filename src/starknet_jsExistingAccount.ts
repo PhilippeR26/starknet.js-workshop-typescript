@@ -1,9 +1,9 @@
 // Deploy and use an ERC20, monetized by an existing account
 // Launch with : npx ts-node src/starknet_jsExistingAccount.ts
-// Coded with Starknet.js v7.1.0 & Devnet v0.4.0
+// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
 
 import fs from "fs";
-import { Account, Contract, json, CallData, Calldata, Call, RpcProvider, shortString, units } from "starknet";
+import { Account, Contract, json, CallData, Calldata, Call, RpcProvider, shortString, config } from "starknet";
 import { Devnet } from "starknet-devnet";
 import * as dotenv from "dotenv";
 import { formatBalance } from "./scripts/utils/formatBalance";
@@ -27,6 +27,7 @@ async function main() {
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
+    config.set("logLevel", "FATAL");
     console.log("Devnet : url =", devnet.provider.url);
     console.log(
         "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
@@ -37,7 +38,11 @@ async function main() {
 
     // initialize existing pre-deployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
-    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
+    const account0 = new Account({
+        provider: myProvider,
+        address: devnetAccounts[0].address,
+        signer: devnetAccounts[0].private_key
+    });
     console.log("Account 0 connected.\n");
 
     // Deploy an ERC20 contract 
@@ -79,8 +84,11 @@ async function main() {
     // Get the erc20 contract address
     const erc20Address = deployERC20Response.deploy.contract_address;
     // Create a new erc20 contract object
-    const erc20 = new Contract(erc20mintableSierra.abi, erc20Address, myProvider);
-    erc20.connect(account0);
+    const erc20 = new Contract({
+        abi: erc20mintableSierra.abi,
+        address: erc20Address,
+        providerOrAccount: account0,
+    });
 
     // Check balance - should be 100
     console.log(`Calling StarkNet for account balance...`);
@@ -89,7 +97,7 @@ async function main() {
 
     // Mint 5 tokens to account address
     console.log("Invoke Tx - Minting 5 tokens to account0...");
-    const { transaction_hash: mintTxHash } = await erc20.mint(account0.address, 500n); 
+    const { transaction_hash: mintTxHash } = await erc20.mint(account0.address, 500n);
     // Wait for the invoke transaction to be accepted on StarkNet
     console.log(`Waiting for Tx to be Accepted on Starknet - Minting...`);
     await myProvider.waitForTransaction(mintTxHash);
@@ -105,7 +113,7 @@ async function main() {
         amount: 1000
     });
     console.log("Transfer 1...");
-    const { transaction_hash: transferTxHash } = await account0.execute(transferCall);  
+    const { transaction_hash: transferTxHash } = await account0.execute(transferCall);
     await myProvider.waitForTransaction(transferTxHash);
 
     console.log("Transfer 2...");
@@ -113,7 +121,7 @@ async function main() {
     await myProvider.waitForTransaction(transferTxHash2);
 
     console.log("Transfer 3...");
-    const { transaction_hash: transferTxHash3 } = await erc20.withOptions({ parseRequest: false }).transfer(...transferCall.calldata as string[] );
+    const { transaction_hash: transferTxHash3 } = await erc20.withOptions({ parseRequest: false }).transfer(...transferCall.calldata as string[]);
     // Warning message is normal with the ParseRequest option de-activated
     await myProvider.waitForTransaction(transferTxHash3);
 
@@ -126,7 +134,7 @@ async function main() {
         recipient: erc20Address,
         amount: 300
     });
-    const { transaction_hash: transferTxHash4 } = await account0.execute([transferCall1, transferCall2]);  // execute several operations in the same transaction (Only Starknet makes it possible)
+    const { transaction_hash: transferTxHash4 } = await account0.execute([transferCall1, transferCall2]);  // execute several operations in the same transaction
     await myProvider.waitForTransaction(transferTxHash4);
 
     // Check balance after transfer - should be 70

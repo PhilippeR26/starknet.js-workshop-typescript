@@ -28,7 +28,8 @@ async function main() {
     //const provider = new SequencerProvider({ network: constants.NetworkName.SN_MAIN });
     // my personal local Pathfinder node
 
-    const wsClient = new websocketClient("ws://192.168.1.11:6061");
+     const wsClient = new websocketClient("ws://192.168.1.34:9545");
+    // const wsClient = new websocketClient("ws://192.168.1.11:6071");
 
     // Mainnet 
     console.log(await wsClient.listMethods());

@@ -1,9 +1,9 @@
 // Create a new OZ ETHEREUM account in Devnet
 // Launch with npx ts-node src/scripts/15.createNewETHaccount.ts
-// Coded with Starknet.js v7.1.0 & Devnet 0.4.0
+// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
 
 
-import { Account, json, hash, CallData, RpcProvider, EthSigner, num, stark, addAddressPadding, encode, cairo, constants, Contract, shortString } from "starknet";
+import { Account, json, hash, CallData, RpcProvider, EthSigner, num, stark, addAddressPadding, encode, cairo, constants, Contract, shortString, config } from "starknet";
 import { ethAddress, strkAddress } from "./utils/constants";
 import { formatBalance } from "./utils/formatBalance";
 import { Devnet } from "starknet-devnet";
@@ -27,6 +27,7 @@ async function main() {
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
+    config.set("logLevel", "FATAL");
     console.log("Devnet : url =", devnet.provider.url);
     console.log(
         "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
@@ -37,7 +38,11 @@ async function main() {
 
     // initialize existing predeployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
-    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
+    const account0 = new Account({
+        provider: myProvider,
+        address: devnetAccounts[0].address,
+        signer: devnetAccounts[0].private_key
+    });
     console.log("Account 0 connected.\nAddress =", account0.address, "\n");
 
     // new Open Zeppelin ETHEREUM account v0.9.0 (Cairo 1) :
@@ -82,7 +87,7 @@ async function main() {
 
 
     // deploy account
-    const ETHaccount = new Account(myProvider, contractETHaddress, ethSigner);
+    const ETHaccount = new Account({ provider: myProvider, address: contractETHaddress, signer: ethSigner });
     const feeEstimation = await ETHaccount.estimateAccountDeployFee({ classHash: decClassHash, addressSalt: salt, constructorCalldata: accountETHconstructorCalldata }, { skipValidate: false });
     console.log("Fee estimation =", feeEstimation);
 
@@ -100,8 +105,8 @@ async function main() {
     console.log('✅ New Ethereum account created.\n   final address =', contract_address);
 
     const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));
-    const ethContract = new Contract(compiledERC20Contract.abi, ethAddress, account0);
-    const strkContract = new Contract(compiledERC20Contract.abi, strkAddress, account0);
+    const ethContract = new Contract({ abi: compiledERC20Contract.abi, address: ethAddress, providerOrAccount: account0 });
+    const strkContract = new Contract({ abi: compiledERC20Contract.abi, address: strkAddress, providerOrAccount: account0 });
     const balETH = await ethContract.call("balanceOf", [ETHaccount.address]) as bigint;
     const balSTRK = await strkContract.call("balanceOf", [ETHaccount.address]) as bigint;
     console.log("ETH account has a balance of :", formatBalance(balETH, 18), "ETH");

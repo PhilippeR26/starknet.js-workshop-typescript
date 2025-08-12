@@ -1,19 +1,19 @@
-# Starkware Starknet network ^0.13.6
+# Starkware Starknet network ^0.14.0
 # Cairo Accounts and ERC20 Demo 
-# Typescript code, using Starknet.js v7.6.2 and local Starknet-devnet 0.4.3
+# Typescript code, using Starknet.js v8.1.2 and local Starknet-devnet 0.5.0
 ![Starknet.js](/src/img/starknet-js.png)
 
 If you want to implement the Starknet network in your DAPP, you can use starknet.js to interact with it.
  
-These little scripts shows how to use and test very quickly your starknet.js code without any user interface.
+These little scripts shows how to use and test very quickly your starknet.js.
 
-Even if these codes are very small, it's a good guideline to always write them in Typescript.
+Even if these codes are very small, it's a good practice to always write them in Typescript.
 
-Starknet mainnet and testnet are slow. To speed up the execution, we use Starknet-devnet, that creates a local Starknet network.
+Starknet mainnet and testnet are a bit slow. To speed up the execution, we use Starknet-devnet, that creates a local Starknet network.
 
 ## 🛠️ Installation 🛠️
 
-copy this repo to your local disk.
+Copy this repo to your local disk.
 Use `cd starknet.js-workshop-typescript` to go to the root of the project.
 
 If necessary :
@@ -66,11 +66,17 @@ In the folder 'scripts', you can find many pedagogical codes :
         - contract.invoke [script11](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/11.CallInvokeContract.ts)
     - with a signature : account.execute [workshop](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/starknet_jsExistingAccount.ts#L69)
 
+### SNIP-9 outside execution
+An account can pay a transaction fees on behalf of an other account. Explore this directory [here](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/Starknet131/Starknet131-sepolia/5.executeFromOutsideTimeBound.ts).
+
+### SNIP-29 paymaster
+You can pay your fees with alternate tokens. See scripts 9 to 14 [here](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/Starknet135/Starknet135-Sepolia/9.paymasterSNIP-29.ts).
 
 ### Devnet :
 Devnet is launched and ended automatically in the main scripts of this tuto, using the `starknet-devnet` library : https://github.com/0xSpaceShard/starknet-devnet-js/blob/master/README.md  
 If you prefer to have a devnet already launched in its own console :
-- To install and launch an instance of the local devnet : https://0xspaceshard.github.io/starknet-devnet/docs/running/install  
+- To install and launch an instance of the local devnet : https://0xspaceshard.github.io/starknet-devnet/docs/running/install . 
+    Starknet-devnet can also be launched easily with `asdf`.
 - Open a console, and launch devnet `starknet-devnet --seed 0`
 - In all scripts, replace opening of a new Devnet by : 
 ```typescript

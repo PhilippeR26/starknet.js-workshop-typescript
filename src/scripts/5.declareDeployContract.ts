@@ -1,8 +1,8 @@
 // declare & deploy a contract.
 // launch with npx ts-node src/scripts/5.declareDeployContractOZ.ts
-// Coded with Starknet.js v7.1.0 & Devnet v0.4.0
+// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
 
-import { Account, CallData, Contract, json, RpcProvider, shortString } from "starknet";
+import { Account, CallData, config, Contract, json, RpcProvider, shortString } from "starknet";
 import { Devnet } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
@@ -24,6 +24,7 @@ async function main() {
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
+    config.set("logLevel","FATAL");
     console.log("Devnet : url =", devnet.provider.url);
     console.log(
         "chain Id =", shortString.decodeShortString(await myProvider.getChainId()), 
@@ -34,7 +35,11 @@ async function main() {
 
     // initialize existing predeployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
-    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
+    const account0 = new Account({
+        provider: myProvider,
+        address: devnetAccounts[0].address,
+        signer: devnetAccounts[0].private_key
+    });
     console.log("Account 0 connected.\nAddress =", account0.address, "\n");
 
     // Declare & deploy Test contract in devnet
@@ -51,7 +56,7 @@ async function main() {
     // In case of constructor, add for example : ,constructorCalldata: [encodeShortString('Token'),encodeShortString('ERC20'),account.address,],
 
     // Connect the new contract instance :
-    const myTestContract = new Contract(testSierra.abi, deployResponse.deploy.contract_address, myProvider);
+    const myTestContract = new Contract({abi: testSierra.abi,address: deployResponse.deploy.contract_address,providerOrAccount: myProvider});
     console.log('✅ Test Contract connected at =', myTestContract.address);
 
     // 👉 Launch script 11 to test the contract & close Devnet

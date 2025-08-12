@@ -1,9 +1,9 @@
 // Deploy and use an ERC20, monetized by a new account
 // Launch with : npx ts-node src/starknet_jsNewAccount.ts
-// Coded with Starknet.js v7.1.0 & Devnet v0.4.0
+// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
 
 import fs from "fs";
-import { Account, Contract, ec, json, hash, CallData, Call, Calldata, RpcProvider, shortString } from "starknet";
+import { Account, Contract, ec, json, hash, CallData, Call, Calldata, RpcProvider, shortString, config } from "starknet";
 import { Devnet } from "starknet-devnet";
 import * as dotenv from "dotenv";
 import { formatBalance } from "./scripts/utils/formatBalance";
@@ -27,6 +27,7 @@ async function main() {
         args: ["--seed", "0", "--port", DEVNET_PORT]
     });
     const myProvider = new RpcProvider({ nodeUrl: devnet.provider.url });
+    config.set("logLevel","FATAL");
     console.log("Devnet : url =", devnet.provider.url);
     console.log(
         "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
@@ -37,7 +38,11 @@ async function main() {
 
     // initialize existing pre-deployed account 0 of Devnet
     const devnetAccounts = await devnet.provider.getPredeployedAccounts();
-    const account0 = new Account(myProvider, devnetAccounts[0].address, devnetAccounts[0].private_key);
+    const account0 = new Account({
+        provider: myProvider,
+        address: devnetAccounts[0].address,
+        signer: devnetAccounts[0].private_key
+    });
     console.log("Account 0 connected.\n");
 
     // creation of new account in Devnet
@@ -67,7 +72,10 @@ async function main() {
     await devnet.provider.mint(C20contractAddress, 10n * 10n ** 18n, "WEI");
     await devnet.provider.mint(C20contractAddress, 100n * 10n ** 18n, "FRI");
     // deploy account
-    const accountC20 = new Account(myProvider, C20contractAddress, privateKeyC20); // with Starknet.js v5.21.0, automatic recognize of the Cairo version of the account
+    const accountC20 = new Account({
+        provider: myProvider,
+        address: C20contractAddress,
+        signer: privateKeyC20}); 
     const { transaction_hash, contract_address } = await accountC20.deployAccount({ classHash: decCH, constructorCalldata: accountConstructorCallData, addressSalt: starkKeyPubC20 });
     console.log('New account created.\n   final address =', contract_address);
     await myProvider.waitForTransaction(transaction_hash);
@@ -111,8 +119,11 @@ async function main() {
     // Get the erc20 contract address
     const erc20Address = deployERC20Response.deploy.contract_address;
     // Create a new erc20 contract object
-    const erc20 = new Contract(erc20mintableSierra.abi, erc20Address, myProvider);
-    erc20.connect(account0);
+    const erc20 = new Contract({
+        abi: erc20mintableSierra.abi,
+        address: erc20Address,
+        providerOrAccount: account0,
+    });
 
     // Check balance - should be 100
     console.log(`Calling StarkNet for account balance...`);
@@ -158,7 +169,7 @@ async function main() {
         recipient: erc20Address,
         amount: 300
     });
-    const { transaction_hash: transferTxHash4 } = await account0.execute([transferCall1, transferCall2]);  // execute several operations in the same transaction (Only Starknet makes it possible)
+    const { transaction_hash: transferTxHash4 } = await account0.execute([transferCall1, transferCall2]);  // execute several operations in the same transaction
     await myProvider.waitForTransaction(transferTxHash4);
 
     // Check balance after transfer - should be 70

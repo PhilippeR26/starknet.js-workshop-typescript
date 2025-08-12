@@ -22,7 +22,7 @@ async function main() {
   // **** local Sepolia Testnet node
   //const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9545/rpc/v0_7" }); 
   // ****  Sepolia Testnet 
-  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8", specVersion: "0.8.1" });
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_9", specVersion: "0.9.0" });
   //  **** Mainnet 
   // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_7" }); 
 
@@ -45,8 +45,8 @@ async function main() {
   //  const accountAddress0 = account1BraavosMainnetAddress;
   //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
-  const account0 = new Account(myProvider, accountAddress0, privateKey0);
-  const account1 = new Account(myProvider, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey);
+  const account0 = new Account({ provider: myProvider, address: accountAddress0, signer: privateKey0 });
+  const account1 = new Account({ provider: myProvider, address: account2TestBraavosSepoliaAddress, signer: account2TestBraavosSepoliaPrivateKey });
   console.log("Accounts connected.\n");
 
   console.log("Account0 (signer) =");

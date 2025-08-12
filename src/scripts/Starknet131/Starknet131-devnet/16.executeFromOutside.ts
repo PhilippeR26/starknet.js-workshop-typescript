@@ -1,8 +1,8 @@
 // SNIP-9 execute transactions from outside.
 // launch with npx ts-node src/scripts/Starknet131/Starknet131-devnet/16.executeFromOutside.ts
-// Coded with Starknet.js v6.11.0 + experimental & devnet-rs v0.1.2 & starknet-devnet.js v0.1.0
+// Coded with Starknet.js v8.1.2 & starknet-devnet v0.5.0
 
-import { RpcProvider, Account, Contract, json, cairo, shortString, OutsideExecutionVersion, type OutsideTransaction } from "starknet";
+import { RpcProvider, Account, Contract, json, cairo, shortString, OutsideExecutionVersion, type OutsideTransaction, ETransactionVersion } from "starknet";
 import { deployBraavosAccount, estimateBraavosAccountDeployFee, getBraavosSignature } from "../../braavos/3b.deployBraavos1";
 import { DevnetProvider } from "starknet-devnet";
 import { outsideExecution, OutsideExecutionOptions } from 'starknet';
@@ -12,7 +12,7 @@ import { formatBalance } from "../../utils/formatBalance";
 import { ethAddress, strkAddress } from "../../utils/constants";
 import { deployAccountArgentX4 } from "./12.deployArgentX4";
 import { deployAccountArgentX3 } from "./13.deployArgentX3";
-import { deployAccountBraavos } from "./11a.deployBraavos110";
+import { deployAccountBraavos } from "./11b.deployBraavos120";
 import { deployAccountOpenzeppelin14 } from "./14.deployOZ14";
 import { deployAccountNoERC165 } from "./15.deployNoIntrospection";
 dotenv.config();
@@ -23,8 +23,8 @@ dotenv.config();
 
 async function balances(accounts: Account[], provider: RpcProvider) {
   const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));
-  const ethContract = new Contract(compiledERC20Contract.abi, ethAddress, provider);
-  const strkContract = new Contract(compiledERC20Contract.abi, strkAddress, provider);
+  const ethContract = new Contract({abi: compiledERC20Contract.abi,address: ethAddress,providerOrAccount: provider});
+  const strkContract = new Contract({abi:compiledERC20Contract.abi,address: strkAddress,providerOrAccount: provider});
   console.log("devnet account0=", formatBalance(await ethContract.call("balanceOf", [accounts[0].address]) as bigint, 18));
   console.log("devnet account1=", formatBalance(await ethContract.call("balanceOf", [accounts[1].address]) as bigint, 18));
   console.log("devnet account2=", formatBalance(await ethContract.call("balanceOf", [accounts[2].address]) as bigint, 18));
@@ -36,6 +36,7 @@ async function balances(accounts: Account[], provider: RpcProvider) {
 }
 
 async function main() {
+  console.log("aaa");
   const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   // **** local Sepolia Testnet node
@@ -64,9 +65,9 @@ async function main() {
   //  const accountAddress0 = account1BraavosMainnetAddress;
   //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
-  const account0 = new Account(myProvider, accountAddress0, privateKey0);
-  const account1 = new Account(myProvider, accData[1].address, accData[1].private_key);
-  const account2 = new Account(myProvider, accData[2].address, accData[2].private_key);
+  const account0 = new Account({provider:myProvider,address: accountAddress0,signer: privateKey0});
+  const account1 = new Account({provider:myProvider,address: accData[1].address,signer: accData[1].private_key});
+  const account2 = new Account({provider:myProvider,address: accData[2].address,signer: accData[2].private_key});
   console.log("Accounts connected.\n");
 
   // *********** Deploy accounts if needed *************
@@ -89,17 +90,17 @@ async function main() {
     } catch { accountsDeployed = false }
   } else { accountsDeployed = false }
   if (accountsDeployed) {
-    accountAX4 = new Account(myProvider, accountsData.accountAX4.address, accountsData.accountAX4.privateK);
-    accountAX3 = new Account(myProvider, accountsData.accountAX3.address, accountsData.accountAX3.privateK);
-    accountBraavos = new Account(myProvider, accountsData.accountBraavos.address, accountsData.accountBraavos.privateK);
-    accountOZ14 = new Account(myProvider, accountsData.accountOZ14.address, accountsData.accountOZ14.privateK);
-    accountNoERC165 = new Account(myProvider, accountsData.accountNoERC165.address, accountsData.accountNoERC165.privateK);
+    accountAX4 = new Account({provider:myProvider,address: accountsData.accountAX4.address,signer: accountsData.accountAX4.privateK});
+    accountAX3 = new Account({provider: myProvider,address: accountsData.accountAX3.address,signer: accountsData.accountAX3.privateK});
+    accountBraavos = new Account({provider: myProvider,address: accountsData.accountBraavos.address,signer: accountsData.accountBraavos.privateK});
+    accountOZ14 = new Account({provider: myProvider,address: accountsData.accountOZ14.address,signer: accountsData.accountOZ14.privateK});
+    accountNoERC165 = new Account({provider: myProvider,address: accountsData.accountNoERC165.address,signer: accountsData.accountNoERC165.privateK});
   } else {
     const accountAX4definition = await deployAccountArgentX4(myProvider, account0);
     accountAX4 = accountAX4definition.account;
     const accountAX3definition = await deployAccountArgentX3(myProvider, account0);
     accountAX3 = accountAX3definition.account;
-    const accountBraavosDefinition = await deployAccountBraavos(myProvider, account0);
+    const accountBraavosDefinition = await deployAccountBraavos(myProvider, account0, ETransactionVersion.V3);
     accountBraavos = accountBraavosDefinition.account;
     const accountOZDefinition = await deployAccountOpenzeppelin14(myProvider, account0);
     accountOZ14 = accountOZDefinition.account;

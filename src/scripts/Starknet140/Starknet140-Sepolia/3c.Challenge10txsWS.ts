@@ -1,14 +1,14 @@
 // Execute transactions as fast as possible in Rpc0.9.
-// Launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/3.Challenge10txs.ts
+// Launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/3c.Challenge10txsWS.ts
 // Coded with Starknet.js v8.0.0-beta.4 + experimental
 
-import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce } from "starknet";
+import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce, logger, type InvokeFunctionResponse, WebSocketChannel } from "starknet";
 import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";
 import { strkAddress } from "../../utils/constants";
 import { wait } from "../../utils/utils";
-import { account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, equilibriumPathfinderTestnetUrl, spaceShardPathfinderTestnetNodeUrl } from "../../../A1priv/A1priv";
+import { account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, equilibriumPathfinderTestnetUrl, equilibriumPathfinderTestnetWs, spaceShardJunoTestnetNodeUrl, spaceShardJunoTestnetNodeWs, spaceShardPathfinderTestnetNodeUrl, spaceShardPathfinderTestnetNodeWs } from "../../../A1priv/A1priv";
 import { DevnetProvider } from "starknet-devnet";
 dotenv.config();
 
@@ -19,12 +19,16 @@ async function main() {
     // const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
 
     // *** local 
-    // const url = "http://192.168.1.34:6070/rpc/v0_9"; // my local Juno Sepolia Testnet node (Starlink network)
     // 🚨🚨🚨 Put here the url of your node.
     //          👇👇👇
-    const url = "http://192.168.1.34:9545/rpc/v0_9"; // local Pathfinder
+    // const url = "http://192.168.1.34:9545/rpc/v0_9"; // local Pathfinder Testnet node (Starlink network)
+    // const url = "http://localhost:9545/rpc/v0_9";
+    // const url = "http://192.168.1.34:6070/rpc/v0_9"; // my local Juno Sepolia Testnet node (Starlink network)
+    // const url = "http://localhost:6070/rpc/v0_9";
+    // const url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_9"; // Public Blast Pathfinder testnet
     // const url = equilibriumPathfinderTestnetUrl; // Pathfinder testnet from Equilibrium team
-    // const url = spaceShardPathfinderTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
+    const url = spaceShardPathfinderTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
+    // const url = spaceShardJunoTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
 
     const myProvider = new RpcProvider({
         nodeUrl: url,
@@ -35,7 +39,6 @@ async function main() {
     // const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.0:9545/rpc/v0_9", specVersion: "0.9.0" }); // local Pathfinder Sepolia Testnet node
     // public node
     // const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_9", specVersion: "0.9.0" }); // Sepolia Testnet 
-    // https://rpc.pathfinder.equilibrium.co/testnet-sepolia/rpc/v0_9
 
 
     // if (!(await l2DevnetProvider.isAlive())) {
@@ -47,6 +50,30 @@ async function main() {
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version);
     console.log("Provider connected to Starknet");
+
+    // *********** WebSocket ******************
+    // **** Websocket Pathfinder
+    // const wsUrl = "ws://localhost:9545/rpc/v0_9";
+    // **** Websocket Juno
+    // const wsUrl = "ws://localhost:6071/rpc/v0_9";
+    // **** Public Blast (do not work. No subscription)
+    // const wsUrl = "wss://starknet-sepolia.public.blastapi.io/rpc/v0_9";
+    // **** Private SpaceShard Pathfinder
+    const wsUrl = spaceShardPathfinderTestnetNodeWs;
+    // **** Private SpaceShard Juno
+    // const wsUrl = spaceShardJunoTestnetNodeWs;
+    // *** private Equilibrium
+    // const wsUrl = equilibriumPathfinderTestnetWs;
+
+    const myWS = new WebSocketChannel({ nodeUrl: wsUrl });
+    try {
+        await myWS.waitForConnection();
+        console.log("connected WS =", myWS.isConnected());
+    } catch (error: any) {
+        console.log("E1", error.message);
+        process.exit(1);
+    }
+
 
     // *** initialize existing predeployed account 0 of Devnet
     // const accData = await l2DevnetProvider.getPredeployedAccounts();
@@ -84,6 +111,7 @@ async function main() {
     // };
     // const classHash = resDecl.class_hash;
     // console.log({ classHash });
+
     const contractAddr = "0x494cff97f36b18123a7d9749756c8c06eecaf3b8b916be1b511e717d3900528";
     // const deployResponse = await account0.deployContract({
     //     classHash: classHash,
@@ -94,10 +122,12 @@ async function main() {
     // Connect the new contract instance :
     const gameContract = new Contract({
         abi: compiledSierra.abi,
-        address: contractAddr, providerOrAccount: account0
+        address: contractAddr,
+        providerOrAccount: account0
     });
     console.log("contract initialization...");
     const resp0 = await gameContract.set_qty_weapons(100);
+    console.log(resp0);
     await myProvider.waitForTransaction(resp0.transaction_hash);
     const startWeapons = (await gameContract.get_qty_weapons()) as bigint;
     console.log("Initial quantity of weapons :", startWeapons);
@@ -110,26 +140,36 @@ async function main() {
     console.log("tip=", tipStats.recommendedTip);
     const start = new Date().getTime();
     const response = [];
+    logger.setLogLevel("INFO");
     for (const call of txList) {
         const start0 = new Date().getTime();
-        const resp = await account0.fastExecute(
-            call,
+
+        const initNonce = BigInt(
+            await myProvider.getNonceForAddress(account0.address, BlockTag.PRE_CONFIRMED)
+        );
+        const details = { tip: tipStats.recommendedTip, nonce: initNonce };
+        const resultTx: InvokeFunctionResponse = await account0.execute(call, details);
+        console.log("txH =", resultTx.transaction_hash);
+        const ready = await myWS.fastWaitForTransaction(
+            resultTx.transaction_hash,
+            account0.address,
+            initNonce,
             {
-                tip: tipStats.recommendedTip,
-            },
-            {
-                retries: 30,
+                retries: 120,
                 retryInterval: 500, //ms
             }
-        );
-        if (!resp.isReady) {
+        )
+
+
+        if (!ready) {
             console.error("Timeout. No response in the timeFrame.\nIncrease `retries` or `retryInterval` parameters");
             process.exit(5);
-        }
+        } else { console.log("OK") }
         const end = new Date().getTime();
-        response.push({ respTx: resp.txResult, end });
+        response.push({ respTx: resultTx, end });
         console.log("tx in", (end - start0) / 1000, "s.");
     }
+    logger.setLogLevel("ERROR");
     response.forEach((resp, i) => {
         console.log("tx#", i, "at", (resp.end - start) / 1000 + "s.");
     })

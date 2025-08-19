@@ -1,9 +1,9 @@
 // Connect a predeployed OZ account in devnet. 
 // Address and PrivKey are displayed when launching starknet-devnet.
 // Launch with npx ts-node src/scripts/1.connectPredeployedAccount.ts
-// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
+// Coded with Starknet.js v8.5.0 & Devnet 0.5.0
 
-import { Account, constants, ETransactionVersion, RpcProvider, shortString } from "starknet";
+import { Account, CairoBytes31, constants, ETransactionVersion, RpcProvider, shortString } from "starknet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import { Devnet } from "starknet-devnet";
 import fs from "fs";
@@ -26,7 +26,7 @@ async function main() {
     const myProvider: RpcProvider = new RpcProvider({ nodeUrl: devnet.provider.url, specVersion:"0.9.0" });
     console.log("devnet url =", devnet.provider.url);
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version,
     );

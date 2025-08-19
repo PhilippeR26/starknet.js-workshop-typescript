@@ -67,7 +67,7 @@ async function main() {
   console.log('existing account connected.\n');
 
 
-  const gasPrices0: GasPrices = await myProvider.getGasPrices();
+  const gasPrices0: GasPrices = await myProvider.getGasPrices(); // latest block
   console.log("gasPrice0 =", gasPrices0);
   const gasPrices1: GasPrices = await myProvider.getGasPrices(892623);
   console.log("gasPrice1 =", gasPrices1);

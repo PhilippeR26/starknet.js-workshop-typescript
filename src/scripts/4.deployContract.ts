@@ -1,9 +1,9 @@
 // Deploy an instance of an already declared contract.
 // use of universal OZ deployer
 // launch with npx ts-node src/scripts/4.deployContractOZ.ts
-// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
+// Coded with Starknet.js v8.5.0 & Devnet 0.5.0
 
-import { Account, CallData, config, Contract, json, RpcProvider, shortString, type EstimateFeeResponseOverhead } from "starknet";
+import { Account, CairoBytes31, CallData, config, Contract, json, RpcProvider, shortString, type EstimateFeeResponseOverhead } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
 import fs from "fs";
 import * as dotenv from "dotenv";
@@ -21,7 +21,7 @@ async function main() {
     const myProvider = new RpcProvider({ nodeUrl: devnet.url, specVersion: "0.9.0" });
     config.set("logLevel", "FATAL");
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version,
     );

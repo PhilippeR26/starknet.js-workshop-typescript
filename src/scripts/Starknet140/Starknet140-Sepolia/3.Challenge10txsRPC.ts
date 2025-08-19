@@ -1,6 +1,6 @@
 // Execute transactions as fast as possible in Rpc0.9.
 // Launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/3.Challenge10txsRPC.ts
-// Coded with Starknet.js v8.0.0-beta.4 + experimental
+// Coded with Starknet.js v8.4.0
 
 import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce, logger } from "starknet";
 import fs from "fs";

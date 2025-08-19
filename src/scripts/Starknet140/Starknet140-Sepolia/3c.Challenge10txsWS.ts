@@ -1,8 +1,8 @@
 // Execute transactions as fast as possible in Rpc0.9.
 // Launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/3c.Challenge10txsWS.ts
-// Coded with Starknet.js v8.0.0-beta.4 + experimental
+// Coded with Starknet.js v8.4.0
 
-import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce, logger, type InvokeFunctionResponse, WebSocketChannel } from "starknet";
+import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce, logger, type InvokeFunctionResponse, WebSocketChannel, CairoBytes31 } from "starknet";
 import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";
@@ -46,6 +46,7 @@ async function main() {
     //     process.exit();
     // }
     console.log(
+        "chain Id =", new CairoBytes31 (await myProvider.getChainId()).decodeUtf8(),
         "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version);
@@ -150,7 +151,7 @@ async function main() {
         const details = { tip: tipStats.recommendedTip, nonce: initNonce };
         const resultTx: InvokeFunctionResponse = await account0.execute(call, details);
         console.log("txH =", resultTx.transaction_hash);
-        const ready = await myWS.fastWaitForTransaction(
+        const ready = await myProvider.fastWaitForTransaction(
             resultTx.transaction_hash,
             account0.address,
             initNonce,

@@ -1,8 +1,8 @@
 // Deploy a new ArgentX wallet (Cairo1, v0.4.0).
 // launch with : npx ts-node ssrc/scripts/3.createNewArgentXaccount.ts
-// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
+// Coded with Starknet.js v8.5.0 & Devnet 0.5.0
 
-import { RpcProvider, Account, ec, json, hash, CallData, CairoOption, CairoOptionVariant, CairoCustomEnum, shortString, config } from "starknet";
+import { RpcProvider, Account, ec, json, hash, CallData, CairoOption, CairoOptionVariant, CairoCustomEnum, shortString, config, CairoBytes31 } from "starknet";
 import { Devnet } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
@@ -27,7 +27,7 @@ async function main() {
     config.set("logLevel", "FATAL");
     console.log("devnet url =", devnet.provider.url);
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version,
     );

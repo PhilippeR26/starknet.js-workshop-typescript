@@ -1,8 +1,8 @@
 // Declare a contract.
 // launch with npx ts-node src/scripts/9.declareContract.ts
-// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
+// Coded with Starknet.js v8.5.0 & Devnet 0.5.0
 
-import { Account, config, json, RpcProvider, shortString, stark, type EstimateFeeResponseOverhead, type FeeEstimate, type ResourceBoundsOverhead, type SuccessfulTransactionReceiptResponse } from "starknet";
+import { Account, CairoBytes31, config, json, RpcProvider, shortString, stark, type EstimateFeeResponseOverhead, type FeeEstimate, type ResourceBoundsOverhead, type SuccessfulTransactionReceiptResponse } from "starknet";
 import { Devnet } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
@@ -26,7 +26,7 @@ async function main() {
     config.set("logLevel","FATAL");
     console.log("devnet url =", devnet.provider.url);
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()), 
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(), 
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version,
     );
@@ -72,7 +72,7 @@ async function main() {
         const txR = await myProvider.waitForTransaction(declareResponse.transaction_hash);
         console.log(txR.value);
         txR.match({
-            success: (txR: SuccessfulTransactionReceiptResponse) => { console.log("Fees paid =", txR.actual_fee) },
+            SUCCEEDED: (txR: SuccessfulTransactionReceiptResponse) => { console.log("Fees paid =", txR.actual_fee) },
             _: () => { }
         });
     }

@@ -112,9 +112,10 @@ async function main() {
     const res2 = await myTestContract.withOptions({
         paymasterDetails: feesDetails,
         maxFeeInGasToken: 2n * 10n ** 8n,
+        waitForTransaction: true,
     }).transfer(account1OZSepoliaAddress, cairo.uint256(400));
-    const txR2 = await myProvider.waitForTransaction(res2.transaction_hash);
-    console.log(txR2);
+    // const txR2 = await myProvider.waitForTransaction(res2.transaction_hash);
+    console.log(res2);
 
     console.log("✅ Test completed.");
 }

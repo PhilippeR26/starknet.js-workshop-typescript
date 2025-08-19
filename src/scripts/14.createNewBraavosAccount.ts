@@ -1,8 +1,8 @@
 // Deploy a new Braavos wallet (Cairo1, contract v1.2.0).
 // launch with : npx src/scripts/14.createNewBraavosAccount.ts
-// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
+// Coded with Starknet.js v8.5.0 & Devnet 0.5.0
 
-import { RpcProvider, Account, ec, json, stark, hash, CallData, type BigNumberish, shortString, config } from "starknet";
+import { RpcProvider, Account, ec, json, stark, hash, CallData, type BigNumberish, shortString, config, CairoBytes31 } from "starknet";
 import { deployBraavosAccount, calculateAddressBraavos } from "./braavos/3d.deployBraavos110v3";
 import { Devnet } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
@@ -28,7 +28,7 @@ async function main() {
     config.set("logLevel","FATAL");
     console.log("Devnet : url =", devnet.provider.url);
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()), 
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(), 
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version,
     );

@@ -1,6 +1,6 @@
 // Interact with a contract that is already deployed on Devnet.
 // Launch with npx ts-node src/scripts/11.CallInvokeContract.ts
-// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
+// Coded with Starknet.js v8.5.0 & Devnet 0.5.0
 
 import { Contract, Account, json, RpcProvider, config, stark, type ResourceBounds, type EstimateFeeResponseOverhead, type ResourceBoundsBN } from "starknet";
 import fs from "fs";

@@ -1,8 +1,8 @@
 // connect a contract that is already deployed in Devnet.
 // launch with npx ts-node src/scripts/7.connectContract.ts
-// Coded with Starknet.js v7.1.0 & Devnet v0.4.0
+// Coded with Starknet.js v8.5.0 & Devnet v0.4.0
 
-import { Contract, json, RpcProvider, shortString } from "starknet";
+import { CairoBytes31, Contract, json, RpcProvider, shortString } from "starknet";
 import { Devnet, DevnetProvider } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
@@ -20,7 +20,7 @@ async function main() {
     const myProvider = new RpcProvider({ nodeUrl: devnet.url });
     console.log("Provider connected to Starknet-Devnet");
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version,
     );

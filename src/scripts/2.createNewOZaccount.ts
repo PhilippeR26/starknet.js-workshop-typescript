@@ -1,8 +1,8 @@
 // Create a new OZ 17 account in devnet
 // Launch with npx ts-node src/scripts/2.createNewOZaccount.ts
-// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
+// Coded with Starknet.js v8.5.0 & Devnet 0.5.0
 
-import { Account, ec, json, hash, CallData, RpcProvider, stark, shortString, config, ETransactionVersion } from "starknet";
+import { Account, ec, json, hash, CallData, RpcProvider, stark, shortString, config, ETransactionVersion, CairoBytes31 } from "starknet";
 import { Devnet, DevnetProvider } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
@@ -34,7 +34,7 @@ async function main() {
     }
     console.log("devnet : url =", devnet.provider.url);
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version,
     );

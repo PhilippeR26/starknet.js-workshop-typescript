@@ -1,9 +1,9 @@
 // Create a new OZ ETHEREUM account in Devnet
 // Launch with npx ts-node src/scripts/15.createNewETHaccount.ts
-// Coded with Starknet.js v8.1.2 & Devnet 0.5.0
+// Coded with Starknet.js v8.5.0 & Devnet 0.5.0
 
 
-import { Account, json, hash, CallData, RpcProvider, EthSigner, num, stark, addAddressPadding, encode, cairo, constants, Contract, shortString, config } from "starknet";
+import { Account, json, hash, CallData, RpcProvider, EthSigner, num, stark, addAddressPadding, encode, cairo, constants, Contract, shortString, config, CairoBytes31 } from "starknet";
 import { ethAddress, strkAddress } from "./utils/constants";
 import { formatBalance } from "./utils/formatBalance";
 import { Devnet } from "starknet-devnet";
@@ -30,7 +30,7 @@ async function main() {
     config.set("logLevel", "FATAL");
     console.log("Devnet : url =", devnet.provider.url);
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version,
     );

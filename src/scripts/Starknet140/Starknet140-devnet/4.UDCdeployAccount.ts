@@ -97,7 +97,7 @@ async function main() {
     const txR = await myProvider.waitForTransaction(txHDepl);
     let accountAddr: string = "";
     txR.match({
-        success: (txR: SuccessfulTransactionReceiptResponse) => {
+        SUCCEEDED: (txR: SuccessfulTransactionReceiptResponse) => {
             console.log('Success =', txR, "\n", txR.events);
             const resDeploy = defaultDeployer.parseDeployerEvent(txR as InvokeTransactionReceiptResponse);
             console.log({ resDeploy });

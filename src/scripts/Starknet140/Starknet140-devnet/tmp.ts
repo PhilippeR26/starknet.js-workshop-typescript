@@ -1,4 +1,4 @@
-import { num } from "starknet";
+import { CairoInt8, num } from "starknet";
 // ☥😅Azş`://Nunc est bibendum
 const word: string = "bibendum";
 const A = word.charCodeAt(2);
@@ -22,8 +22,8 @@ console.log("Utf8=", u8enc.length, u8enc);
 console.log(u8dec);
 
 type Person = {
-    name: string,
-    age: number;
+  name: string,
+  age: number;
 }
 const guy: Person = { name: "edmund", age: 34 };
 type A = typeof guy;
@@ -37,6 +37,9 @@ type G = Person[keyof Person];
 type G1 = Person[keyof typeof guy];
 type H = Person["name"];
 const f: G = guy[e as B1];
-type AA={
+type AA = {
   [clef in B]: (res: Person[clef]) => void;
 };
+
+const i8=new CairoInt8(-1).toHexString();
+console.log({i8})

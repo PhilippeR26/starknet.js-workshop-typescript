@@ -3,7 +3,7 @@
 // Coded with Starknet.js v8.1.2 & Devnet 0.5.0
 
 import fs from "fs";
-import { Account, Contract, ec, json, hash, CallData, Call, Calldata, RpcProvider, shortString, config } from "starknet";
+import { Account, Contract, ec, json, hash, CallData, Call, Calldata, RpcProvider, shortString, config, CairoBytes31 } from "starknet";
 import { Devnet } from "starknet-devnet";
 import * as dotenv from "dotenv";
 import { formatBalance } from "./scripts/utils/formatBalance";
@@ -30,7 +30,7 @@ async function main() {
     config.set("logLevel","FATAL");
     console.log("Devnet : url =", devnet.provider.url);
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version,
     );

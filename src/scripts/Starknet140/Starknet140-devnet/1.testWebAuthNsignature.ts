@@ -2,7 +2,7 @@
 // Launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/1.testWebAuthNsignature.ts
 // Coded with Starknet.js v8 experimental
 
-import { RpcProvider, shortString, Account, type BlockIdentifier, BlockTag, json, Contract, stark, type FeeEstimate, type ResourceBounds, num, type CompiledSierra, CallData, CairoCustomEnum, type BigNumberish, parseCalldataField, type AbiEntry } from "starknet";
+import { RpcProvider, shortString, Account, type BlockIdentifier, BlockTag, json, Contract, stark, type FeeEstimate, type ResourceBounds, num, type CompiledSierra, CallData, CairoCustomEnum, type BigNumberish, parseCalldataField, type AbiEntry, CairoBytes31 } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
 import axios from "axios";
@@ -33,7 +33,7 @@ async function main() {
   // config.set("legacyMode",true);
   console.log("ert");
   console.log(
-    "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+    "chain Id =", new CairoBytes31 (await myProvider.getChainId()).decodeUtf8(),
     ", rpc", await myProvider.getSpecVersion(),
     ", SN version =", (await myProvider.getBlock()).starknet_version);
   console.log("Provider connected to Starknet Sepolia testnet");

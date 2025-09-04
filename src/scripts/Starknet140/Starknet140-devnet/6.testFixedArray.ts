@@ -1,8 +1,8 @@
-// Test  reverted fastExecute.
-// launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/3a.fastTxReverted.ts
-// Coded with Starknet.js v8.1.0 +experimental & starknet-devnet.js v0.5.0
+// Test fixedArray with snjs v8
+// launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/6.testFixedArray.ts
+// Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoBytes31 } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag,  CairoFixedArray, hdParsingStrategy} from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -20,7 +20,7 @@ dotenv.config();
 
 async function main() {
     // initialize Provider 
-    const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" , blockIdentifier: BlockTag.PRE_CONFIRMED, }); // only starknet-devnet
+    const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", blockIdentifier: BlockTag.PRE_CONFIRMED, }); // only starknet-devnet
     const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
     if (!(await l2DevnetProvider.isAlive())) {
         console.log("No l2 devnet.");
@@ -33,7 +33,7 @@ async function main() {
 
     // Check that communication with provider is OK
     console.log(
-        "chain Id =", new CairoBytes31 (await myProvider.getChainId()).decodeUtf8(),
+        // "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version);
     console.log("Provider connected to Starknet Devnet.");
@@ -55,30 +55,27 @@ async function main() {
     // *** initialize existing Argent X mainnet  account
     // const privateKey0 = account4MainnetPrivateKey;
     // const accountAddress0 = account4MainnetAddress
-    const account0 = new Account({provider:myProvider,address: accountAddress0,signer: privateKey0});
+    const account0 = new Account({ provider: myProvider, address: accountAddress0, signer: privateKey0 });
     console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
     console.log('existing account connected.\n');
 
     // ********** main
-    const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo210/reject.sierra.json").toString("ascii"));
-    const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo210/reject.casm.json").toString("ascii"));
-    // const contractAddress = "0x37bfdeb9c262566183211b89e85b871518eb0c32cbcb026dce9a486560a03e0"; //Sepolia Testnet
-    // const contractAddress = "0x33852427be21d24eca46797a31363597f52afcc315763ce32e83e5218eed2e3"; //Sepolia Integration
-     console.log("Deploy of contract in progress...");
+    const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/fixed_array_testfixed_array.contract_class.json").toString("ascii"));
+    const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2120/fixed_array_testfixed_array.compiled_contract_class.json").toString("ascii"));
+    console.log("Deploy of contract in progress...");
     const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm });
     const contractAddress = deployResponse.deploy.address;
 
-    const myTestContract = new Contract({abi:compiledSierra.abi, address: contractAddress,providerOrAccount: account0});
+    const myTestContract = new Contract({
+        abi: compiledSierra.abi,
+        address: contractAddress,
+        providerOrAccount: account0
+    });
 
-    // ********** transaction should revert
-    console.log("Transaction in progress...");
-    const myCallFail: Call = myTestContract.populate("test_fail", [10]); // will fail
-    const myCallOk: Call = myTestContract.populate("test_fail", [100]); // will succeed
-     const fees = await account0.estimateInvokeFee(myCallOk);
-     console.log("Estimated fees:", fees);
-    const res = await account0.fastExecute(myCallFail,{resourceBounds:fees.resourceBounds});
-     console.log("response=", res);
-    
+    // ********** main code
+    const myFixedArray=new CairoFixedArray([121,122,123,124,125,126,127,128],"[core::integer::u32; 8]", hdParsingStrategy);
+    const resp= await myTestContract.call("fixed_array",[myFixedArray]);
+    console.log({resp});
 
     console.log("✅ Test completed.");
 

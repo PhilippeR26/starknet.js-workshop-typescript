@@ -37,7 +37,7 @@ async function main() {
         process.exit();
     }
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        "chain Id =", new CairoBytes31 (await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version);
     console.log("Provider connected to Starknet");

@@ -2,7 +2,7 @@
 // Launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/3a.Challenge10txsRpcStrk.ts
 // Coded with Starknet.js v8.4.0
 
-import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce } from "starknet";
+import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce, CairoBytes31 } from "starknet";
 import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";
@@ -60,7 +60,7 @@ async function main() {
     //     process.exit();
     // }
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        "chain Id =", new CairoBytes31 (await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version);
     console.log("Provider connected to Starknet");

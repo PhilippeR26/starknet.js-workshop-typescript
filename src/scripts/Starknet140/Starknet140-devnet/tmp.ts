@@ -1,4 +1,4 @@
-import { CairoInt8, num } from "starknet";
+import { CairoInt8, CairoOptionVariant, num, type CairoResultVariant } from "starknet";
 // ☥😅Azş`://Nunc est bibendum
 const word: string = "bibendum";
 const A = word.charCodeAt(2);
@@ -43,3 +43,10 @@ type AA = {
 
 const i8=new CairoInt8(-1).toHexString();
 console.log({i8})
+
+type VariantType = CairoOptionVariant | CairoResultVariant | string | number;
+const input: VariantType=1;
+const t0=Object.values(CairoOptionVariant);
+const nu=Number(input);
+const valid = [0,1].includes(nu);
+console.log({valid});

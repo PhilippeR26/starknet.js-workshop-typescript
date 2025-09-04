@@ -2,7 +2,7 @@
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/5.ContractPaymaster.ts
 // Coded with Starknet.js v8.1.2 +experimental & starknet-devnet.js v0.5.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, type Call, BlockTag, PaymasterRpc, cairo, type PaymasterDetails, type PaymasterFeeEstimate } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, type Call, BlockTag, PaymasterRpc, cairo, type PaymasterDetails, type PaymasterFeeEstimate, CairoBytes31 } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
@@ -39,7 +39,7 @@ async function main() {
 
     // Check that communication with provider is OK
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version);
     console.log("Provider connected to Starknet.");

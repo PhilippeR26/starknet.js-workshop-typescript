@@ -2,7 +2,7 @@
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/20.changeFeeMargins.ts
 // Coded with Starknet.js v8.1.0
 
-import { RpcProvider, shortString, Account, type BlockIdentifier, BlockTag, json, Contract,  stark, type FeeEstimate, type ResourceBounds, num, type GasPrices } from "starknet";
+import { RpcProvider, shortString, Account, type BlockIdentifier, BlockTag, json, Contract, stark, type FeeEstimate, type ResourceBounds, num, type GasPrices, CairoBytes31 } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
 import axios from "axios";
@@ -32,7 +32,7 @@ async function main() {
   // logger.setLogLevel("ERROR");
   // config.set("legacyMode",true);
   console.log(
-    "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+    "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
     ", rpc", await myProvider.getSpecVersion(),
     ", SN version =", (await myProvider.getBlock()).starknet_version);
   console.log("Provider connected to Starknet Sepolia testnet");
@@ -62,7 +62,7 @@ async function main() {
   // const privateKey0 = account4MainnetPrivateKey;
   // const accountAddress0 = account4MainnetAddress
 
-  const account0 = new Account({provider: myProvider,address: accountAddress0,signer: privateKey0});
+  const account0 = new Account({ provider: myProvider, address: accountAddress0, signer: privateKey0 });
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   console.log('existing account connected.\n');
 
@@ -74,7 +74,7 @@ async function main() {
   const gasPrices2: GasPrices = await myProvider.getGasPrices(BlockTag.PRE_CONFIRMED);
   console.log("gasPrice2 =", gasPrices2);
 
-  
+
   console.log("✅ Test performed.");
 }
 main()

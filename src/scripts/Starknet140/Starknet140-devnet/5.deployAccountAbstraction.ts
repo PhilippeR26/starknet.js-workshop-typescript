@@ -15,7 +15,7 @@
 // Launch with : npx ts-node src/scripts/Starknet140/Starknet140-devnet/5.deployAccountAbstraction.ts
 // Coded with Starknet.js v8.5.0
 
-import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce, logger, stark, ec, CallData, hash, type InvokeFunctionResponse, type SuccessfulTransactionReceiptResponse } from "starknet";
+import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce, logger, stark, ec, CallData, hash, type InvokeFunctionResponse, type SuccessfulTransactionReceiptResponse, CairoBytes31 } from "starknet";
 import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";
@@ -66,7 +66,7 @@ async function main() {
         process.exit();
     }
     console.log(
-        "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+        "chain Id =", new CairoBytes31 (await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version);
     console.log("Provider connected to Starknet");

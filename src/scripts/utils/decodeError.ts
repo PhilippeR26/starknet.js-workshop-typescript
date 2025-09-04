@@ -7,7 +7,7 @@ import { shortString } from "starknet";
 
 function main() {
     console.log("Decoded message =", shortString.decodeShortString("0x496e70757420746f6f206c6f6e6720666f7220617267756d656e7473"));
-    console.log("Decoded message =", shortString.decodeShortString("0x494e56414c49445f534947"));
+    console.log("Decoded message =", shortString.decodeShortString("0x003e8cfd4725c1e28fa4a6e3e468b4fcf75367166b850ac5f04e33ec843e82c1"));
     console.log(shortString.encodeShortString("is invalid"));
 } 
 main();

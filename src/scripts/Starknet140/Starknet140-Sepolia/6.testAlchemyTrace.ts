@@ -2,35 +2,15 @@
 // launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/1.testSpeedTx.ts
 // Coded with Starknet.js v8.0.0-beta.1
 
-import { RpcProvider, Account,  json,   Contract, shortString,  type CompiledSierra, type CairoAssembly, CairoBytes31 } from "starknet";
+import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, CairoBytes31 } from "starknet";
 import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";
 import { strkAddress } from "../../utils/constants";
 import { wait } from "../../utils/utils";
 import { account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, equilibriumPathfinderTestnetUrl, spaceShardPathfinderTestnetNodeUrl } from "../../../A1priv/A1priv";
+import { alchemyKey, infuraKey } from "../../../A-MainPriv/mainPriv";
 dotenv.config();
-
-
-async function axiosGetNonce(url: string): Promise<string> {
-    //console.log("url=", url);
-    const payload = {
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'starknet_getNonce',
-        params: [
-             "pre_confirmed",
-            // "pending",
-            // "latest",
-            "0x16607b2adc51fbb2b24587a725f58ab3b506004cf49344f9b47f42664070a93",
-
-        ]
-    };
-    const response = await axios.post(url, payload);
-    const nonce: string = response.data.result;
-    return nonce;
-}
-
 
 
 async function main() {
@@ -43,7 +23,9 @@ async function main() {
     const url = "http://192.168.1.34:9545/rpc/v0_9"; // local Pathfinder
     // const url = equilibriumPathfinderTestnetUrl; // Pathfinder testnet from Equilibrium team
     // const url = spaceShardPathfinderTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
-    
+    // const url = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_9/" + alchemyKey;
+    // const url="https://starknet-sepolia.infura.io/v3/" + infuraKey;
+
     const myProvider = new RpcProvider({ nodeUrl: url, specVersion: "0.9.0" }); // my local Juno Sepolia Testnet node (Starlink network)
     // const myProvider = new RpcProvider({ nodeUrl: url, specVersion: "0.9.0" }); // my local Pathfinder Sepolia Testnet node (Starlink network)
     // const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.0:9545/rpc/v0_9", specVersion: "0.9.0" }); // local Pathfinder Sepolia Testnet node
@@ -57,7 +39,7 @@ async function main() {
     //     process.exit();
     // }
     console.log(
-        "chain Id =", new CairoBytes31 (await myProvider.getChainId()).decodeUtf8(),
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version);
     console.log("Provider connected to Starknet");
@@ -77,63 +59,23 @@ async function main() {
     //  const accountAddress0 = account1BraavosMainnetAddress;
     //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
-    const account0 = new Account({provider:myProvider,address: accountAddress0, signer:privateKey0});
+    const account0 = new Account({ provider: myProvider, address: accountAddress0, signer: privateKey0 });
     console.log("Account 0 connected.\n");
 
     // ***** main code : 
-    async function followTransaction(txH: string) {
-        const stepDuration = 500; //ms
-        let success: boolean = false
-        while (!success) {
-            try {
-                const status = await myProvider.getTransactionStatus(txH);
-                if (["PRE_CONFIRMED", "ACCEPTED_ON_L2", "ACCEPTED_ON_L1"].includes(status.finality_status)) {
-                    success = true;
-                } else {
-                    await wait(stepDuration);
-                }
-                console.log(status.finality_status, (new Date().getTime() - start) / 1000, "nonce=", await axiosGetNonce(url));
-            } catch { await wait(stepDuration) }
-        }
-        const finality = new Date().getTime();
-        console.log("Finality in (s) =", (finality - start) / 1000);
-        let isReceipt: boolean = false;
-    }
-
     // 
     // direct access with axios
-    const nonce = await axiosGetNonce(url);
-    console.log("Axios nonce:", nonce);
-    if (nonce === undefined) {
-        process.exit()
-    };
     const account1Address = account3ArgentXSepoliaAddress;
-        // test a big multiCall
+    // test a big multiCall
     const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo264/openZeppelin14/openzeppelin_ERC20Upgradeable.sierra.json").toString("ascii"));
-    const strkContract = new Contract({abi:compiledERC20Contract.abi,address: strkAddress, providerOrAccount:account0});
+    const strkContract = new Contract({ abi: compiledERC20Contract.abi, address: strkAddress, providerOrAccount: account0 });
     const transferCall = strkContract.populate("transfer", [account1Address, 1n * 10n ** 2n]);
-    let start = new Date().getTime();
-    const respTransfer = await account0.execute([transferCall, transferCall, transferCall, transferCall, transferCall, transferCall, transferCall, transferCall, transferCall, transferCall,], {
-        nonce,
-        tip: 1n * 10n ** 9n,
-    });
-    await followTransaction(respTransfer.transaction_hash);
-
-    // *********************************
-    console.log("Try second tx...");
-    const nonce2 = await axiosGetNonce(url);
-    console.log("Axios nonce2:", nonce2);
-    if (BigInt(nonce2) !== (BigInt(nonce) + 1n)) {
-        throw new Error("Nonce problem (should not be the same): " + nonce + " " + nonce2);
-    }
-    start = new Date().getTime();
-    const respTransfer2 = await strkContract.withOptions({
-        nonce: nonce2,
-        blockIdentifier: "pre_confirmed"
-    }).transfer(account1Address, 2n * 10n ** 3n);
-    console.log(respTransfer2);
-    await followTransaction(respTransfer2.transaction_hash);
-
+    console.log("transfer test in progress...");
+    const respTransfer = await account0.execute(transferCall);
+    const txR=await myProvider.waitForTransaction(respTransfer.transaction_hash);
+    console.log("transfer success is :",txR.isSuccess());
+    const tr=await myProvider.getTransactionTrace(respTransfer.transaction_hash);
+    console.log(tr);
 
     console.log('✅ Test completed.');
 

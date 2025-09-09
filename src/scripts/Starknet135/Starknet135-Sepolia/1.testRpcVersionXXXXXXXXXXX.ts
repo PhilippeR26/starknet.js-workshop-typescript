@@ -55,7 +55,7 @@ async function main() {
         "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0.6/" + alchemyKey,
         "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/" + alchemyKey,
         "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_8/" + alchemyKey,
-        'https://starknet-sepolia.infura.io/v3/' + infuraKey,
+        "https://starknet-sepolia.infura.io/v3/" + infuraKey,
         // 'https://starknet-sepolia.blastapi.io/' + blastKey + '/rpc/v0.4',
         // 'https://starknet-sepolia.blastapi.io/' + blastKey + '/rpc/v0.5',
         // 'https://starknet-sepolia.blastapi.io/' + blastKey + '/rpc/v0_6',

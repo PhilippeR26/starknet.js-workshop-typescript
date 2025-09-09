@@ -2,7 +2,7 @@
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/6.testFixedArray.ts
 // Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag,  CairoFixedArray, hdParsingStrategy} from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, type BigNumberish, CairoOptionVariant } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -13,6 +13,7 @@ import { blastKey } from "../../../A-MainPriv/mainPriv";
 import type { ResourceBounds } from "@starknet-io/types-js";
 import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
+import LogC from "../../utils/logColors";
 dotenv.config();
 
 
@@ -60,25 +61,66 @@ async function main() {
     console.log('existing account connected.\n');
 
     // ********** main
-    const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/fixed_array_testfixed_array.contract_class.json").toString("ascii"));
-    const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2120/fixed_array_testfixed_array.compiled_contract_class.json").toString("ascii"));
-    console.log("Deploy of contract in progress...");
-    const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm });
-    const contractAddress = deployResponse.deploy.address;
+    // const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/fixed_array_testfixed_array.contract_class.json").toString("ascii"));
+    // const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2120/fixed_array_testfixed_array.compiled_contract_class.json").toString("ascii"));
+    // console.log("Deploy of contract in progress...");
+    // const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm });
+    // const contractAddress = deployResponse.deploy.address;
 
-    const myTestContract = new Contract({
-        abi: compiledSierra.abi,
-        address: contractAddress,
-        providerOrAccount: account0
-    });
+    // const myTestContract = new Contract({
+    //     abi: compiledSierra.abi,
+    //     address: contractAddress,
+    //     providerOrAccount: account0
+    // });
 
     // ********** main code
-    const myFixedArray=new CairoFixedArray([121,122,123,124,125,126,127,128],"[core::integer::u32; 8]", hdParsingStrategy);
-    const resp= await myTestContract.call("fixed_array",[myFixedArray]);
-    console.log({resp});
+    const myU8 = 8;
+    const myOption0 = new CairoOption<BigNumberish>(CairoOptionVariant.Some, myU8);
+    const iter2 = ["10", "100"][Symbol.iterator]();
+
+    // simple fixed array Cairo1
+    const arr0 = new CairoFixedArray([10, 20], "[core::integer::u8; 2]", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "arr0 =", LogC.reset, arr0);
+    console.log(arr0.toApiRequest());
+    console.log(arr0.decompose(hdParsingStrategy));
+    const arr1 = new CairoFixedArray({ "0": 10, "1": 20 }, "[core::integer::u8; 2]", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "arr1 =", LogC.reset, arr1);
+    console.log(arr1.toApiRequest());
+    console.log(arr1.decompose(hdParsingStrategy));
+    const arr2 = new CairoFixedArray(iter2, "[core::integer::u8; 2]", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "arr2 =", LogC.reset, arr2);
+    console.log(arr2.toApiRequest());
+    console.log(arr2.decompose(hdParsingStrategy));
+    const arr3 = new CairoFixedArray(arr0, "[core::integer::u8; 2]>", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "arr3 =", LogC.reset, arr3);
+    console.log(arr3.toApiRequest());
+    console.log(arr3.decompose(hdParsingStrategy));
+
+    // fixed Array including an array
+    const arr5 = new CairoFixedArray([[20, 30], [100, 110]], "[core::array::Array::<core::integer::u8>; 2]", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "arr5 =", LogC.reset, arr5);
+    console.log(arr5.toApiRequest());
+    console.log(arr5.decompose(hdParsingStrategy));
+
+    // fixed Array including a fixed array
+    const arr6 = new CairoFixedArray([[20, 30], [100, 110]], "[[core::integer::u8; 2]; 2]", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "arr6 =", LogC.reset, arr6);
+    console.log(arr6.toApiRequest());
+    console.log(arr6.decompose(hdParsingStrategy));
+
+    // fixed Array including a tuple
+    const arr7 = new CairoFixedArray([cairo.tuple(20, 30), cairo.tuple(100, 110)], "[(core::integer::u8, core::integer::u16); 2]", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "arr7 =", LogC.reset, arr7);
+    console.log(arr7.toApiRequest());
+    console.log(arr7.decompose(hdParsingStrategy));
+
+    // fixed Array including an option
+    const arr8 = new CairoFixedArray([myOption0, myOption0], "[core::option::Option::<core::integer::u8>; 2]", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "arr8 =", LogC.reset, arr8);
+    console.log(arr8.toApiRequest());
+    console.log(arr8.decompose(hdParsingStrategy));
 
     console.log("✅ Test completed.");
-
 }
 main()
     .then(() => process.exit(0))

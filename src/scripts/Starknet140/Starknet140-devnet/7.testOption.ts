@@ -13,6 +13,7 @@ import { blastKey } from "../../../A-MainPriv/mainPriv";
 import type { ResourceBounds } from "@starknet-io/types-js";
 import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
+import LogC from "../../utils/logColors";
 dotenv.config();
 
 
@@ -61,162 +62,85 @@ async function main() {
     // ********** main code
     // *** Option from a CairoType
     // const myU8 = new CairoUint8(200);
-        const myU8=8;
-    const myOption0 = new CairoTypeOption(myU8, "core::option::Option::<core::integer::u8>", hdParsingStrategy, CairoOptionVariant.Some);
-    console.log("myOption0 =", myOption0.isVariantSome, myOption0.content);
-    console.log("myOption0.decompose =", myOption0.decompose(hdParsingStrategy));
-    const encoded00 = CallData.compile({ option: myOption0 });
-    console.log("encoded00 =", encoded00);
-    const encoded01 = CallData.compile([myOption0]);
-    console.log("encoded01 =", encoded01);
-    const myCairoOption: CairoOption<BigNumberish> = new CairoOption<BigNumberish>(CairoOptionVariant.Some, 200);
-    console.log("myCairoOption compiled =", CallData.compile([myCairoOption]));
-    // *** Option from raw data
-    const myOption1 = new CairoTypeOption(123, "core::option::Option::<core::integer::u8>", hdParsingStrategy, CairoOptionVariant.Some);
-    console.log("myOption1 =", myOption1.isVariantSome, myOption1.content);
-    console.log("myOption1.toApiRequest =", myOption1.toApiRequest());
-    console.log("myOption1.decompose.unwrap =", myOption1.decompose(hdParsingStrategy).unwrap());
+    const myU8 = 8;
+    const myOption0 = new CairoOption<BigNumberish>(CairoOptionVariant.Some, myU8);
 
-    // *** Option from an iterator
-    const iter = ["0", "100"][Symbol.iterator]();
-    const myOption2 = new CairoTypeOption(iter, "core::option::Option::<core::integer::u8>", hdParsingStrategy);
-    console.log("myOption2 =", myOption2.isVariantSome, myOption2.content);
-    // *** Option with None variant
-    const myOption3 = new CairoTypeOption(undefined, "core::option::Option::<core::integer::u8>", hdParsingStrategy, CairoOptionVariant.None);
-    console.log("myOption3.decompose =", myOption3.decompose(hdParsingStrategy));
+    // Option from num
+    const myOption1 = new CairoTypeOption(myU8, "core::option::Option::<core::integer::u8>", hdParsingStrategy, CairoOptionVariant.Some);
+    console.log(LogC.bg.yellow, "myOption1 =", LogC.reset, myOption1);
+    console.log("  encode =", myOption1.toApiRequest());
+    console.log("  unwrap =", myOption1.decompose(hdParsingStrategy));
 
-    console.log("myOption3 =", myOption3.isVariantSome, myOption3.content);
-    // *** Option of an option
-    const myOption4 = new CairoTypeOption(myOption0, "core::option::Option::<core::option::Option::<core::integer::u8>>", hdParsingStrategy, CairoOptionVariant.Some);
-    console.log("myOption4 =", myOption4.isVariantSome, ".unwrap().unwrap()", myOption4.content);
-    // *** Option of an array
-    const myOption5 = new CairoTypeOption([1, 2, 3], "core::option::Option::<core::array::Array::<core::integer::u8>>", hdParsingStrategy, CairoOptionVariant.Some);
-    console.log("myOption5 =", myOption5.isVariantSome, myOption5.content);
-    const encoded50 = CallData.compile({ option: myOption5 });
-    console.log("encoded50 =", encoded50);
-    const encoded51 = CallData.compile([myOption5]);
-    console.log("encoded51 =", encoded51);
-    const decoded5: CairoOption<any> = myOption5.decompose(hdParsingStrategy);
-    console.log("decoded5.unwrap() =", decoded5.unwrap());
-    // *** Option of a tuple
-    const myTuple0 = new CairoTuple([234, [1, 2, 3]], "(core::integer::u8, core::array::Array::<core::integer::u8>)", hdParsingStrategy);
-    console.log("myTuple0 toApiRequest =", myTuple0.toApiRequest());
-    console.log("myTuple0 compiled =", CallData.compile([myTuple0]));
-    const myOption6 = new CairoTypeOption(myTuple0, "core::option::Option::<(core::integer::u8, core::array::Array::<core::integer::u8>)>", hdParsingStrategy, CairoOptionVariant.Some);
-    console.log("myOption6 =", myOption6.isVariantSome, myOption6.content);
-    console.log("myOption6.toApiRequest =", myOption6.toApiRequest());
-    console.log("myOption6.decompose.unwrap =", myOption6.decompose(hdParsingStrategy).unwrap());
-    const encoded6 = CallData.compile([myOption6]);
-    console.log("encoded6 =", encoded6);
-    const myOption7 = new CairoTypeOption({ "0": 234, "1": [1, 2, 3] }, "core::option::Option::<(core::integer::u8, core::array::Array::<core::integer::u8>)>", hdParsingStrategy, CairoOptionVariant.Some);
-    console.log("myOption7 =", myOption7.isVariantSome, myOption7.content);
-    const encoded7 = CallData.compile({ option: myOption7 });
-    console.log("encoded7 =", encoded7);
-    const myOption8 = new CairoTypeOption([234, [1, 2, 3]], "core::option::Option::<(core::integer::u8, core::array::Array::<core::integer::u8>)>", hdParsingStrategy, CairoOptionVariant.Some);
-    console.log("myOption8 =", myOption8.isVariantSome, myOption8.content);
-    const encoded8 = CallData.compile({ option: myOption8 });
-    console.log("encoded8 =", encoded8);
+    // Option from iterator
+    const iter2 = ["0", "100"][Symbol.iterator]();
+    const myOption2 = new CairoTypeOption(iter2, "core::option::Option::<core::integer::u8>", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "myOption2 =", LogC.reset, myOption2);
+    console.log("  encode =", myOption2.toApiRequest());
+    console.log("  unwrap =", myOption2.decompose(hdParsingStrategy));
 
+    // Option from CairoOption
+    const myOption3 = new CairoTypeOption(myOption0, "core::option::Option::<core::integer::u8>", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "myOption3 =", LogC.reset, myOption3);
+    console.log("  encode =", myOption3.toApiRequest());
+    console.log("  unwrap =", myOption3.decompose(hdParsingStrategy));
 
-    const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/cairo_option_test_option.contract_class.json").toString("ascii"));
-    const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2120/cairo_option_test_option.compiled_contract_class.json").toString("ascii"));
-    console.log("Deploy of contract in progress...");
-    const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm }, { tip: 2000000 });
-    const contractAddress = deployResponse.deploy.address;
-    // const contractAddress = "0x123";
+    // Option of Option 
+    const myOption4 = new CairoOption(CairoOptionVariant.Some, myOption0);
+    const myOption5 = new CairoTypeOption(myOption4, "core::option::Option::<core::option::Option::<core::integer::u8>>", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "myOption5 =", LogC.reset, myOption5);
+    console.log("  encode =", myOption5.toApiRequest());
+    console.log("  unwrap =", myOption5.decompose(hdParsingStrategy));
 
-    const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
-    const myTestContract = new Contract({
-        abi: compiledSierra.abi,
-        address: contractAddress,
-        providerOrAccount: account0
-    });
+    // Option of Option of Option
+    const myOption6 = new CairoOption(CairoOptionVariant.Some, myOption4);
+    const myOption7 = new CairoTypeOption(myOption6, "core::option::Option::<core::option::Option::<core::option::Option::<core::integer::u8>>>", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "myOption7 =", LogC.reset, myOption7);
+    console.log(myOption7.toApiRequest());
+    console.log(myOption7.decompose(hdParsingStrategy));
+    const resp = myOption7.decompose(hdParsingStrategy).unwrap().unwrap().unwrap();
+    console.log({ resp });
 
-    // BN
-    const myCairoOption0 = new CairoOption<BigNumberish>(CairoOptionVariant.Some, 18);
-    const option0S = new CairoTypeOption(18, "core::option::Option::<core::integer::u16>", hdParsingStrategy, CairoOptionVariant.Some);
-    const option0N = new CairoTypeOption(undefined, "core::option::Option::<core::integer::u16>", hdParsingStrategy, CairoOptionVariant.None);
-    const res0S = (await myTestContract.option_bn(option0S)) as CairoOption<bigint>;
-    const res0N = (await myTestContract.option_bn(option0N)) as CairoOption<bigint>;
-    console.log("Option0S meta-function =", res0S.isSome(), res0S.unwrap());
-    CairoTypeOption.validate(200,"core::option::Option::<core::integer::u16>",CairoOptionVariant.Some);
-    console.log("is =",CairoTypeOption.is(200,"core::option::Option::<core::integer::u16>",CairoOptionVariant.Some));
-    // Array
-    const option1S = new CairoTypeOption([67, 68n, "0x34", "70"], "core::option::Option::<core::array::Array::<core::integer::u8>>", hdParsingStrategy, CairoOptionVariant.Some);
-    const option1N = new CairoTypeOption(undefined, "core::option::Option::<core::array::Array::<core::integer::u8>>", hdParsingStrategy, CairoOptionVariant.None);
-    const res1S = (await myTestContract.call("option_array", [option1S])) as CairoOption<Array<bigint>>;
-    const res1N = (await myTestContract.call("option_array", [option1N])) as CairoOption<Array<bigint>>;
-    console.log("Option1S meta-function =", res1S.isSome(), res1S.unwrap());
+    // Option of CairoFixedArray
+    const fArr0 = new CairoFixedArray([1, 2, 3], "[core::integer::u8; 3]", hdParsingStrategy);
+    const myOption8 = new CairoTypeOption(fArr0, "core::option::Option::<[core::integer::u8; 3]>", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "myOption8 =", LogC.reset, myOption8);
+    console.log("  encode =", myOption8.toApiRequest());
+    console.log("  decode =", myOption8.decompose(hdParsingStrategy));
 
-    // fixedArray
-    const option2S = new CairoTypeOption([17, 18, 19], "core::option::Option::<[core::integer::u32; 3]>", hdParsingStrategy, CairoOptionVariant.Some);
-    const option2N = new CairoTypeOption(undefined, "core::option::Option::<[core::integer::u32; 3]>", hdParsingStrategy, CairoOptionVariant.None);
-    const res2S = (await myTestContract.call("option_fixed_array", [option2S])) as CairoOption<Array<bigint>>;
-    const res2N = (await myTestContract.call("option_fixed_array", [option2N])) as CairoOption<Array<bigint>>;
-    console.log("Option2S meta-function =", res2S.isSome(), res2S.unwrap());
+    // Option of fixed array
+    const myOption9 = new CairoTypeOption([1, 2, 3], "core::option::Option::<[core::integer::u8; 3]>", hdParsingStrategy, CairoOptionVariant.Some);
+    console.log(LogC.bg.yellow, "myOption9 =", LogC.reset, myOption9);
+    console.log(myOption9.toApiRequest());
+    console.log(myOption9.decompose(hdParsingStrategy));
 
-    // Tuple
-    const cArray = new CairoArray([50, 51], "core::array::Array::<core::integer::u32>", hdParsingStrategy);
-    const cTuple = new CairoTuple([40, cArray], "(core::integer::u32, core::array::Array::<core::integer::u32>)", hdParsingStrategy);
-    console.log("cTuple=", cTuple.toApiRequest());
-    const myTup = cairo.tuple(40, [50, 51]);
-    console.log({ myTup });
-    const cairoOption3S = new CairoOption<any>(CairoOptionVariant.Some, myTup);
-    console.log("cairoOption3S CallData.compile() array =", CallData.compile([cairoOption3S]));
-    console.log("cairoOption3S CallData.compile() object =", CallData.compile({ x: cairoOption3S }));
-    console.log("cairoOption3S myTestCallData.compile() array =", myTestCallData.compile("option_tuple", [cairoOption3S]));
-    console.log("cairoOption3S myTestCallData.compile() object =", myTestCallData.compile("option_tuple", { x: cairoOption3S }));
-    const resCO3S = (await myTestContract.call("option_tuple", [cairoOption3S])) as CairoOption<any>;
-    console.log("resCO3S call", resCO3S.isSome(), resCO3S.unwrap());
-    const resCO3Sbis = (await myTestContract.option_tuple(cairoOption3S)) as CairoOption<any>;
-    console.log("resCO3Sbis meta-function", resCO3Sbis.isSome(), resCO3Sbis.unwrap());
-    const option3S = new CairoTypeOption(cTuple, "core::option::Option::<(core::integer::u32, core::array::Array::<core::integer::u32>)>", hdParsingStrategy, CairoOptionVariant.Some);
-    console.log("option3S encoded =", option3S.toApiRequest());
-    const option3N = new CairoTypeOption(undefined, "core::option::Option::<(core::integer::u32, core::array::Array::<core::integer::u32>)>", hdParsingStrategy, CairoOptionVariant.None);
-    console.log("option3S CallData.compile() array =", CallData.compile([option3S]));
-    console.log("option3S CallData.compile() object =", CallData.compile({ x: option3S }));
-    console.log("option3S myTestCallData.compile() array =", myTestCallData.compile("option_tuple", [option3S]));
-    console.log("option3S myTestCallData.compile() object =", myTestCallData.compile("option_tuple", { x: option3S }));
-    console.log("option3S myTestContract.populate array=", myTestContract.populate("option_tuple", [option3S]));
-    console.log("option3S myTestContract.populate object=", myTestContract.populate("option_tuple", { x: option3S }));
-    const res3S = (await myTestContract.call("option_tuple", [option3S])) as CairoOption<any>;
-    console.log("res3S call", res3S.isSome(), res3S.unwrap());
-    const res3Sbis = (await myTestContract.option_tuple(option3S)) as CairoOption<any>;
-    console.log("res3S meta-function", res3Sbis.isSome(), res3Sbis.unwrap());
-    const res3N = (await myTestContract.call("option_tuple", [option3N])) as CairoOption<any>;
-    console.log("res3N call", res3N.isSome(), res3N.unwrap());
+    // Option of fixed array
+    const fArr1 = [1,2,3];
+    const myOpt10=new CairoOption<Array<BigNumberish>>(CairoOptionVariant.Some, fArr1);
+    const myOption10 = new CairoTypeOption(myOpt10, "core::option::Option::<[core::integer::u8; 3]>", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "myOption10 =", LogC.reset, myOption10);
+    console.log(myOption10.toApiRequest());
+    console.log(myOption10.decompose(hdParsingStrategy));
 
-    // option of option
-    const o1 = new CairoOption<BigNumberish>(CairoOptionVariant.Some, 200);
-    const o2 = new CairoOption<CairoOption<BigNumberish>>(CairoOptionVariant.Some, o1);
-    const comp4 = myTestCallData.compile("option_option_bn", [o2]);
-    console.log("option_option myCallData compile() array =", comp4);
-    const res4S = (await myTestContract.option_option_bn(o2)) as CairoOption<CairoOption<BigNumberish>>;
-    console.log("res4S meta-function", res4S.isSome(), res4S.unwrap()!.unwrap());
-    const res4Sbis = (await myTestContract.call("option_option_bn", [o2])) as CairoOption<CairoOption<BigNumberish>>;
-    console.log("res4Sbis call", res4Sbis.isSome(), res4Sbis.unwrap()!.unwrap());
+    // option of array
+    const myOption11 = new CairoTypeOption([1,2,3], "core::option::Option::<core::array::Array::<core::integer::u8>>", hdParsingStrategy, CairoOptionVariant.Some);
+    console.log(LogC.bg.yellow, "myOption11 =", LogC.reset, myOption11);
+    console.log(myOption11.toApiRequest());
+    console.log(myOption11.decompose(hdParsingStrategy));
 
-    // execute
-    const op5 = new CairoOption<BigNumberish>(CairoOptionVariant.Some, 100);
-    const myCall5 = myTestContract.populate("write_option_bn", { x: op5 });
-    const res5 = await account0.execute(myCall5, { tip: 200n });
-    const txR5 = await myProvider.waitForTransaction(res5.transaction_hash);
-    console.log("write =", txR5.isSuccess());
+    // option of array
+    const myArr1 = new CairoArray([10,11,12], "core::array::Array::<core::integer::u8>", hdParsingStrategy);
+    const myOption12 = new CairoTypeOption(myArr1, "core::option::Option::<core::array::Array::<core::integer::u8>>", hdParsingStrategy,CairoOptionVariant.Some);
+    console.log(LogC.bg.yellow, "myOption12 =", LogC.reset, myOption12);
+    console.log(myOption12.toApiRequest());
+    console.log(myOption12.decompose(hdParsingStrategy));
 
-    // array of option
-    const o = new CairoOption<BigNumberish>(CairoOptionVariant.Some, 200);
-    const arrOption=[o,o];
-    console.log("arr of options CallData.compile array =", CallData.compile([arrOption]));
-    console.log("arr of options CallData.compile object =", CallData.compile({x: arrOption}));
-    console.log("arr of options myCallData.compile array =", myTestCallData.compile("array_option_bn", [arrOption]));
-    console.log("arr of options myCallData.compile object =", myTestCallData.compile("array_option_bn", {x:arrOption}));
-    console.log("arr of options myContract.populate array =", myTestContract.populate("array_option_bn", [arrOption]));
-    console.log("arr of options myContract.populate object =", myTestContract.populate("array_option_bn", {x:arrOption}));
-    const res6=(await myTestContract.call("array_option_bn", [arrOption])) as Array<CairoOption<any>>;
-    console.log("arr of options myContract.call =", res6);
+    // option of tuple
+    const myOption13 = new CairoTypeOption([100, 10], "core::option::Option::<(core::integer::u16, core::integer::u8)>", hdParsingStrategy, CairoOptionVariant.Some);
+    console.log(LogC.bg.yellow, "myOption13 =", LogC.reset, myOption13);
+    console.log(myOption13.toApiRequest());
+    console.log(myOption13.decompose(hdParsingStrategy));
 
     console.log("✅ Test completed.");
-
 }
 main()
     .then(() => process.exit(0))

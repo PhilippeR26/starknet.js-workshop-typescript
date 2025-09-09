@@ -25,7 +25,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/Starknet140/Starknet140-devnet/7.testOption2.ts",
+            "program": "${workspaceFolder}/src/scripts/Starknet140/Starknet140-devnet/7a.testOption.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

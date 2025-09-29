@@ -2,7 +2,7 @@
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/6.testFixedArray.ts
 // Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoCustomEnum } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -62,6 +62,7 @@ async function main() {
     // ********** main code
     const myU8 = 8;
     const myOption0 = new CairoOption<BigNumberish>(CairoOptionVariant.Some, myU8);
+    const myResult0 = new CairoResult(CairoResultVariant.Ok, 9);
     const iter2 = ["0", "100", "0", "200"][Symbol.iterator]();
 
     // tuple from object
@@ -133,9 +134,37 @@ async function main() {
     // empty tuple
     const tup9 = new CairoTuple(cairo.tuple(), "()", hdParsingStrategy);
     console.log(LogC.bg.yellow, "tup9 =", LogC.reset, tup9);
-    console.log(tup9.toApiRequest());
-    console.log(tup9.decompose(hdParsingStrategy));
-    
+    console.log("  encode =", tup9.toApiRequest());
+    console.log("  decode =", tup9.decompose(hdParsingStrategy));
+
+    // tuple including an option
+    const tup11 = new CairoTuple(cairo.tuple(100, myResult0), "(core::integer::u8, core::result::Result::<core::integer::u8, core::integer::u16>)", hdParsingStrategy);
+    console.log(LogC.bg.yellow, "tup11 =", LogC.reset, tup11);
+    console.log("  encode =", tup11.toApiRequest());
+    console.log("  decode =", tup11.decompose(hdParsingStrategy));
+
+    // tuple including a struct
+    const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/enums_test_enums.contract_class.json").toString("ascii"));
+        const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
+        const strategies = myTestCallData.parser.parsingStrategies;
+        type Point = {
+            x: BigNumberish,
+            y: BigNumberish,
+        }
+        const myPoint: Point = { x: 1, y: 2 };
+    const tup12 = new CairoTuple([7,myPoint], "(core::integer::u8, enums::Point)", strategies);
+    console.log(LogC.bg.yellow, "tup12 =", LogC.reset, tup12);
+    console.log("  encode =", tup12.toApiRequest());
+    console.log("  decode =", tup12.decompose(strategies));
+
+    // tuple including a CairoCustomEnum
+    const myEnum13=new CairoCustomEnum({Success: 3});
+const tup13 = new CairoTuple([7, myEnum13], "(core::integer::u8, enums::MyEnum)", strategies);
+    console.log(LogC.bg.yellow, "tup13 =", LogC.reset, tup13);
+    console.log("  encode =", tup13.toApiRequest());
+    console.log("  decode =", tup13.decompose(strategies));
+
+
     console.log("✅ Test completed.");
 }
 main()

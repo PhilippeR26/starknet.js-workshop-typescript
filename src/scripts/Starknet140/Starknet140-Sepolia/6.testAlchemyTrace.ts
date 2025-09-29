@@ -2,7 +2,7 @@
 // launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/1.testSpeedTx.ts
 // Coded with Starknet.js v8.0.0-beta.1
 
-import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, CairoBytes31 } from "starknet";
+import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly } from "starknet";
 import fs from "fs";
 import axios from "axios";
 import * as dotenv from "dotenv";
@@ -20,10 +20,10 @@ async function main() {
 
     // *** local 
     // const url = "http://192.168.1.34:6070/rpc/v0_9"; // local Juno
-    const url = "http://192.168.1.34:9545/rpc/v0_9"; // local Pathfinder
+    // const url = "http://192.168.1.34:9545/rpc/v0_9"; // local Pathfinder
     // const url = equilibriumPathfinderTestnetUrl; // Pathfinder testnet from Equilibrium team
     // const url = spaceShardPathfinderTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
-    // const url = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_9/" + alchemyKey;
+     const url = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_9/" + alchemyKey;
     // const url="https://starknet-sepolia.infura.io/v3/" + infuraKey;
 
     const myProvider = new RpcProvider({ nodeUrl: url, specVersion: "0.9.0" }); // my local Juno Sepolia Testnet node (Starlink network)
@@ -39,7 +39,7 @@ async function main() {
     //     process.exit();
     // }
     console.log(
-        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
+        // "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version);
     console.log("Provider connected to Starknet");
@@ -72,7 +72,7 @@ async function main() {
     const transferCall = strkContract.populate("transfer", [account1Address, 1n * 10n ** 2n]);
     console.log("transfer test in progress...");
     const respTransfer = await account0.execute(transferCall);
-    const txR=await myProvider.waitForTransaction(respTransfer.transaction_hash);
+    const txR=await myProvider.waitForTransaction(respTransfer.transaction_hash, {retryInterval: 5000});
     console.log("transfer success is :",txR.isSuccess());
     const tr=await myProvider.getTransactionTrace(respTransfer.transaction_hash);
     console.log(tr);

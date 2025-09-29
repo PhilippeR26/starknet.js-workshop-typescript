@@ -50,3 +50,12 @@ const t0=Object.values(CairoOptionVariant);
 const nu=Number(input);
 const valid = [0,1].includes(nu);
 console.log({valid});
+
+class A1 {}
+class A2 {}
+class A3 {}
+const At=new A2();
+const classArray=[A1, A2,A3];
+if (classArray.some(cls => At instanceof cls)){
+  console.log("Ok");
+}

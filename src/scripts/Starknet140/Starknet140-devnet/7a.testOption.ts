@@ -2,7 +2,7 @@
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/6.testFixedArray.ts
 // Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -61,7 +61,7 @@ async function main() {
     // ********** main code
     // *** Option from a CairoType
     // const myU8 = new CairoUint8(200);
-        const myU8=8;
+    const myU8 = 8;
     const myOption0 = new CairoTypeOption(myU8, "core::option::Option::<core::integer::u8>", hdParsingStrategy, CairoOptionVariant.Some);
     console.log("myOption0 =", myOption0.isVariantSome, myOption0.content);
     console.log("myOption0.decompose =", myOption0.decompose(hdParsingStrategy));
@@ -118,13 +118,13 @@ async function main() {
     console.log("encoded8 =", encoded8);
 
 
-    const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/cairo_option_test_option.contract_class.json").toString("ascii"));
-    const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2120/cairo_option_test_option.compiled_contract_class.json").toString("ascii"));
-    // console.log("Deploy of contract in progress...");
+    const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/enums_test_enums.contract_class.json").toString("ascii"));
+    const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2120/enums_test_enums.compiled_contract_class.json").toString("ascii"));
+    console.log("Deploy of contract in progress...");
     // const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm }, { tip: 2000000 });
     // const contractAddress = deployResponse.deploy.address;
     // console.log("Contract deployed at =", contractAddress);
-    const contractAddress = "0x55ed884db117d8e1d5842200d089fbe2c6f7e134a5eee9b06f2030cb9832f";
+    const contractAddress = "0x703cd4e9816f09e44a07e170fdf37b993f036994468683dd90ea7a1ec803086";
 
     const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
     const myTestContract = new Contract({
@@ -132,6 +132,7 @@ async function main() {
         address: contractAddress,
         providerOrAccount: account0
     });
+    const strategies = myTestContract.callData.parser.parsingStrategies;
 
     // BN
     const myCairoOption0 = new CairoOption<BigNumberish>(CairoOptionVariant.Some, 18);
@@ -140,8 +141,8 @@ async function main() {
     const res0S = (await myTestContract.option_bn(option0S)) as CairoOption<bigint>;
     const res0N = (await myTestContract.option_bn(option0N)) as CairoOption<bigint>;
     console.log("Option0S meta-function =", res0S.isSome(), res0S.unwrap());
-    CairoTypeOption.validate(200,"core::option::Option::<core::integer::u16>",CairoOptionVariant.Some);
-    console.log("is =",CairoTypeOption.is(200,"core::option::Option::<core::integer::u16>",CairoOptionVariant.Some));
+    CairoTypeOption.validate(200, "core::option::Option::<core::integer::u16>", CairoOptionVariant.Some);
+    console.log("is =", CairoTypeOption.is(200, "core::option::Option::<core::integer::u16>", CairoOptionVariant.Some));
     // Array
     const option1S = new CairoTypeOption([67, 68n, "0x34", "70"], "core::option::Option::<core::array::Array::<core::integer::u8>>", hdParsingStrategy, CairoOptionVariant.Some);
     const option1N = new CairoTypeOption(undefined, "core::option::Option::<core::array::Array::<core::integer::u8>>", hdParsingStrategy, CairoOptionVariant.None);
@@ -187,6 +188,28 @@ async function main() {
     const res3N = (await myTestContract.call("option_tuple", [option3N])) as CairoOption<any>;
     console.log("res3N call", res3N.isSome(), res3N.unwrap());
 
+    // Result
+    const myResult7 = new CairoResult<BigNumberish, BigNumberish>(CairoResultVariant.Ok, 7);
+    const option7S = new CairoTypeOption(myResult7, "core::option::Option::<core::result::Result::<core::integer::u8, core::integer::u16>>", hdParsingStrategy, CairoOptionVariant.Some);
+    const option7N = new CairoTypeOption(undefined, "core::option::Option::<core::result::Result::<core::integer::u8, core::integer::u16>>", hdParsingStrategy, CairoOptionVariant.None);
+    const res7S = (await myTestContract.call("option_result", [option7S])) as CairoOption<CairoResult<bigint, bigint>>;
+    const res7N = (await myTestContract.call("option_result", [option7N])) as CairoOption<CairoResult<bigint, bigint>>;
+    const res7 = (await myTestContract.option_result(option7S)) as CairoOption<CairoResult<bigint, bigint>>;
+    console.log("Option7S =", res7S.isSome(), res7S.unwrap(), res7S.unwrap()!.unwrap());
+    console.log("Option7N =", res7N.isSome(), res7N.unwrap());
+    console.log("Option7 meta-function =", res7.isSome(), res7.unwrap());
+
+    // Struct Point
+    type Point = { x: BigNumberish, y: BigNumberish };
+    const myPoint: Point = { x: 3, y: 4 };
+    const myOptionPoint = new CairoOption<Point>(CairoOptionVariant.Some, myPoint);
+    const calldata8=myTestCallData.compile("option_struct", [myOptionPoint]);
+    console.log("option_struct myCallData compile() array =", calldata8);
+    const res8S = (await myTestContract.call("option_struct", [myOptionPoint])) as CairoOption<Point>;
+    const res8 = (await myTestContract.option_struct(myOptionPoint)) as CairoOption<Point>;
+    console.log("Option8S =", res8S.isSome(), res8S.unwrap());
+    console.log("Option8 meta-function =", res8.isSome(), res8.unwrap());
+
     // option of option
     const o1 = new CairoOption<BigNumberish>(CairoOptionVariant.Some, 200);
     const o2 = new CairoOption<CairoOption<BigNumberish>>(CairoOptionVariant.Some, o1);
@@ -199,21 +222,24 @@ async function main() {
 
     // execute
     const op5 = new CairoOption<BigNumberish>(CairoOptionVariant.Some, 100);
+    const op5a=new CairoTypeOption(op5,"core::option::Option::<core::integer::u16>",strategies);
     const myCall5 = myTestContract.populate("write_option_bn", { x: op5 });
+    const myCall5a = myTestContract.populate("write_option_bn", { x: op5a });
+    console.log("invoke in progress...");
     const res5 = await account0.execute(myCall5, { tip: 200n });
     const txR5 = await myProvider.waitForTransaction(res5.transaction_hash);
     console.log("write =", txR5.isSuccess());
 
     // array of option
     const o = new CairoOption<BigNumberish>(CairoOptionVariant.Some, 200);
-    const arrOption=[o,o];
+    const arrOption = [o, o];
     console.log("arr of options CallData.compile array =", CallData.compile([arrOption]));
-    console.log("arr of options CallData.compile object =", CallData.compile({x: arrOption}));
+    console.log("arr of options CallData.compile object =", CallData.compile({ x: arrOption }));
     console.log("arr of options myCallData.compile array =", myTestCallData.compile("array_option_bn", [arrOption]));
-    console.log("arr of options myCallData.compile object =", myTestCallData.compile("array_option_bn", {x:arrOption}));
+    console.log("arr of options myCallData.compile object =", myTestCallData.compile("array_option_bn", { x: arrOption }));
     console.log("arr of options myContract.populate array =", myTestContract.populate("array_option_bn", [arrOption]));
-    console.log("arr of options myContract.populate object =", myTestContract.populate("array_option_bn", {x:arrOption}));
-    const res6=(await myTestContract.call("array_option_bn", [arrOption])) as Array<CairoOption<any>>;
+    console.log("arr of options myContract.populate object =", myTestContract.populate("array_option_bn", { x: arrOption }));
+    const res6 = (await myTestContract.call("array_option_bn", [arrOption])) as Array<CairoOption<any>>;
     console.log("arr of options myContract.call =", res6);
 
     console.log("✅ Test completed.");

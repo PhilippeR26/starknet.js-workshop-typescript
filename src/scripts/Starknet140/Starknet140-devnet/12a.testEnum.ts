@@ -67,7 +67,7 @@ async function main() {
     // const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm }, { tip: 2000000 });
     // const contractAddress = deployResponse.deploy.address;
     // console.log("Contract deployed at =", contractAddress);
-     const contractAddress = "0x703cd4e9816f09e44a07e170fdf37b993f036994468683dd90ea7a1ec803086";
+    const contractAddress = "0x703cd4e9816f09e44a07e170fdf37b993f036994468683dd90ea7a1ec803086";
 
     const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
     const myTestContract = new Contract({
@@ -82,13 +82,13 @@ async function main() {
     console.log("strat1 =", myTestCallData.parser.parsingStrategies);
     const strategies = myTestContract.callData.parser.parsingStrategies;
     console.log("strategies =", strategies);
-     type Point = { x: BigNumberish, y: BigNumberish };
+    type Point = { x: BigNumberish, y: BigNumberish };
 
     // custom_enum
     // const myPoint: Point = { x: 3, y: 4 };
     const abiMyEnum: AbiEnum = myTestCallData.abi.find(
-         (item) => item.name === 'enums::MyEnum'
-     );
+        (item) => item.name === 'enums::MyEnum'
+    );
     // console.log("abiMyEnum =", abiMyEnum);
     // const myTypeEnum0 = new CairoTypeCustomEnum(myPoint, abiMyEnum, strategies,1);
     // console.log("MyTypeEnum =",myTypeEnum0);
@@ -355,23 +355,23 @@ async function main() {
     // console.log("res7g =", res7g);
 
     // execute
-    const op8: Point = { x: 3, y: 4 };
-    const myEnum8=new CairoCustomEnum({LocationError: op8});
+    const op8: Point = {y: 4,  x: 3 };
+    const myEnum8 = new CairoCustomEnum({ LocationError: op8 });
     //const myEnum8=new CairoCustomEnum({Success: 10});
-    const myTypeEnum8 = new CairoTypeCustomEnum(op8, abiMyEnum, strategies,1);
-    
+    const myTypeEnum8 = new CairoTypeCustomEnum(op8, abiMyEnum, strategies, 1);
+
     const myCall8 = myTestContract.populate("write_custom_enum", { x: myEnum8 });
-    console.log("myCall8 =",myCall8);
+    console.log("myCall8 =", myCall8);
     const myCall8a = myTestContract.populate("write_custom_enum", [myEnum8]);
     const myCall8b = myTestContract.populate("write_custom_enum", { x: myTypeEnum8 });
     const myCall8c = myTestContract.populate("write_custom_enum", [myTypeEnum8]);
-    
+
     console.log("Invoke in progress...");
     const res8 = await account0.execute(myCall8, { tip: 200n });
     const txR8 = await myProvider.waitForTransaction(res8.transaction_hash);
     console.log("write8 =", txR8.isSuccess());
 
-    
+
 
     console.log("✅ Test completed.");
 }

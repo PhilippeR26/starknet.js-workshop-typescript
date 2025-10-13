@@ -1,8 +1,8 @@
 // Test Cairo Option with snjs v8
-// launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/6.testFixedArray.ts
+// launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/7a.testOption.ts
 // Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant } from "starknet";
+import { CairoCustomEnum, constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, type AbiEnum, CairoTypeCustomEnum } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -121,10 +121,10 @@ async function main() {
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/enums_test_enums.contract_class.json").toString("ascii"));
     const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2120/enums_test_enums.compiled_contract_class.json").toString("ascii"));
     console.log("Deploy of contract in progress...");
-    // const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm }, { tip: 2000000 });
-    // const contractAddress = deployResponse.deploy.address;
-    // console.log("Contract deployed at =", contractAddress);
-    const contractAddress = "0x703cd4e9816f09e44a07e170fdf37b993f036994468683dd90ea7a1ec803086";
+    const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm }, { tip: 2000000 });
+    const contractAddress = deployResponse.deploy.address;
+    console.log("Contract deployed at =", contractAddress);
+    // const contractAddress = "0x703cd4e9816f09e44a07e170fdf37b993f036994468683dd90ea7a1ec803086";
 
     const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
     const myTestContract = new Contract({
@@ -209,6 +209,27 @@ async function main() {
     const res8 = (await myTestContract.option_struct(myOptionPoint)) as CairoOption<Point>;
     console.log("Option8S =", res8S.isSome(), res8S.unwrap());
     console.log("Option8 meta-function =", res8.isSome(), res8.unwrap());
+
+    // Option including an enum
+    const abiMyEnum: AbiEnum = myTestCallData.abi.find(
+        (item) => item.name === 'enums::MyEnum'
+    );
+    const myEnum0= new CairoCustomEnum({LocationError: myPoint});
+    const myTypeEnum0 = new CairoTypeCustomEnum(myPoint, abiMyEnum, strategies,1);
+    const myOptionEnum = new CairoOption<CairoCustomEnum>(CairoOptionVariant.Some, myEnum0);
+    const myOptionTypeEnum = new CairoOption<CairoTypeCustomEnum>(CairoOptionVariant.Some, myTypeEnum0);
+    const calldata9=myTestCallData.compile("option_enum", [myOptionEnum]);
+    const calldata9a=myTestCallData.compile("option_enum", {x:myOptionEnum});
+    const calldata9b=myTestCallData.compile("option_enum", [myOptionTypeEnum]);
+    const calldata9c=myTestCallData.compile("option_enum", {x:myOptionTypeEnum});
+    console.log("option_enum myCallData compile() array =", calldata9);
+    console.log("option_enum myCallData compile() object =", calldata9a);
+    console.log("option_enum myCallData compile() array =", calldata9b);
+    console.log("option_enum myCallData compile() object =", calldata9c);
+    const res9S = (await myTestContract.call("option_enum", [myOptionEnum])) as CairoOption<CairoCustomEnum>;
+    const res9 = (await myTestContract.option_enum(myOptionTypeEnum)) as CairoOption<CairoCustomEnum>;
+    console.log("Option9S =", res9S.isSome(), res9S.unwrap());
+    console.log("Option9 meta-function =", res9.isSome(), res9.unwrap());
 
     // option of option
     const o1 = new CairoOption<BigNumberish>(CairoOptionVariant.Some, 200);

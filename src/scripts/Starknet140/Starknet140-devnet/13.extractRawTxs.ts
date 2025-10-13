@@ -75,8 +75,7 @@ export class customRpcProvider extends RpcProvider implements RawTx {
 
   }
 
-  // public invokeFunction(
-  public getInvokeRawTxRpc(
+    public getInvokeRawTxRpc(
     functionInvocation: Invocation,
     details: InvocationsDetailsWithNonce
   ): RPC.RPCSPEC09.INVOKE_TXN_V3 {
@@ -91,8 +90,7 @@ export class customRpcProvider extends RpcProvider implements RawTx {
 }
 
 
-
-
+// ********** account *******************************
 export class CustomAccount extends customRpcProvider implements AccountInterface {
   public signer: SignerInterface;
 
@@ -1101,7 +1099,7 @@ export class CustomAccount extends customRpcProvider implements AccountInterface
   }
 }
 
-
+// ********** channel *******************************
 export class CustomChannel9 extends RPC09.RpcChannel {
 
   public getInvokeRawTxChannel(functionInvocation: Invocation, details: InvocationsDetailsWithNonce): RPC.RPCSPEC09.INVOKE_TXN_V3 {
@@ -1136,159 +1134,6 @@ export class CustomChannel9 extends RPC09.RpcChannel {
     const promise = this.fetchEndpoint('starknet_addInvokeTransaction', {
       invoke_transaction: transaction,
     });
-  }
-}
-
-
-
-// class CustomAccount extends Account {
-
-//   public async extractRawTx(
-//     transactions: AllowArray<Call>,
-//     transactionsDetail: UniversalDetails = {}
-//   ): Promise<InvokeFunctionResponse> {
-//     const calls = [transactions].flat();
-//     const detailsWithTip = await this.resolveDetailsWithTipPublic2(transactionsDetail);
-
-//     // Estimate resource bounds if not provided
-//     const { resourceBounds: providedResourceBounds } = transactionsDetail;
-//     let resourceBounds = providedResourceBounds;
-//     if (!resourceBounds) {
-//       const estimateResponse = await this.estimateInvokeFee(calls, detailsWithTip);
-//       resourceBounds = estimateResponse.resourceBounds;
-//     }
-
-//     const accountInvocations = await this.accountInvocationsFactory(
-//       [{ type: ETransactionType.INVOKE, payload: calls }],
-//       {
-//         ...stark.v3Details(detailsWithTip),
-//         resourceBounds,
-//         versions: [this.resolveTransactionVersion2(transactionsDetail.version)],
-//         nonce: transactionsDetail.nonce,
-//         skipValidate: false,
-//       }
-//     );
-
-//     const invocation = accountInvocations[0];
-
-//     return this.invokeRawTx(
-//       {
-//         contractAddress: invocation.contractAddress,
-//         calldata: invocation.calldata,
-//         signature: invocation.signature,
-//       },
-//       {
-//         ...stark.v3Details(detailsWithTip),
-//         resourceBounds: invocation.resourceBounds,
-//         nonce: invocation.nonce,
-//         version: invocation.version,
-//       }
-//     );
-//   }
-
-//   // public async sendRawTxPublic(
-//   //   transactions: AllowArray<Call>,
-//   //   transactionsDetail: UniversalDetails = {}
-//   // ): Promise<InvokeFunctionResponse> {
-//   //   const calls = [transactions].flat();
-//   //   const detailsWithTip = await this.resolveDetailsWithTipPublic2(transactionsDetail);
-
-//   //   // Estimate resource bounds if not provided
-//   //   const { resourceBounds: providedResourceBounds } = transactionsDetail;
-//   //   let resourceBounds = providedResourceBounds;
-//   //   if (!resourceBounds) {
-//   //     const estimateResponse = await this.estimateInvokeFee(calls, detailsWithTip);
-//   //     resourceBounds = estimateResponse.resourceBounds;
-//   //   }
-
-//   //   const accountInvocations = await this.accountInvocationsFactory(
-//   //     [{ type: ETransactionType.INVOKE, payload: calls }],
-//   //     {
-//   //       ...v3Details(detailsWithTip),
-//   //       resourceBounds,
-//   //       versions: [this.resolveTransactionVersion(transactionsDetail.version)],
-//   //       nonce: transactionsDetail.nonce,
-//   //       skipValidate: false,
-//   //     }
-//   //   );
-
-//   //   const invocation = accountInvocations[0];
-
-//   //   return this.invokeFunction(
-//   //     {
-//   //       contractAddress: invocation.contractAddress,
-//   //       calldata: invocation.calldata,
-//   //       signature: invocation.signature,
-//   //     },
-//   //     {
-//   //       ...v3Details(detailsWithTip),
-//   //       resourceBounds: invocation.resourceBounds,
-//   //       nonce: invocation.nonce,
-//   //       version: invocation.version,
-//   //     }
-//   //   );
-//   // }
-
-//   public async resolveDetailsWithTipPublic2(
-//     details: UniversalDetails
-//   ): Promise<UniversalDetails & { 0: BigNumberish }> {
-//     return {
-//       ...details,
-//       0: details.tip ?? (await this.getEstimateTip())[this.defaultTipType],
-//     };
-//   }
-
-
-//   public resolveTransactionVersion2(providedVersion?: BigNumberish) {
-//     return stark.toTransactionVersion(
-//       this.transactionVersion || ETransactionVersion3.V3,
-//       providedVersion
-//     );
-//   }
-
-
-// }
-
-
-
-class customSigner extends Signer {
-  public async signTransaction(
-    transactions: Call[],
-    details: InvocationsSignerDetails
-  ): Promise<Signature> {
-    const compiledCalldata = transaction.getExecuteCalldata(transactions, details.cairoVersion);
-    let msgHash;
-    if (Object.values(ETransactionVersion3).includes(details.version as any)) {
-      const det = details as V3InvocationsSignerDetails;
-      msgHash = hash.calculateInvokeTransactionHash({
-        ...det,
-        senderAddress: det.walletAddress,
-        compiledCalldata,
-        version: det.version,
-        nonceDataAvailabilityMode: stark.intDAM(det.nonceDataAvailabilityMode),
-        feeDataAvailabilityMode: stark.intDAM(det.feeDataAvailabilityMode),
-      });
-    } else {
-      throw Error('unsupported signTransaction version');
-    }
-    const signed = await this.signRaw(msgHash as string);
-    const callArray = transaction.getExecuteCalldata(transactions, "1").map(item => num.toHex(item));
-    const apiTransaction = {
-      type: 'INVOKE',
-      sender_address: details.walletAddress,
-      calldata: callArray,
-      signature: stark.signatureToHexArray(signed),
-      nonce: num.toHex(details.nonce),
-      resource_bounds: stark.resourceBoundsToHexString(details.resourceBounds),
-      tip: num.toHex(details.tip),
-      paymaster_data: [],
-      nonce_data_availability_mode: 'L1',
-      fee_data_availability_mode: 'L1',
-      account_deployment_data: [],
-      version: '0x3'
-    }
-    console.log("Transaction built =", apiTransaction);
-    return signed;
   }
 }
 
@@ -1332,7 +1177,6 @@ async function main() {
   // *** initialize existing Argent X mainnet  account
   // const privateKey0 = account4MainnetPrivateKey;
   // const accountAddress0 = account4MainnetAddress
-  const mySigner = new customSigner(privateKey0);
   const account0 = new CustomAccount({ provider: { optionsOrProvider: myProvider, channel: specialChannel }, address: accountAddress0, signer: privateKey0 });
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   const account1 = new Account({ provider: myProvider, address: accountAddress1, signer: privateKey1 });
@@ -1345,13 +1189,13 @@ async function main() {
     address: strkAddress,
     providerOrAccount: account0,
   });
-  const transferCall = strkContract.populate("transfer", {
+  const myCall = strkContract.populate("transfer", {
     recipient: account1.address,
     amount: 2n * 10n ** 16n,
   });
-  const resp = await account0.extractInvokeRawTx(transferCall, { tip: 200n });
-  console.log("json =", resp);
-  const result=await account0.sendInvokeRawTx(resp);
+  const jsonTransaction = await account0.extractInvokeRawTx(myCall, { tip: 200n });
+  console.log("json =", jsonTransaction);
+  const result=await account0.sendInvokeRawTx(jsonTransaction);
   const txR = await myProvider.waitForTransaction(result.transaction_hash);
   console.log("txH =", result);
 

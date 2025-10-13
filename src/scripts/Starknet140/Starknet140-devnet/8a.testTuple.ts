@@ -1,16 +1,14 @@
-// Test Cairo Struct with snjs v8
-// launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/12a.testEnum.ts
+// Test Cairo array with snjs v8
+// launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/9a.testArray.ts
 // Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoTypeResult, type AbiStruct, CairoStruct, CairoCustomEnum, type AbiEnum, CairoTypeCustomEnum } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hdParsingStrategy,  type AbiStruct, CairoStruct, CairoCustomEnum, type AbiEnum, CairoTypeCustomEnum, type BigNumberish, CairoTuple } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
 import { ethAddress, strkAddress } from "../../utils/constants";
 import { formatBalance } from "../../utils/formatBalance";
 import axios from "axios";
-import { blastKey } from "../../../A-MainPriv/mainPriv";
-import type { ResourceBounds } from "@starknet-io/types-js";
 import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
 dotenv.config();
@@ -67,7 +65,7 @@ async function main() {
     const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm }, { tip: 2000000 });
     const contractAddress = deployResponse.deploy.address;
     console.log("Contract deployed at =", contractAddress);
-    // const contractAddress = "0x703cd4e9816f09e44a07e170fdf37b993f036994468683dd90ea7a1ec803086";
+    // const contractAddress = "0x3cb38b467e468d3caadfc056c11cb6cf754f4c98ac430c6f1af36d35bce3e4f";
 
     const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
     const myTestContract = new Contract({
@@ -76,71 +74,35 @@ async function main() {
         providerOrAccount: account0,
     });
 
-    // console.log("A0=", JSON.stringify(hdParsingStrategy))
-    console.log("A1 =", CallData.getAbiEnum(compiledSierra.abi));
-    console.log("A2 =", CallData.getAbiStruct(compiledSierra.abi));
-    console.log("strat1 =", myTestCallData.parser.parsingStrategies);
     const strategies = myTestContract.callData.parser.parsingStrategies;
-    console.log("strategies =", strategies);
-    type Point = { x: BigNumberish, y: BigNumberish };
-
-    // custom_enum using Point struct
-    const myPoint: Point = { y: 4, x: 3 }; // wrong order
-    const abiMyEnum: AbiEnum = myTestCallData.abi.find(
-        (item) => item.name === 'enums::MyEnum'
-    );
-    const abiPoint: AbiStruct = myTestCallData.abi.find(
-        (item) => item.name === 'enums::Point'
-    );
-    console.log("abiMyEnum =", abiMyEnum);
-    const myTypeEnum0 = new CairoTypeCustomEnum(myPoint, abiMyEnum, strategies, 1);
-    console.log("MyTypeEnum =", myTypeEnum0);
-    const myEnum0 = new CairoCustomEnum({ LocationError: myPoint });
-    const comp0 = myTestCallData.compile("custom_enum", [myTypeEnum0]);
-    const comp0a = myTestCallData.compile("custom_enum", { x: myTypeEnum0 });
-    const comp0b = myTestCallData.compile("custom_enum", [myEnum0]);
-    const comp0c = myTestCallData.compile("custom_enum", { x: myEnum0 });
-    console.log("custom_enum comp0 compile() =", comp0);
-    console.log("custom_enum comp0a compile() =", comp0a);
-    console.log("custom_enum comp0b compile() =", comp0b);
-    console.log("custom_enum comp0c compile() =", comp0c);
-    const res0a = (await myTestContract.call("custom_enum", [myEnum0])) as Point;
-    const res0b = (await myTestContract.call("custom_enum", [myTypeEnum0])) as Point;
-    const res0 = (await myTestContract.custom_enum(myEnum0)) as CairoCustomEnum;
-    const res0c = (await myTestContract.custom_enum(myTypeEnum0)) as CairoCustomEnum;
+    // console.log("strategies =", strategies);
+    
+    const myTup = [true,false];
+    const myTypeTup=new CairoTuple(myTup,"(core::bool, core::bool)", strategies);
+    const comp0 = myTestCallData.compile("tuple_bool", [myTup]);
+    const comp0a = myTestCallData.compile("tuple_bool", { x: myTup });
+    const comp0b = myTestCallData.compile("tuple_bool", [myTypeTup]);
+    const comp0c = myTestCallData.compile("tuple_bool", { x: myTypeTup });
+    console.log("tuple_bool comp0 compile() =", comp0);
+    console.log("tuple_bool comp0a compile() =", comp0a);
+    console.log("tuple_bool comp0b compile() =", comp0b);
+    console.log("tuple_bool comp0c compile() =", comp0c);
+    const res0a = (await myTestContract.call("tuple_bool", [myTup])) as Object;
+    const res0b = (await myTestContract.call("tuple_bool", [myTypeTup])) as  Object;
+    const res0 = (await myTestContract.tuple_bool(myTup)) as  Object;
+    const res0c = (await myTestContract.tuple_bool(myTypeTup)) as  Object;
     console.log("res0 =", res0);
     console.log("res0a =", res0a);
     console.log("res0b =", res0b);
     console.log("res0c =", res0c);
-    const res0d = CallData.compile([myEnum0]); // should be a wrong answer (undefined variants have to be created with CallData.compile).
-    const res0e = CallData.compile({ x: myEnum0 }); // Same.
-    const res0f = CallData.compile([myTypeEnum0]);
-    const res0g = CallData.compile({ x: myTypeEnum0 });
+    const res0d = CallData.compile([CairoTuple.compile(myTup)]); 
+    const res0e = CallData.compile({ x: CairoTuple.compile(myTup) }); 
+    const res0f = CallData.compile([myTypeTup]);
+    const res0g = CallData.compile({ x: myTypeTup });
     console.log("res0d =", res0d);
     console.log("res0e =", res0e);
     console.log("res0f =", res0f);
     console.log("res0g =", res0g);
-
-
-    // execute
-    const op8: Point = { y: 4, x: 3 }; // wrong order
-    console.log("abiPoint =", { abiPoint });
-    const op8t = new CairoStruct(op8, abiPoint, strategies);
-    console.log("op8t=", op8t);
-    const myEnum8 = new CairoCustomEnum({ LocationError: op8 });
-    //const myEnum8=new CairoCustomEnum({Success: 10});
-    const myTypeEnum8 = new CairoTypeCustomEnum(op8, abiMyEnum, strategies, 1);
-
-    const myCall8 = myTestContract.populate("write_custom_enum", { x: myEnum8 });
-    console.log("myCall8 =", myCall8);
-    const myCall8a = myTestContract.populate("write_custom_enum", [myEnum8]);
-    const myCall8b = myTestContract.populate("write_custom_enum", { x: myTypeEnum8 });
-    const myCall8c = myTestContract.populate("write_custom_enum", [myTypeEnum8]);
-
-    console.log("Invoke in progress...");
-    const res8 = await account0.execute(myCall8, { tip: 200n });
-    const txR8 = await myProvider.waitForTransaction(res8.transaction_hash);
-    console.log("write8 =", txR8.isSuccess());
 
 
     console.log("✅ Test completed.");

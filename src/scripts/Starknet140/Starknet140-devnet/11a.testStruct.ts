@@ -2,7 +2,7 @@
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/11a.testStruct.ts
 // Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoTypeResult, type AbiStruct, CairoStruct } from "starknet";
+import { CairoCustomEnum, constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoTypeResult, type AbiStruct, CairoStruct } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -352,6 +352,40 @@ async function main() {
     console.log("res7f =", res7f);
     console.log("res7g =", res7g);
 
+    // struct_Enum
+    type ExecutionReport = { message: CairoCustomEnum, description: BigNumberish };
+    const enum0 = new CairoCustomEnum({ Success: 32 });
+    const myReport: ExecutionReport = { message: enum0, description: "Caga" };
+    const abiReport: AbiStruct = myTestCallData.abi.find(
+        (item) => item.name === 'enums::ExecutionReport'
+    );
+    console.log("abiReport =", abiReport);
+    const myTypeReport = new CairoStruct(myReport, abiReport, strategies);
+    const comp9 = myTestCallData.compile("struct_enum", [myReport]);
+    const comp9a = myTestCallData.compile("struct_enum", { x: myReport });
+    const comp9b = myTestCallData.compile("struct_enum", [myTypeReport]);
+    const comp9c = myTestCallData.compile("struct_enum", { x: myTypeReport });
+    console.log("struct_enum comp9 compile() =", comp9);
+    console.log("struct_enum comp9a compile() =", comp9a);
+    console.log("struct_enum comp9b compile() =", comp9b);
+    console.log("struct_enum comp9c compile() =", comp9c);
+    const res9a = (await myTestContract.call("struct_enum", [myReport])) as ExecutionReport;
+    const res9b = (await myTestContract.call("struct_enum", [myTypeReport])) as ExecutionReport;
+    const res9 = (await myTestContract.struct_enum(myReport)) as ExecutionReport;
+    const res9c = (await myTestContract.struct_enum(myTypeReport)) as ExecutionReport;
+    console.log("res9 =", res9);
+    console.log("res9a =", res9a);
+    console.log("res9b =", res9b);
+    console.log("res9c =", res9c);
+    const res9d = CallData.compile([myReport]); // should be a wrong answer (undefined variants have to be created with CallData.compile).
+    const res9e = CallData.compile({ x: myReport }); // same
+    const res9f = CallData.compile([myTypeReport]);
+    const res9g = CallData.compile({ x: myTypeReport });
+    console.log("res9d =", res9d);
+    console.log("res9e =", res9e);
+    console.log("res9f =", res9f);
+    console.log("res9g =", res9g);
+
     // execute
     console.log("Tx in progress...");
     const op8: Point = { x: 3, y: 4 };
@@ -361,7 +395,7 @@ async function main() {
     const txR8 = await myProvider.waitForTransaction(res8.transaction_hash);
     console.log("write8 =", txR8.isSuccess());
 
-    
+
 
     console.log("✅ Test completed.");
 }

@@ -2,7 +2,7 @@
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/10a.testResult.ts
 // Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoTypeResult } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoTypeResult, CairoCustomEnum } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -64,10 +64,10 @@ async function main() {
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/enums_test_enums.contract_class.json").toString("ascii"));
     const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2120/enums_test_enums.compiled_contract_class.json").toString("ascii"));
     console.log("Deploy of contract in progress...");
-    // const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm }, { tip: 2000000 });
-    // const contractAddress = deployResponse.deploy.address;
-    // console.log("Contract deployed at =", contractAddress);
-    const contractAddress = "0x703cd4e9816f09e44a07e170fdf37b993f036994468683dd90ea7a1ec803086";
+    const deployResponse = await account0.declareAndDeploy({ contract: compiledSierra, casm: compiledCasm }, { tip: 2000000 });
+    const contractAddress = deployResponse.deploy.address;
+    console.log("Contract deployed at =", contractAddress);
+    // const contractAddress = "0x703cd4e9816f09e44a07e170fdf37b993f036994468683dd90ea7a1ec803086";
 
     const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
     const myTestContract = new Contract({
@@ -77,11 +77,11 @@ async function main() {
     });
     const strategies = myTestContract.callData.parser.parsingStrategies;
 
-    console.log("A0=", JSON.stringify(hdParsingStrategy))
-    console.log("A1 =",CallData.getAbiEnum(compiledSierra.abi));
-    console.log("A2 =",CallData.getAbiStruct(compiledSierra.abi));
-    console.log("strat1 =",myTestCallData.parser.parsingStrategies);
-    console.log("strat2 =",myTestContract.callData.parser.parsingStrategies);
+    // console.log("A0=", JSON.stringify(hdParsingStrategy))
+    // console.log("A1 =",CallData.getAbiEnum(compiledSierra.abi));
+    // console.log("A2 =",CallData.getAbiStruct(compiledSierra.abi));
+    // console.log("strat1 =",myTestCallData.parser.parsingStrategies);
+    // console.log("strat2 =",myTestContract.callData.parser.parsingStrategies);
 
     // BN
     const myCairoResult0 = new CairoResult<BigNumberish, BigNumberish>(CairoResultVariant.Ok, 18);
@@ -166,6 +166,19 @@ async function main() {
     const res8 = (await myTestContract.result_struct(myResultPoint)) as CairoResult<BigNumberish,Point>;
     console.log("Result8S =", res8S.isOk(), res8S.unwrap());
     console.log("Result8 meta-function =", res8.isOk(), res8.unwrap());
+
+    // Result including an Enum
+    const enum0 = new CairoCustomEnum({ Success: 32 });
+    const myResultEnum = new CairoResult<BigNumberish, CairoCustomEnum>(CairoResultVariant.Err, enum0);
+    const myTypeResultEnum=new CairoTypeResult(enum0, "core::result::Result::<core::integer::u8, enums::MyEnum>", strategies, CairoResultVariant.Err);
+    const calldata9=myTestCallData.compile("result_enum", [myResultEnum]);
+    console.log("result_enum myCallData compile() array =", calldata9);
+    const res9S = (await myTestContract.call("result_enum", [myResultEnum])) as CairoResult<BigNumberish,CairoCustomEnum>;
+    const res9 = (await myTestContract.result_enum(myResultEnum)) as CairoResult<BigNumberish,CairoCustomEnum>;
+    const res9a = (await myTestContract.result_enum(myTypeResultEnum)) as CairoResult<BigNumberish,CairoCustomEnum>;
+    console.log("Result9S =", res9S.isOk(), res9S.unwrap());
+    console.log("Result9 meta-function =", res9.isOk(), res9.unwrap());
+    console.log("Result9a meta-function =", res9a.isOk(), res9a.unwrap());
 
     // execute
     const resu5 = new CairoResult<BigNumberish, BigNumberish>(CairoResultVariant.Ok, 100);

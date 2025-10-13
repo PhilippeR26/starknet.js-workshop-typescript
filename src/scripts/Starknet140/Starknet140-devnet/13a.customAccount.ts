@@ -1,5 +1,5 @@
 import { ETransactionType, type INVOKE_TXN_V3 } from "@starknet-io/types-js";
-import { CallData, extractContractHashes, isSierra, Provider, type AccountInterface, type SignerInterface, type CairoVersion, type ETransactionVersion, type PaymasterInterface, type Deployer, type TipType, type AccountOptions, Signer, PaymasterRpc, defaultPaymaster, defaultDeployer, ETransactionVersion3, logger, LibraryError, OutsideExecutionVersion, type BlockIdentifier, type Nonce, type BigNumberish, type AllowArray, type Call, type UniversalDetails, type EstimateFeeResponseOverhead, type DeclareContractPayload, type DeployAccountContractPayload, type UniversalDeployerContractPayload, type Invocations, type EstimateFeeBulk, type SimulateTransactionDetails, type SimulateTransactionOverheadResponse, type InvokeFunctionResponse, type DeclareContractResponse, type MultiDeployContractResponse, type waitForTransactionOptions, type DeployContractUDCResponse, type DeployTransactionReceiptResponse, type DeclareAndDeployContractPayload, type DeclareDeployUDCResponse, type DeployContractResponse, TypedData, typedData as sourceTypeData, type Signature, type OutsideExecutionOptions, type OutsideTransaction, type OutsideExecution, type InvocationsSignerDetails, type Invocation, type DeclareContractTransaction, type DeployAccountContractTransaction, type AccountInvocationsFactoryDetails, type InvocationsDetailsWithNonce, type AccountInvocations, type PaymasterDetails, type PreparedTransaction, type ExecutionParameters, type UserTransaction, type PaymasterFeeEstimate, type ExecutableUserTransaction, config, num, hash, stark, constants, src5, outsideExecution, transaction, paymaster as sourcePaymaster, provider, type ProviderOptions, type PaymasterOptions, type DeployerInterface, type RpcProvider } from "starknet";
+import { CallData, extractContractHashes, isSierra, Provider, type AccountInterface, type SignerInterface, type CairoVersion, type ETransactionVersion, type PaymasterInterface, type Deployer, type TipType, type AccountOptions, Signer, PaymasterRpc, defaultPaymaster, defaultDeployer, ETransactionVersion3, logger, LibraryError, OutsideExecutionVersion, type BlockIdentifier, type Nonce, type BigNumberish, type AllowArray, type Call, type UniversalDetails, type EstimateFeeResponseOverhead, type DeclareContractPayload, type DeployAccountContractPayload, type UniversalDeployerContractPayload, type Invocations, type EstimateFeeBulk, type SimulateTransactionDetails, type SimulateTransactionOverheadResponse, type InvokeFunctionResponse, type DeclareContractResponse, type MultiDeployContractResponse, type waitForTransactionOptions, type DeployContractUDCResponse, type DeployTransactionReceiptResponse, type DeclareAndDeployContractPayload, type DeclareDeployUDCResponse, type DeployContractResponse, TypedData, typedData as sourceTypeData, type Signature, type OutsideExecutionOptions, type OutsideTransaction, type OutsideExecution, type InvocationsSignerDetails, type Invocation, type DeclareContractTransaction, type DeployAccountContractTransaction, type AccountInvocationsFactoryDetails, type InvocationsDetailsWithNonce, type AccountInvocations, type PaymasterDetails, type PreparedTransaction, type ExecutionParameters, type UserTransaction, type PaymasterFeeEstimate, type ExecutableUserTransaction, config, num, hash, stark, constants, src5, outsideExecution, transaction, paymaster as sourcePaymaster, provider, type ProviderOptions, type PaymasterOptions, type DeployerInterface, type RpcProvider, json, type RPC } from "starknet";
 import {customRpcProvider, type CustomChannel9} from "./13.extractRawTxs"
 
 export function isString(value: unknown): value is string {
@@ -84,10 +84,10 @@ export class CustomAccount extends customRpcProvider implements AccountInterface
     });
   }
 
-  public async extractRawTx(
+  public async extractInvokeRawTx(
     transactions: AllowArray<Call>,
     transactionsDetail: UniversalDetails = {}
-  ): Promise<INVOKE_TXN_V3> {
+  ): Promise<string> {
     const calls = [transactions].flat();
     const detailsWithTip = await this.resolveDetailsWithTip(transactionsDetail);
 
@@ -112,7 +112,7 @@ export class CustomAccount extends customRpcProvider implements AccountInterface
 
     const invocation = accountInvocations[0];
 
-    return this.getInvokeRawTxRpc(
+    const rawTx: RPC.RPCSPEC09.INVOKE_TXN_V3 = this.getInvokeRawTxRpc(
       {
         contractAddress: invocation.contractAddress,
         calldata: invocation.calldata,
@@ -125,9 +125,16 @@ export class CustomAccount extends customRpcProvider implements AccountInterface
         version: invocation.version,
       }
     );
-
-    
+    return json.stringify(rawTx, undefined, 2);
   }
+
+  public async sendInvokeRawTx(
+    transaction: string,
+  ): Promise<InvokeFunctionResponse> {
+   const invocation = json.parse(transaction);
+    return this.sendInvokeRawTxRpc(invocation);
+  }
+
 
 
   /** @deprecated @hidden */
@@ -729,19 +736,19 @@ export class CustomAccount extends customRpcProvider implements AccountInterface
 
     assert(
       !isUndefined(compiledClassHash) &&
-        (details.version === ETransactionVersion3.F3 ||
-          details.version === ETransactionVersion3.V3),
+      (details.version === ETransactionVersion3.F3 ||
+        details.version === ETransactionVersion3.V3),
       'V3 Transaction work with Cairo1 Contracts and require compiledClassHash'
     );
 
     const signature = !details.skipValidate
       ? await this.signer.signDeclareTransaction({
-          ...details,
-          ...stark.v3Details(details),
-          classHash,
-          compiledClassHash,
-          senderAddress: details.walletAddress,
-        })
+        ...details,
+        ...stark.v3Details(details),
+        classHash,
+        compiledClassHash,
+        senderAddress: details.walletAddress,
+      })
       : [];
 
     return {
@@ -768,13 +775,13 @@ export class CustomAccount extends customRpcProvider implements AccountInterface
 
     const signature = !details.skipValidate
       ? await this.signer.signDeployAccountTransaction({
-          ...details,
-          ...stark.v3Details(details),
-          classHash,
-          contractAddress,
-          addressSalt,
-          constructorCalldata: compiledCalldata,
-        })
+        ...details,
+        ...stark.v3Details(details),
+        classHash,
+        contractAddress,
+        addressSalt,
+        constructorCalldata: compiledCalldata,
+      })
       : [];
 
     return {
@@ -802,7 +809,7 @@ export class CustomAccount extends customRpcProvider implements AccountInterface
   ): Promise<
     [
       ({ type: typeof ETransactionType.DECLARE } & DeclareContractTransaction) &
-        InvocationsDetailsWithNonce,
+      InvocationsDetailsWithNonce,
     ]
   >;
   public async accountInvocationsFactory(
@@ -813,7 +820,7 @@ export class CustomAccount extends customRpcProvider implements AccountInterface
   ): Promise<
     [
       ({ type: typeof ETransactionType.DEPLOY_ACCOUNT } & DeployAccountContractTransaction) &
-        InvocationsDetailsWithNonce,
+      InvocationsDetailsWithNonce,
     ]
   >;
   public async accountInvocationsFactory(

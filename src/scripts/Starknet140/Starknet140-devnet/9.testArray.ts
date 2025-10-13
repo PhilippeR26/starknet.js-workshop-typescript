@@ -1,5 +1,5 @@
 // Test Cairo Option with snjs v8
-// launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/6.testFixedArray.ts
+// launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/9.testArray.ts
 // Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
 
 import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoCustomEnum } from "starknet";

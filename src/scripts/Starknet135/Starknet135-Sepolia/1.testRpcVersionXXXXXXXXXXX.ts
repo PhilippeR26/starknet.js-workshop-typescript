@@ -50,11 +50,12 @@ async function main() {
 
         // ************** Sepolia testnet
         "https://starknet-sepolia.g.alchemy.com/v2/" + alchemyKey,
-        "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0.5/" + alchemyKey,
+        // "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0.5/" + alchemyKey,
         "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_6/" + alchemyKey,
-        "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0.6/" + alchemyKey,
+        // "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0.6/" + alchemyKey,
         "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/" + alchemyKey,
         "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_8/" + alchemyKey,
+        "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_9/" + alchemyKey,
         "https://starknet-sepolia.infura.io/v3/" + infuraKey,
         // 'https://starknet-sepolia.blastapi.io/' + blastKey + '/rpc/v0.4',
         // 'https://starknet-sepolia.blastapi.io/' + blastKey + '/rpc/v0.5',
@@ -92,8 +93,8 @@ async function main() {
         
         // *************** Mainnet
         "https://starknet-mainnet.g.alchemy.com/v2/" + alchemyKey,
-        "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.5/" + alchemyKey,
-        "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/" + alchemyKey,
+        // "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.5/" + alchemyKey,
+        // "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/" + alchemyKey,
         "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_6/" + alchemyKey,
         "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/" + alchemyKey,
         "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_8/" + alchemyKey,
@@ -114,6 +115,7 @@ async function main() {
         "https://starknet-mainnet.public.blastapi.io/rpc/v0_6",
         "https://starknet-mainnet.public.blastapi.io/rpc/v0_7",
         "https://starknet-mainnet.public.blastapi.io/rpc/v0_8",
+        "https://starknet-mainnet.public.blastapi.io/rpc/v0_9",
         // "https://free-rpc.nethermind.io/mainnet-juno/v0_5", // no more
         // "https://free-rpc.nethermind.io/mainnet-juno/v0_6",
         // "https://free-rpc.nethermind.io/mainnet-juno/v0_7",

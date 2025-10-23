@@ -25,7 +25,7 @@
             "type": "node",
             "request": "launch",
             "name": "TS2",
-            "program": "${workspaceFolder}/src/scripts/Starknet140/Starknet140-devnet/14.complexCall.ts",
+            "program": "${workspaceFolder}/src/scripts/Starknet141/Starknet141-devnet/1.hashBlake.ts",
             "preLaunchTask": "npm: build",
             "sourceMaps": true,
             "smartStep": true,

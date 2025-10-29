@@ -4,6 +4,16 @@ import { constants, num } from 'starknet';
 const PRIME = constants.PRIME;
 
 export function blake2sHashMany(data: bigint[]): bigint {
+    const encoded: Uint8Array = blake2sEncode(data);
+    const hash: Uint8Array = blake2s(encoded, { dkLen: 32 }); // Paul version
+    let hashBigInt = 0n;
+    for (let i = 0; i < 32; i++) {
+        hashBigInt |= BigInt(hash[i]) << BigInt(i * 8);
+    }
+    return hashBigInt % constants.PRIME;
+}
+
+export function blake2sEncode(data: bigint[]): Uint8Array {
     const SMALL_THRESHOLD = 0x8000000000000000n; // 2^63
     const BIG_MARKER = 0x80000000; // 1 << 31
 
@@ -47,10 +57,5 @@ export function blake2sHashMany(data: bigint[]): bigint {
     for (let i = 0; i < u32Words.length; i++) {
         bytesView.setUint32(i * 4, u32Words[i], true);
     }
-    const hash = blake2s(new Uint8Array(bytes), { dkLen: 32 }); // Paul version
-    let hashBigInt = 0n;
-    for (let i = 0; i < 32; i++) {
-        hashBigInt |= BigInt(hash[i]) << BigInt(i * 8);
-    }
-    return hashBigInt % constants.PRIME;
+    return new Uint8Array(bytes);
 }

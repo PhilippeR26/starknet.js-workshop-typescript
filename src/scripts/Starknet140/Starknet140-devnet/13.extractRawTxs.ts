@@ -1,6 +1,13 @@
-// Test a custom signer with snjs v8
-// launch with npx src/scripts/Starknet140/Starknet140-devnet/13.specialSigner.ts
+// Extract & process later a raw transaction.
+// Launch with npx src/scripts/Starknet140/Starknet140-devnet/13.extractRawTxs.ts
 // Coded with Starknet.js v8.5.4 & starknet-devnet.js v0.5.0
+//
+// ***************************************************
+// *** TO USE ONLY FOR DEVELOPMENT PURPOSE.   ********
+// *** NEVER USE THIS CODE TO PROCESS ITEMS   ********
+// *** THAT HAVE A REAL VALUE.                ********
+// *** IT'S NOT SAFE TO PROCESS THIS WAY.     ********
+// ***************************************************
 
 import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, hdParsingStrategy, CairoOptionVariant, BigNumberish, CairoResult, CairoResultVariant, RPC08, typedData, Signer, type CompiledSierra, type InvokeFunctionResponse, ETransactionVersion3, type Call, type InvocationsSignerDetails, type Signature, type V3InvocationsSignerDetails, transaction, stark, RPC09, type Invocation, type InvocationsDetailsWithNonce, type AllowArray, type UniversalDetails, type InvokedTransaction, type ProviderInterface, type RpcProviderOptions, Provider, defaultDeployer, defaultPaymaster, logger, PaymasterRpc, type AccountOptions, type CairoVersion, isVersion, config, RPCResponseParser } from "starknet";
 import fs from "fs";
@@ -1197,7 +1204,7 @@ async function main() {
   console.log("json =", jsonTransaction);
   const result=await account0.sendInvokeRawTx(jsonTransaction);
   const txR = await myProvider.waitForTransaction(result.transaction_hash);
-  console.log("txH =", result);
+  console.log("txR =", txR);
 
 
 

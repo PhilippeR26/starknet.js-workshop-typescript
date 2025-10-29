@@ -25,6 +25,7 @@
     "@ledgerhq/hw-transport-webhid": "^6.30.0",
     "@ledgerhq/react-native-hid": "^6.32.4",
     "@ledgerhq/react-native-hw-transport-ble": "^6.34.0",
+    "@napi-rs/blake-hash": "^1.3.5",
     "@noble/curves": "^1.8.1",
     "@noble/hashes": "^1.7.1",
     "@scure/bip32": "^1.6.2",

@@ -9,6 +9,7 @@ import fs from "fs";
 import { LogC } from "../../utils/logColors"
 import * as dotenv from "dotenv";
 import { alchemyKey, blastKey, infuraKey, lavaMainnetKey } from "../../../A-MainPriv/mainPriv";
+import { equilibriumPathfinderTestnetUrl } from "../../../A1priv/A1priv";
 dotenv.config();
 
 
@@ -44,6 +45,8 @@ async function main() {
     // const resp = await provider.getSpecVersion();
     // console.log("default =", chId, resp);
 
+    const localIP="26";
+
     const listProvider = [
         constants.NetworkName.SN_SEPOLIA, // default Sepolia Testnet
         constants.NetworkName.SN_MAIN, // default Testnet
@@ -56,6 +59,7 @@ async function main() {
         "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/" + alchemyKey,
         "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_8/" + alchemyKey,
         "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_9/" + alchemyKey,
+        "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey,
         "https://starknet-sepolia.infura.io/v3/" + infuraKey,
         // 'https://starknet-sepolia.blastapi.io/' + blastKey + '/rpc/v0.4',
         // 'https://starknet-sepolia.blastapi.io/' + blastKey + '/rpc/v0.5',
@@ -68,6 +72,7 @@ async function main() {
         "https://starknet-sepolia.public.blastapi.io/rpc/v0_7",
         "https://starknet-sepolia.public.blastapi.io/rpc/v0_8",
         "https://starknet-sepolia.public.blastapi.io/rpc/v0_9",
+        "https://starknet-sepolia.public.blastapi.io/rpc/v0_10",
         // "https://free-rpc.nethermind.io/sepolia-juno",
         // "https://free-rpc.nethermind.io/sepolia-juno/v0_5", // no more
         // "https://free-rpc.nethermind.io/sepolia-juno/v0_6",
@@ -78,19 +83,23 @@ async function main() {
         "https://rpc.starknet-testnet.lava.build/rpc/v0_7",
         "https://rpc.starknet-testnet.lava.build/rpc/v0_8",
         "https://rpc.starknet-testnet.lava.build/rpc/v0_9",
+        "https://rpc.starknet-testnet.lava.build/rpc/v0_10",
         // 'http://192.168.1.167:9545/rpc/v0.4', // my local pathfinder 
         // 'http://192.168.1.167:9545/rpc/v0_4', // my local pathfinder 
         // 'http://192.168.1.167:9545/rpc/v0.5', // my local pathfinder 
         // 'http://192.168.1.167:9545/rpc/v0_5', // my local pathfinder 
-        'http://192.168.1.167:9545/rpc/v0_6', // my local pathfinder 
-        'http://192.168.1.167:9545/rpc/v0_7', // my local pathfinder
-        'http://192.168.1.167:9545/rpc/v0_8', // my local pathfinder
-        'http://192.168.1.167:9545/rpc/v0_9', // my local pathfinder
-        'http://192.168.1.167:6070/rpc/v0_6', // my local Juno 
-        'http://192.168.1.167:6070/rpc/v0_7', // my local Juno
-        'http://192.168.1.167:6070/rpc/v0_8', // my local Juno
-        'http://192.168.1.167:6070/rpc/v0_9', // my local Juno
-        
+        'http://192.168.1.'+localIP+':9545/rpc/v0_6', // my local pathfinder 
+        'http://192.168.1.'+localIP+':9545/rpc/v0_7', // my local pathfinder
+        'http://192.168.1.'+localIP+':9545/rpc/v0_8', // my local pathfinder
+        'http://192.168.1.'+localIP+':9545/rpc/v0_9', // my local pathfinder
+        'http://192.168.1.'+localIP+':9545/rpc/v0_10', // my local pathfinder
+        'http://192.168.1.'+localIP+':6070/rpc/v0_6', // my local Juno 
+        'http://192.168.1.'+localIP+':6070/rpc/v0_7', // my local Juno
+        'http://192.168.1.'+localIP+':6070/rpc/v0_8', // my local Juno
+        'http://192.168.1.'+localIP+':6070/rpc/v0_9', // my local Juno
+        'http://192.168.1.'+localIP+':6070/rpc/v0_10', // my local Juno
+        equilibriumPathfinderTestnetUrl,
+                
         // *************** Mainnet
         "https://starknet-mainnet.g.alchemy.com/v2/" + alchemyKey,
         // "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.5/" + alchemyKey,
@@ -99,6 +108,7 @@ async function main() {
         "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/" + alchemyKey,
         "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_8/" + alchemyKey,
         "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_9/" + alchemyKey,
+        "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey,
         "https://starknet-mainnet.infura.io/v3/" + infuraKey,
         // 'https://starknet-mainnet.infura.io/rpc/v0.4/' + infuraKey,
         // 'https://starknet-mainnet.infura.io/rpc/v0.5/' + infuraKey,
@@ -128,12 +138,14 @@ async function main() {
         "https://rpc.starknet.lava.build/rpc/v0_7",
         "https://rpc.starknet.lava.build/rpc/v0_8",
         "https://rpc.starknet.lava.build/rpc/v0_9",
+        "https://rpc.starknet.lava.build/rpc/v0_10",
         // "http://192.168.1.11:6060/v0_4", // my Juno no more working
         // "http://192.168.1.11:6060/v0_5", // my Juno no more working
-        "http://192.168.1.167:6060/v0_6", //my local Juno
-        "http://192.168.1.167:6060/v0_7", //my local Juno
-        "http://192.168.1.167:6060/v0_8", //my local Juno
-        "http://192.168.1.167:6060/v0_9", //my local Juno
+        "http://192.168.1."+localIP+":6060/v0_6", //my local Juno
+        "http://192.168.1."+localIP+":6060/v0_7", //my local Juno
+        "http://192.168.1."+localIP+":6060/v0_8", //my local Juno
+        "http://192.168.1."+localIP+":6060/v0_9", //my local Juno
+        "http://192.168.1."+localIP+":6060/v0_10", //my local Juno
     ]
 
     for (const url of listProvider) {

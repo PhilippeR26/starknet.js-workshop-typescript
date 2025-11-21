@@ -175,8 +175,7 @@ export class ArgentP256Signer implements SignerInterface {
     return formattedSignature;
   }
 }
+
 export function p256RandomPrivateKey(): string {
   return encode.sanitizeHex(encode.buf2hex(secp256r1.utils.randomPrivateKey()));
 }
-78991612456162898002509856066830489575806608947111614636816128002717858044001n
-57896044605178124381348723474703786764998477612067880171211129530534256022184n

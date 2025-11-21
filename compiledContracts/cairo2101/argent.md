@@ -1,0 +1,2 @@
+contract Ready 0.5.0
+class hash : 0xbe187ea57c1dcf8b0b954bf68b7aeeafe071418acbfcab5951125dca69bb97

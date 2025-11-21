@@ -1,14 +1,13 @@
 // test format WebAuthN signature.
 // Launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/1.testWebAuthNsignature.ts
-// Coded with Starknet.js v8 experimental
+// Coded with Starknet.js v8.6.0
 
-import { RpcProvider, shortString, Account, type BlockIdentifier, BlockTag, json, Contract, stark, type FeeEstimate, type ResourceBounds, num, type CompiledSierra, CallData, CairoCustomEnum, type BigNumberish, parseCalldataField, type AbiEntry, CairoBytes31 } from "starknet";
-import fs from "fs";
+import { RpcProvider, shortString, Account, json, Contract, stark, num, type CompiledSierra, CallData, CairoCustomEnum, type BigNumberish, type AbiEntry, CairoBytes31, parseCalldataField } from "starknet";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
 import axios from "axios";
-import type { BlockWithTxHashes } from "@starknet-io/types-js";
-import { strkAddress } from "../../utils/constants";
+import { alchemyKey } from "../../../A-MainPriv/mainPriv";
 import * as dotenv from "dotenv";
+import fs from "fs";
 dotenv.config();
 
 
@@ -17,7 +16,7 @@ async function main() {
   // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_8" });
   // ********* Sepolia Testnet **************
   // *** local pathfinder Sepolia Testnet node
-  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8" });
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_9/" + alchemyKey });
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
   // *** local Juno Sepolia Testnet node
@@ -31,9 +30,8 @@ async function main() {
 
   // logger.setLogLevel("ERROR");
   // config.set("legacyMode",true);
-  console.log("ert");
   console.log(
-    "chain Id =", new CairoBytes31 (await myProvider.getChainId()).decodeUtf8(),
+    "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
     ", rpc", await myProvider.getSpecVersion(),
     ", SN version =", (await myProvider.getBlock()).starknet_version);
   console.log("Provider connected to Starknet Sepolia testnet");
@@ -63,13 +61,13 @@ async function main() {
   // const privateKey0 = account4MainnetPrivateKey;
   // const accountAddress0 = account4MainnetAddress
 
-  const account0 = new Account(myProvider, accountAddress0, privateKey0);
+  const account0 = new Account({ provider: myProvider, address: accountAddress0, signer: privateKey0 });
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   console.log('existing account connected.\n');
 
   // Main code
   const ReadySierra = json.parse(fs.readFileSync("./compiledContracts/cairo263/ArgentXAccount040.sierra.json").toString("ascii")) as CompiledSierra;
-  const ReadyCallData = new CallData(ReadySierra.abi);
+  const readyCallData = new CallData(ReadySierra.abi);
   type WebAuthNSignature = {
     cross_origin: boolean,
     client_data_json_outro: BigNumberish[],
@@ -94,7 +92,13 @@ async function main() {
   const enums = CallData.getAbiEnum(ReadySierra.abi);
   const abiExtract = ReadySierra.abi.find((abiItem) => abiItem.name === selectedType);
   const inputAbi: AbiEntry = { name: abiExtract.type, type: abiExtract.name };
-  const encoded = parseCalldataField(iter, inputAbi, structs, enums);
+  const encoded = parseCalldataField({
+    argsIterator: iter,
+    input: inputAbi,
+    structs: structs,
+    enums: enums,
+    parser: readyCallData.parser
+  });
 
   console.log(encoded);
 

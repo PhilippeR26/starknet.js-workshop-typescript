@@ -2,7 +2,7 @@
 // launch with npx src/scripts/Starknet141/Starknet141-devnet/4a.testCairoV1.ts
 // Coded with Starknet.js v8.6.0 + experimental
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, CairoStruct } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -57,20 +57,59 @@ async function main() {
 
 
     // ********** main code
-
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo110/helloSierra/hello.sierra.json").toString("ascii")) as CompiledSierra;
 
     const myCallData = new CallData(compiledSierra.abi);
     const myContract = new Contract({ abi: compiledSierra.abi, address: "0x100" });
     const calldata1 = myCallData.compile("array2ddd_felt", {
-        testdd: [[20,21],[10,20,30]],
+        testdd: [[20, 21], [10, 20, 30]],
     });
     console.log({ calldata1 });
-    
-    // const response = myCallData.parse("array_bool_tuple", calldata3);
-    //console.log("response=", response);
 
-    
+    const calldata2 = myCallData.compile("array_bool_tuple", {
+        a: [7, 8, 9],
+        b: false,
+    });
+    console.log({ calldata2 });
+    const response2 = myCallData.parse("array_bool_tuple", calldata2);
+    console.log("response2=", response2);
+
+    const calldata3 = myCallData.compile("tuple_echo", {
+        a: cairo.tuple([7, 8, 9], [100, 101]),
+        b: false,
+    });
+    console.log({ calldata3 });
+    const response3 = myCallData.parse("tuple_echo", calldata3);
+    console.log("response3=", response3);
+
+    const userData = { address: "0x123", is_claimed: true };
+    const calldata4 = myCallData.compile("set_user1", {
+        user: userData,
+    });
+    console.log({ calldata4 });
+    const response4 = myCallData.parse("get_user1", calldata4);
+    console.log("response4=", response4);
+
+    const bet = {
+        name: 456,
+        description: 1000,
+        expire_date: 345,
+        creation_time: 678,
+        creator: "0xabcde",
+        is_cancelled: false,
+        is_voted: true,
+        bettor: userData,
+        counter_bettor: userData,
+        winner: false,
+        pool: 45674575467457,
+        amount: 12234567,
+    };
+    const abiBet = myCallData.structs["hello::hello::Bet"];
+    const calldata5 = new CairoStruct(bet, abiBet, myCallData.parser.parsingStrategies).toApiRequest();
+    console.log({ calldata5 });
+    const response5 = myCallData.parse("get_bet", calldata5);
+    console.log("response5=", response5);
+
     console.log("✅ Test completed.");
 }
 main()

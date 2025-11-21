@@ -19,7 +19,7 @@ dotenv.config({ path: "./.env.local" });
 
 async function main() {
     // *** pathfinder Testnet
-    const wsUrl = "ws://localhost:9545/rpc/v0_8";
+    const wsUrl = "ws://localhost:9545/rpc/v0_9";
     // const wsUrl = process.env.NEXT_PUBLIC_WS_PROVIDER ?? "";
     // *** juno Testnet
     // const wsUrl = "ws://localhost:6071/ws/rpc/v0_8";
@@ -35,7 +35,7 @@ async function main() {
 
 
     // subscribe pending tx
-    const txStatusID = await myWS.subscribePendingTransaction();
+    const txStatusID = await myWS.subscribeNewTransactions({finalityStatus:["PRE_CONFIRMED"]});
     console.log("subscribe pending tx response =", txStatusID);
     if (!txStatusID) {
         throw new Error("pending tx subscription failed");
@@ -46,7 +46,7 @@ async function main() {
     let i: number = 0;
     txStatusID.on (function (pendingTx: TXN_HASH | TXN_WITH_HASH) {
         i++
-        console.log("pending tx event", i, "=", pendingTx);
+        console.log("pending tx", i, "=", pendingTx);
     }
 )
 

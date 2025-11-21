@@ -16,8 +16,8 @@ dotenv.config({ path: "./.env.local" });
 
 async function main() {
     // *** pathfinder Testnet
-     const wsUrl = "ws://localhost:9545/rpc/v0_8";
-    // const wsUrl = process.env.NEXT_PUBLIC_WS_PROVIDER ?? "";
+    // const wsUrl = "ws://localhost:9545/rpc/v0_9";
+    const wsUrl = process.env.NEXT_PUBLIC_WS_PROVIDER ?? "";
     // const wsUrl = "wss://starknet-mainnet.public.blastapi.io/rpc/v0_8";
     // *** juno Testnet
     // const wsUrl = "ws://localhost:6071/ws/rpc/v0_8";

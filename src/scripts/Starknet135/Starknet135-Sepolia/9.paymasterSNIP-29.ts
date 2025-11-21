@@ -118,7 +118,7 @@ async function main() {
   const supported: TokenData[] = await myPaymaster.getSupportedTokens();
   // or
   // const supported: TokenData[] = await account0.paymaster.getSupportedTokens();
-  // console.log("supported =", supported);
+  console.log("supported =", supported);
   const isETHsupported = supported.some((token: TokenData) =>
     num.toHex64(token.token_address) === ethAddress);
   console.log("isETHsupported =", isETHsupported);

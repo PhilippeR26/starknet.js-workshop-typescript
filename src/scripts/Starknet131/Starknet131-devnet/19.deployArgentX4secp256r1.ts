@@ -27,8 +27,7 @@ export async function deployAccountArgentX4secp256r1(myProvider: RpcProvider, ac
   // Calculate future address of the ArgentX account
   const privateKeyAX = p256RandomPrivateKey();
   // 0x19103d5c83a54c9aa68a07dbd06ce81e52594608d2786498fa9f76fe941a31d8
-  // 0x19103d5c83a54c9aa68a07dbd06ce81e52594608d2786498fa9f76fe941a31d8
-  0x3466163efeac3a53d2a63ea5ccf3626b098d7ecb7b2fa95f2a14281b35ea06ab
+  // 0x3466163efeac3a53d2a63ea5ccf3626b098d7ecb7b2fa95f2a14281b35ea06ab
   console.log('AX account Private Key =', privateKeyAX);
   const myP256Signer = new ArgentP256Signer(privateKeyAX);
   const tmpPub = await myP256Signer.getPubKey();

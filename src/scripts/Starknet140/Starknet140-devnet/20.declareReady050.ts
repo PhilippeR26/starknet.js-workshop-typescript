@@ -59,7 +59,7 @@ async function main() {
   if (respDecl.transaction_hash) {
     contractReadyClassHash = respDecl.class_hash;
     // await myProvider.waitForTransaction(respDecl.transaction_hash);
-    console.log("ArgentX v0.4.0 contract declared. Class :", respDecl.class_hash);
+    console.log("ArgentX v0.5.0 contract declared. Class :", respDecl.class_hash);
   } else {
     contractReadyClassHash = "0x036078334509b514626504edc9fb252328d1a240e4e948bef8d0c08dff45927f"; //v0.4.0
     console.log("Already declared.")
@@ -106,7 +106,7 @@ async function main() {
   // await myProvider.waitForTransaction(AXdAth);
 
 
-  console.log('✅ ArgentX 0.4.0 account deployed.');
+  console.log('✅ ArgentX 0.5.0 account declared.');
 }
 main()
   .then(() => process.exit(0))

@@ -44,8 +44,8 @@
     "prompt-sync": "^4.2.0",
     "rpc-websockets": "^9.0.4",
     "rsv-signature": "^1.1.0",
-    "starknet": "^8.6.0",
-    "starknet-devnet": "^0.6.0",
+    "starknet": "^9.1.1",
+    "starknet-devnet": "^0.7.0",
     "starknet-merkle-tree": "1.0.5",
     "vm2": "^3.9.19",
     "web3-utils": "^4.3.3",
@@ -64,6 +64,6 @@
     "dotenv": "^16.4.7",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.9.3"
   }
 }

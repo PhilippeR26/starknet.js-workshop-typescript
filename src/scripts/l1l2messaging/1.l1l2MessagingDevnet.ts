@@ -8,10 +8,10 @@ import * as ethers from "ethers";
 
 import { account1BraavosSepoliaAddress, account1BraavosSepoliaPrivateKey } from "../../A1priv/A1priv";
 import fs from "fs";
-import * as dotenv from "dotenv";
 import { ethAddress } from "../utils/constants";
 import { formatBalance } from "../utils/formatBalance";
 import LogC from "../utils/logColors";
+import * as dotenv from "dotenv";
 dotenv.config();
 
 // *******************************

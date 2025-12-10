@@ -8,6 +8,7 @@ import { json, WebSocketChannel, type Subscription } from "starknet";
 import { keypress, wait } from "../utils/utils";
 import { SubscriptionNewHeadsResponse, type BLOCK_HEADER } from "@starknet-io/types-js";
 import * as dotenv from "dotenv";
+import { equilibriumPathfinderTestnetWs } from "../../A1priv/A1priv";
 dotenv.config({ path: "./.env.local" });
 
 //        👇👇👇
@@ -16,12 +17,12 @@ dotenv.config({ path: "./.env.local" });
 
 async function main() {
     // *** pathfinder Testnet
-    // const wsUrl = "ws://localhost:9545/rpc/v0_9";
-    const wsUrl = process.env.NEXT_PUBLIC_WS_PROVIDER ?? "";
-    // const wsUrl = "wss://starknet-mainnet.public.blastapi.io/rpc/v0_8";
+    // const wsUrl = "ws://localhost:9545/rpc/v0_10";
+     const wsUrl = process.env.NEXT_PUBLIC_WS_PROVIDER ?? "";
+    // const wsUrl = "wss://starknet-rpc.publicnode.com/";
+    // const wsUrl = equilibriumPathfinderTestnetWs;
     // *** juno Testnet
-    // const wsUrl = "ws://localhost:6071/ws/rpc/v0_8";
-    // const wsUrl = "wss://free-rpc.nethermind.io/sepolia-juno/rpc/v0_8";
+    // const wsUrl = "ws://localhost:6071/ws/rpc/v0_10";
     console.log("wsUrl =", wsUrl);
 
     const myWS = new WebSocketChannel({ nodeUrl: wsUrl });

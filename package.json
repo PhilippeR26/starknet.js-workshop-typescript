@@ -45,7 +45,7 @@
     "rpc-websockets": "^9.0.4",
     "rsv-signature": "^1.1.0",
     "starknet": "^9.1.1",
-    "starknet-devnet": "^0.7.0",
+    "starknet-devnet": "^0.7.1",
     "starknet-merkle-tree": "1.0.5",
     "vm2": "^3.9.19",
     "web3-utils": "^4.3.3",

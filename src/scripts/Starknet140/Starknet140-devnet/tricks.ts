@@ -1,4 +1,6 @@
 import { CairoInt8, CairoOptionVariant, num, type CairoResultVariant } from "starknet";
+
+// To play with encoding/decoding of strings:
 // ☥😅Azş`://Nunc est bibendum
 const word: string = "bibendum";
 const A = word.charCodeAt(2);
@@ -21,6 +23,7 @@ console.log(u16dec);
 console.log("Utf8=", u8enc.length, u8enc);
 console.log(u8dec);
 
+// complex types
 type Person = {
   name: string,
   age: number;
@@ -41,21 +44,24 @@ type AA = {
   [clef in B]: (res: Person[clef]) => void;
 };
 
-const i8=new CairoInt8(-1).toHexString();
-console.log({i8})
+// real hex value behind a Cairo int value
+const i8 = new CairoInt8(-1).toHexString();
+console.log({ i8 })
 
+// Cairo enums variants verification
 type VariantType = CairoOptionVariant | CairoResultVariant | string | number;
-const input: VariantType=1;
-const t0=Object.values(CairoOptionVariant);
-const nu=Number(input);
-const valid = [0,1].includes(nu);
-console.log({valid});
+const input: VariantType = 1;
+const t0 = Object.values(CairoOptionVariant);
+const nu = Number(input);
+const valid = [0, 1].includes(nu);
+console.log({ valid });
 
-class A1 {}
-class A2 {}
-class A3 {}
-const At=new A2();
-const classArray=[A1, A2,A3];
-if (classArray.some(cls => At instanceof cls)){
+// to check if an instance is one of several classes
+class A1 { }
+class A2 { }
+class A3 { }
+const At = new A2();
+const classArray = [A1, A2, A3];
+if (classArray.some(cls => At instanceof cls)) {
   console.log("Ok");
 }

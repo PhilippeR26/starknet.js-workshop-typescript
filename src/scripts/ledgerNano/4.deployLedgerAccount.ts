@@ -2,7 +2,7 @@
 // Deploy a Ledger ArgentX v0.4.0 account in devnet.
 // Coded with Starknet.js v6.11.0 & devnet-rs v0.1.1 & starknet-devnet.js v0.1.0
 
-import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, types, cairo, CairoCustomEnum, CairoOption, CairoOptionVariant, type Call, type InvokeFunctionResponse } from "starknet";
+import { RpcProvider, Account, Contract, ec, json, RawArgs, stark, num, uint256, Calldata, CallData, shortString, constants, hash, type BigNumberish, CairoCustomEnum, CairoOption, CairoOptionVariant, type Call, type InvokeFunctionResponse } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
 //import { OutsideExecution, OutsideExecutionOptions } from 'starknet';
 
@@ -49,7 +49,7 @@ export async function deployLedgerAccount(myProvider: RpcProvider, account0: Acc
 
   // declare
   console.log("casm_hash", hash.computeCompiledClassHash(accountAXcasm));
-  const respDecl = await account0.declareIfNot({ contract: accountAXsierra, casm: accountAXcasm });
+  const respDecl = await account0.declareIfNot({ contract: accountAXsierra, casm: accountAXcasm },{tip:0});
   if (respDecl.transaction_hash) {
     await myProvider.waitForTransaction(respDecl.transaction_hash);
     console.log("ArgentX Cairo 1 contract declared");
@@ -85,7 +85,7 @@ export async function deployLedgerAccount(myProvider: RpcProvider, account0: Acc
   };
   console.log("Deploy of account in progress...");
   // *** with account.execute()
-  const { transaction_hash: txHDepl }: InvokeFunctionResponse = await account0.execute([myCall]); // you can add other txs here
+  const { transaction_hash: txHDepl }: InvokeFunctionResponse = await account0.execute([myCall],{tip:0}); // you can add other txs here
 
   console.log("TxH =", txHDepl);
   const txR = await myProvider.waitForTransaction(txHDepl);

@@ -1,9 +1,9 @@
 // Use a Ledger Nano S+/X Starknet APP 2.3.1 to sign a transaction in a node rpc 0.8.
 // Use of a Starknet.js signer
 // Launch with npx ts-node src/scripts/ledgerNano/10.testLedger231-rpc08.ts
-// Coded with Starknet.js v7.3.0 & devnet v0.4.1 & starknet-devnet.js v0.4.0
+// Coded with Starknet.js v9.1.0 & devnet v0.7.0 & starknet-devnet.js v0.7.0
 
-import { RpcProvider, Account, Contract, json, shortString, LedgerSigner221, constants, type V2InvocationsSignerDetails, type Call, hash, type V3InvocationsSignerDetails, getLedgerPathBuffer111, type TypedData, getLedgerPathBuffer221, type BigNumberish, CallData, stark, ec, ETransactionVersion, config, logger, LedgerSigner231 } from "starknet";
+import { RpcProvider, Account, Contract, json, shortString, hash, type TypedData, getLedgerPathBuffer221, type BigNumberish, CallData, LedgerSigner231, CairoBytes31 } from "starknet";
 import { DevnetProvider } from "starknet-devnet";
 import fs from "fs";
 import * as dotenv from "dotenv";
@@ -12,14 +12,21 @@ import { ethAddress, strkAddress } from "../utils/constants";
 import { formatBalance } from "../utils/formatBalance";
 import TransportNodeHid from "@ledgerhq/hw-transport-node-hid";
 import LogC from "../utils/logColors";
-import { transactionVersion } from "starknet/dist/utils/hash";
 import { keypress } from "../utils/utils";
 dotenv.config();
 
 async function displayBalances(addr: BigNumberish, myProv: RpcProvider) {
   const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));
-  const EthContract = new Contract(compiledERC20Contract.abi, ethAddress, myProv);
-  const strkContract = new Contract(compiledERC20Contract.abi, strkAddress, myProv);
+  const EthContract = new Contract({
+    abi: compiledERC20Contract.abi,
+    address: ethAddress,
+    providerOrAccount: myProv
+  });
+  const strkContract = new Contract({
+    abi: compiledERC20Contract.abi,
+    address: strkAddress,
+    providerOrAccount: myProv
+  });
   const balETH = await EthContract.call("balanceOf", [addr]) as bigint;
   const balSTRK = await strkContract.call("balanceOf", [addr]) as bigint;
   console.log("Ledger account 0 has a balance of :", formatBalance(balETH, 18), "ETH");
@@ -35,7 +42,7 @@ async function main() {
   // The ledger shall not be locked when launching this script.
   // Once the Starknet APP selected, you have 2 minutes to proceed, before the APP is locked.
   //          👆👆👆
-  const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", specVersion: "0.8.1" });
+  const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   if (!(await l2DevnetProvider.isAlive())) {
     console.log("No l2 devnet.");
@@ -53,8 +60,11 @@ async function main() {
 
 
 
-  console.log("chain Id =", shortString.decodeShortString(await myProvider.getChainId()), ", rpc", await myProvider.getSpecVersion());
-  console.log("Provider connected to Starknet");
+  console.log(
+    "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
+    ", rpc", await myProvider.getSpecVersion(),
+    ", SN version =", (await myProvider.getBlock()).starknet_version
+  ); console.log("Provider connected to Starknet");
 
   // *** initialize existing predeployed account 0 of Devnet
   const listAccounts = await l2DevnetProvider.getPredeployedAccounts();
@@ -67,9 +77,13 @@ async function main() {
   //  const accountAddress0 = account1BraavosMainnetAddress;
   //  const privateKey0 = account1BraavosMainnetPrivateKey;
 
-  const account0 = new Account(myProvider, accountAddress0, privateKey0, undefined, ETransactionVersion.V3);
+  const account0 = new Account({
+    provider: myProvider,
+    address: accountAddress0,
+    signer: privateKey0,
+  });
   console.log("Account connected.\n");
-  
+
   // ******* declare OZ Account (common) *****
   // declare OZ 0.17 account
   console.log("Declare...");
@@ -78,7 +92,7 @@ async function main() {
   const ch = hash.computeContractClassHash(accountOZSierra);
   console.log("OZ Class Hash of contract =", ch);
   // declare
-  const respDecl = await account0.declareIfNot({ contract: accountOZSierra, casm: accountOZCasm });
+  const respDecl = await account0.declareIfNot({ contract: accountOZSierra, casm: accountOZCasm }, { tip: 0 });
   // const contractClassHash = "0x540d7f5ec7ecf317e68d48564934cb99259781b1ee3cedbbc37ec5337f8e688";
   const contractOZClassHash = respDecl.class_hash;
   if (respDecl.transaction_hash) {
@@ -93,16 +107,20 @@ async function main() {
   const chReject = hash.computeContractClassHash(rejectSierra);
   console.log("Reject contract class hash =", chReject);
   // declare
-  const respDecl2 = await account0.declareIfNot({ contract: rejectSierra, casm: rejectCasm });
+  const respDecl2 = await account0.declareIfNot({ contract: rejectSierra, casm: rejectCasm }, { tip: 0 });
   // const contractClassHash = "0x540d7f5ec7ecf317e68d48564934cb99259781b1ee3cedbbc37ec5337f8e688";
   if (respDecl2.transaction_hash) {
     await myProvider.waitForTransaction(respDecl2.transaction_hash);
     console.log("Reject class declared")
   }
   const calldataReject = new CallData(rejectSierra.abi);
-  const respDeployReject = await account0.deployContract({ classHash: chReject, constructorCalldata: [] });
+  const respDeployReject = await account0.deployContract({ classHash: chReject, constructorCalldata: [] }, { tip: 0 });
   const rejectAddr = respDeployReject.address;
-  const rejectContract = new Contract(calldataReject.abi, rejectAddr, myProvider);
+  const rejectContract = new Contract({
+    abi: calldataReject.abi,
+    address: rejectAddr,
+    providerOrAccount: myProvider
+  });
 
   //
   // *********** Deploy AX account *************
@@ -110,24 +128,24 @@ async function main() {
   await keypress();
   console.log("A");
   const myLedgerTransport = await TransportNodeHid.create();
-  console.log("B");
   const myLedgerSigner = new LedgerSigner231(myLedgerTransport, 0);
-  console.log("C");
-
-
   const pubK = await myLedgerSigner.getPubKey();
   const fullPubK = await myLedgerSigner.getFullPubKey();
   console.log("Read public key in Ledger =\n", { pubK, fullPubK });
   const a = getLedgerPathBuffer221(0);
   console.log(a);
   console.log("Deployment of AX account in progress...");
-  const deployAccountDefinition = await deployLedgerAccount(myProvider, account0, pubK,pubK);
+  const deployAccountDefinition = await deployLedgerAccount(myProvider, account0, pubK, pubK);
   const ledger0addr = deployAccountDefinition.address;
   console.log({ deployAccountDefinition });
   const classH = myProvider.getClassAt(deployAccountDefinition.address);
   // const ledger0addr = "0x59c7bc02433c4ee91231d864e54d0256728c3dd2f9a3d4296c2b6a13ee6df66";
 
-  const ledgerAccount = new Account(myProvider, ledger0addr, myLedgerSigner, undefined, ETransactionVersion.V3);
+  const ledgerAccount = new Account({
+    provider: myProvider,
+    address: ledger0addr,
+    signer: myLedgerSigner
+  });
 
   // sign Message
   console.log("Sign a message in the Nano...")
@@ -193,8 +211,16 @@ async function main() {
 
   // *** transfer ***
   const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo241/erc20basicOZ081.sierra.json").toString("ascii"));
-  const EthContract = new Contract(compiledERC20Contract.abi, ethAddress, myProvider);
-  const strkContract = new Contract(compiledERC20Contract.abi, strkAddress, myProvider);
+  const EthContract = new Contract({
+    abi: compiledERC20Contract.abi,
+    address: ethAddress,
+    providerOrAccount: myProvider
+  });
+  const strkContract = new Contract({
+    abi: compiledERC20Contract.abi,
+    address: strkAddress,
+    providerOrAccount: myProvider
+  });
   await displayBalances(ledgerAccount.address, myProvider);
   console.log(LogC.underscore + LogC.fg.yellow + "Sign in your Ledger for transfer of ETH" + LogC.reset);
 
@@ -204,20 +230,20 @@ async function main() {
   const myCall2 = EthContract.populate("transfer", [account0.address, 2n * 10n ** 12n]);
   const myCall3 = EthContract.populate("transfer", [account0.address, 3n * 10n ** 12n]);
   // *********** TX V3 ***********
-    console.log("\n***** Transaction V3 (STRK fees):\nSign in the Nano...");
+  console.log("\n***** Transaction V3 (STRK fees):\nSign in the Nano...");
   console.log("Processing 1 call...");
-  const resV3 = await ledgerAccount.execute(myCall1, { version: 3 });
+  const resV3 = await ledgerAccount.execute(myCall1, { tip: 0 });
   await myProvider.waitForTransaction(resV3.transaction_hash);
   console.log("If necessary unlock the Nano.\nPress a key to continue.");
   await keypress();
   console.log("Processing 3 calls...");
-  const resV3b = await ledgerAccount.execute([myCall3, myCall2, myCall1], { version: 3 });
+  const resV3b = await ledgerAccount.execute([myCall3, myCall2, myCall1], { tip: 0 });
   await myProvider.waitForTransaction(resV3b.transaction_hash);
   console.log("If necessary unlock the Nano.\nPress a key to continue.");
   await keypress();
-   console.log("Call with empty calldata...");
+  console.log("Call with empty calldata...");
   const myCall4 = rejectContract.populate("process_nonce", {});
-  const resV1c = await ledgerAccount.execute(myCall4);
+  const resV1c = await ledgerAccount.execute(myCall4, { tip: 0 });
   await myProvider.waitForTransaction(resV1c.transaction_hash);
   await displayBalances(ledgerAccount.address, myProvider);
 
@@ -243,14 +269,18 @@ async function main() {
   console.log("account funded.");
 
   // deploy account v3
-  const accountOZ17V3 = new Account(myProvider, accountAddress3, myLedgerSigner3);
+  const accountOZ17V3 = new Account({
+    provider: myProvider,
+    address: accountAddress3,
+    signer: myLedgerSigner3
+  });
   const deployAccountPayload3 = {
     classHash: contractOZClassHash,
     constructorCalldata: constructorCallData3,
     contractAddress: accountAddress3,
     addressSalt: pubK2
   };
-  const { transaction_hash: th3, contract_address: accountOZFinalAddress3 } = await accountOZ17V3.deployAccount(deployAccountPayload3, { version: 3 });
+  const { transaction_hash: th3, contract_address: accountOZFinalAddress3 } = await accountOZ17V3.deployAccount(deployAccountPayload3, { tip: 0 });
   console.log("Final address =", accountOZFinalAddress3);
   console.log("Account deployed v3.");
   await myProvider.waitForTransaction(th3);

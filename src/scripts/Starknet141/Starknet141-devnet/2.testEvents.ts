@@ -1,8 +1,8 @@
 // Test events
 // launch with npx ts-node src/scripts/Starknet141/Starknet141-devnet/2.testEvents.ts
-// Coded with Starknet.js v8.6.0 & starknet-devnet.js v0.6.1
+// Coded with Starknet.js v9.2.1 & starknet-devnet.js v0.7.1
 
-import { constants, Contract, Account, json, RpcProvider, num, hash, CairoBytes31, type CairoAssembly, type CompiledSierra, events, CallData } from "starknet";
+import { constants, Contract, Account, json, RpcProvider, num, hash, CairoBytes31, type CairoAssembly, type CompiledSierra, events, CallData, type EVENTS_CHUNK, type TXN_HASH, type BLOCK_HASH, type BLOCK_NUMBER, type FELT, type RPC } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -12,7 +12,7 @@ import axios from "axios";
 import { blastKey } from "../../../A-MainPriv/mainPriv";
 import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
-import type { EMITTED_EVENT } from "@starknet-io/types-js";
+import type { EMITTED_EVENT, EVENT_CONTENT } from "@starknet-io/types-js";
 dotenv.config();
 
 
@@ -104,6 +104,36 @@ async function main() {
     let continuationToken: string | undefined = '0';
     let chunkNum: number = 1;
     const collectedEvents: EMITTED_EVENT[] = [];
+
+    // type EVENT_CONTENT = {
+    //     keys: string[];
+    //     data: FELT[];
+    // }
+
+    // type EMITTED_EVENT = {
+    //     from_address: string;
+    // } & EVENT_CONTENT & {
+    //     transaction_hash: TXN_HASH;
+    //     transaction_index: number;
+    //     event_index: number;
+    //     block_hash?: BLOCK_HASH;
+    //     block_number?: BLOCK_NUMBER;
+    // }
+
+    // type EVENTS_CHUNK = {
+    //     events: {
+    //         transaction_hash: string;
+    //         from_address: string;
+    //         keys: string[];
+    //         data: string[];
+    //         block_number?: number | undefined;
+    //         block_hash?: string | undefined;
+    //         transaction_index?: number | undefined;
+    //         event_index?: number | undefined;
+    //     }[];
+    //     continuation_token?: string | undefined;
+    // }
+
     while (continuationToken) {
         const eventsRes = await myProvider.getEvents({
             from_block: {
@@ -116,7 +146,7 @@ async function main() {
             keys: keyFilter,
             chunk_size: 5,
             continuation_token: continuationToken === '0' ? undefined : continuationToken,
-        });
+        }) as RPC.RPCSPEC010.EVENTS_CHUNK;
         collectedEvents.push(...eventsRes.events);
         const nbEvents = eventsRes.events.length;
         continuationToken = eventsRes.continuation_token;
@@ -137,7 +167,7 @@ async function main() {
         }
         chunkNum++;
     }
-    const myTestCallData = new CallData((compiledSierra as CompiledSierra).abi); 
+    const myTestCallData = new CallData((compiledSierra as CompiledSierra).abi);
     const abiEvents = events.getAbiEvents(myTestCallData.abi);
     const abiStructs = CallData.getAbiStruct(myTestCallData.abi);
     const abiEnums = CallData.getAbiEnum(myTestCallData.abi);

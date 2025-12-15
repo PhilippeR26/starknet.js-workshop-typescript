@@ -46,7 +46,7 @@ export function getBraavosSignature(
             feeDataAvailabilityMode: stark.intDAM(v3det.feeDataAvailabilityMode),
             tip: v3det.tip,
             paymasterData: v3det.paymasterData,
-            resourceBounds: det.resourceBounds,
+            resourceBounds: v3det.resourceBounds,
         } as CalcV3DeployAccountTxHashArgs
     );
 

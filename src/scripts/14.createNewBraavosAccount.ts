@@ -3,7 +3,7 @@
 // Coded with Starknet.js v8.5.0 & Devnet 0.5.0
 
 import { RpcProvider, Account, ec, json, stark, hash, CallData, type BigNumberish, shortString, config, CairoBytes31 } from "starknet";
-import { deployBraavosAccount, calculateAddressBraavos } from "./braavos/3d.deployBraavos110v3";
+import { deployBraavosAccount, calculateAddressBraavos } from "./braavos/3g.deployBraavos120v3rpc08";
 import { Devnet } from "starknet-devnet";
 import { DEVNET_PORT, DEVNET_VERSION } from "../constants";
 import fs from "fs";
@@ -52,8 +52,8 @@ async function main() {
     const contractBraavosClassHash = respDecl.class_hash;
     if (respDecl.transaction_hash) { await myProvider.waitForTransaction(respDecl.transaction_hash) };
     console.log("Braavos base contract class hash :", respDecl.class_hash);
-    const accountBraavosSierra = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosAccount110.contract_class.json").toString("ascii"));
-    const accountBraavosCasm = json.parse(fs.readFileSync("./compiledContracts/cairo284/braavos_account_BraavosAccount110.compiled_contract_class.json").toString("ascii"));
+    const accountBraavosSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2100/Braavos_120.contract_class.json").toString("ascii"));
+    const accountBraavosCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2100/Braavos_120.compiled_contract_class.json").toString("ascii"));
     const respDecl2 = await account0.declareIfNot({ contract: accountBraavosSierra, casm: accountBraavosCasm });
     console.log("Braavos contract class hash :", respDecl2.class_hash);
     if (respDecl2.transaction_hash) { await myProvider.waitForTransaction(respDecl2.transaction_hash) };
@@ -78,13 +78,11 @@ async function main() {
     await devnet.provider.mint(accountBraavosAddress, 10n * 10n ** 18n, "WEI"); // 10 ETH
     await devnet.provider.mint(accountBraavosAddress, 100n * 10n ** 18n, "FRI"); // 100 STRK
 
-    const respDeploy = deployBraavosAccount(
+    const respDeploy = await deployBraavosAccount(
         privateKeyBraavosBase, 
-        myProvider, 
-        undefined,
-        ETransactionVersion.V3 // 👈👈 V1 or V3 deploy transaction
+        myProvider
     );
-    const txR = await myProvider.waitForTransaction((await respDeploy).transaction_hash);
+    const txR = await myProvider.waitForTransaction( respDeploy.transaction_hash);
     console.log("Transaction receipt =", txR);
     console.log("Account created.\nFinal address =", accountBraavosAddress);
     console.log('✅ Braavos wallet deployed.');

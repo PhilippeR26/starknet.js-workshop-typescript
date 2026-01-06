@@ -1,3 +1,14 @@
+// Extract & process later a raw transaction.
+// Launch with npx src/scripts/Starknet140/Starknet140-devnet/13.extractRawTxs.ts
+// Coded with Starknet.js v8.5.4 & starknet-devnet.js v0.5.0
+//
+// ***************************************************
+// *** TO USE ONLY FOR DEVELOPMENT PURPOSE.   ********
+// *** NEVER USE THIS CODE TO PROCESS ITEMS   ********
+// *** THAT HAVE A REAL VALUE.                ********
+// *** IT'S NOT SAFE TO PROCESS THIS WAY.     ********
+// ***************************************************
+
 import { ETransactionType, type INVOKE_TXN_V3 } from "@starknet-io/types-js";
 import { CallData, extractContractHashes, isSierra, Provider, type AccountInterface, type SignerInterface, type CairoVersion, type ETransactionVersion, type PaymasterInterface, type Deployer, type TipType, type AccountOptions, Signer, PaymasterRpc, defaultPaymaster, defaultDeployer, ETransactionVersion3, logger, LibraryError, OutsideExecutionVersion, type BlockIdentifier, type Nonce, type BigNumberish, type AllowArray, type Call, type UniversalDetails, type EstimateFeeResponseOverhead, type DeclareContractPayload, type DeployAccountContractPayload, type UniversalDeployerContractPayload, type Invocations, type EstimateFeeBulk, type SimulateTransactionDetails, type SimulateTransactionOverheadResponse, type InvokeFunctionResponse, type DeclareContractResponse, type MultiDeployContractResponse, type waitForTransactionOptions, type DeployContractUDCResponse, type DeployTransactionReceiptResponse, type DeclareAndDeployContractPayload, type DeclareDeployUDCResponse, type DeployContractResponse, TypedData, typedData as sourceTypeData, type Signature, type OutsideExecutionOptions, type OutsideTransaction, type OutsideExecution, type InvocationsSignerDetails, type Invocation, type DeclareContractTransaction, type DeployAccountContractTransaction, type AccountInvocationsFactoryDetails, type InvocationsDetailsWithNonce, type AccountInvocations, type PaymasterDetails, type PreparedTransaction, type ExecutionParameters, type UserTransaction, type PaymasterFeeEstimate, type ExecutableUserTransaction, config, num, hash, stark, constants, src5, outsideExecution, transaction, paymaster as sourcePaymaster, provider, type ProviderOptions, type PaymasterOptions, type DeployerInterface, type RpcProvider, json, type RPC } from "starknet";
 import {customRpcProvider, type CustomChannel9} from "./13.extractRawTxs"

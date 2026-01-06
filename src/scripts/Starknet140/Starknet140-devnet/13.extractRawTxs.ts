@@ -1,6 +1,7 @@
 // Extract & process later a raw transaction.
 // Launch with npx src/scripts/Starknet140/Starknet140-devnet/13.extractRawTxs.ts
-// Coded with Starknet.js v8.5.4 & starknet-devnet.js v0.5.0
+// Coded with Starknet.js v8.5.4 & starknet-devnet.js v0.5.0.
+// Includes at the end a test script.
 //
 // ***************************************************
 // *** TO USE ONLY FOR DEVELOPMENT PURPOSE.   ********
@@ -9,7 +10,7 @@
 // *** IT'S NOT SAFE TO PROCESS THIS WAY.     ********
 // ***************************************************
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, hdParsingStrategy, CairoOptionVariant, BigNumberish, CairoResult, CairoResultVariant, RPC08, typedData, Signer, type CompiledSierra, type InvokeFunctionResponse, ETransactionVersion3, type Call, type InvocationsSignerDetails, type Signature, type V3InvocationsSignerDetails, transaction, stark, RPC09, type Invocation, type InvocationsDetailsWithNonce, type AllowArray, type UniversalDetails, type InvokedTransaction, type ProviderInterface, type RpcProviderOptions, Provider, defaultDeployer, defaultPaymaster, logger, PaymasterRpc, type AccountOptions, type CairoVersion, isVersion, config, RPCResponseParser } from "starknet";
+import { constants, Contract, Account, json, RpcProvider, RPC, num, ec, CallData, hash, BigNumberish, Signer, type CompiledSierra, type InvokeFunctionResponse, ETransactionVersion3, type Call, type InvocationsSignerDetails, type Signature, type V3InvocationsSignerDetails, transaction, stark, RPC09, type Invocation, type InvocationsDetailsWithNonce, type AllowArray, type UniversalDetails, type InvokedTransaction, defaultDeployer, defaultPaymaster, logger, PaymasterRpc, type CairoVersion, config, } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -22,7 +23,6 @@ import { DevnetProvider } from "starknet-devnet";
 import { ETransactionType } from "@starknet-io/types-js";
 dotenv.config();
 
-import { type INVOKE_TXN_V3 } from "@starknet-io/types-js";
 import { extractContractHashes, isSierra, type AccountInterface, type SignerInterface, type ETransactionVersion, type PaymasterInterface, type Deployer, type TipType, LibraryError, OutsideExecutionVersion, type BlockIdentifier, type Nonce, type EstimateFeeResponseOverhead, type DeclareContractPayload, type DeployAccountContractPayload, type UniversalDeployerContractPayload, type Invocations, type EstimateFeeBulk, type SimulateTransactionDetails, type SimulateTransactionOverheadResponse, type DeclareContractResponse, type MultiDeployContractResponse, type waitForTransactionOptions, type DeployContractUDCResponse, type DeployTransactionReceiptResponse, type DeclareAndDeployContractPayload, type DeclareDeployUDCResponse, type DeployContractResponse, TypedData, typedData as sourceTypeData, type OutsideExecutionOptions, type OutsideTransaction, type OutsideExecution, type DeclareContractTransaction, type DeployAccountContractTransaction, type AccountInvocationsFactoryDetails, type AccountInvocations, type PaymasterDetails, type PreparedTransaction, type ExecutionParameters, type UserTransaction, type PaymasterFeeEstimate, type ExecutableUserTransaction, src5, outsideExecution, paymaster as sourcePaymaster, provider, type ProviderOptions, type PaymasterOptions, type DeployerInterface } from "starknet";
 
 export function isString(value: unknown): value is string {
@@ -82,7 +82,7 @@ export class customRpcProvider extends RpcProvider implements RawTx {
 
   }
 
-    public getInvokeRawTxRpc(
+  public getInvokeRawTxRpc(
     functionInvocation: Invocation,
     details: InvocationsDetailsWithNonce
   ): RPC.RPCSPEC09.INVOKE_TXN_V3 {
@@ -92,7 +92,7 @@ export class customRpcProvider extends RpcProvider implements RawTx {
   public async sendInvokeRawTxRpc(transaction: RPC.RPCSPEC09.INVOKE_TXN_V3) {
 
     return this.channel.sendInvokeRawTxChannel(transaction) as Promise<InvokedTransaction>;
-  
+
   }
 }
 
@@ -189,7 +189,7 @@ export class CustomAccount extends customRpcProvider implements AccountInterface
   public async sendInvokeRawTx(
     transaction: string,
   ): Promise<InvokeFunctionResponse> {
-   const invocation = json.parse(transaction);
+    const invocation = json.parse(transaction);
     return this.sendInvokeRawTxRpc(invocation);
   }
 
@@ -1202,7 +1202,7 @@ async function main() {
   });
   const jsonTransaction = await account0.extractInvokeRawTx(myCall, { tip: 200n });
   console.log("json =", jsonTransaction);
-  const result=await account0.sendInvokeRawTx(jsonTransaction);
+  const result = await account0.sendInvokeRawTx(jsonTransaction);
   const txR = await myProvider.waitForTransaction(result.transaction_hash);
   console.log("txR =", txR);
 

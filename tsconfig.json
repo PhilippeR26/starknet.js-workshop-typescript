@@ -17,7 +17,7 @@
     "isolatedModules": true,
     "allowJs": true,
     "declaration": true,
-    "types": ["node"],
+    "types": ["node","jest"],
     "typeRoots": ["node_modules/@types"]
   },
   "include": [

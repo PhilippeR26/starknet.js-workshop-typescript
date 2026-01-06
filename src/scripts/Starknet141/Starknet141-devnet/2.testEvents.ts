@@ -103,7 +103,7 @@ async function main() {
 
     let continuationToken: string | undefined = '0';
     let chunkNum: number = 1;
-    const collectedEvents: EMITTED_EVENT[] = [];
+    const collectedEvents: RPC.RPCSPEC010.EMITTED_EVENT[] = [];
 
     // type EVENT_CONTENT = {
     //     keys: string[];
@@ -135,7 +135,7 @@ async function main() {
     // }
 
     while (continuationToken) {
-        const eventsRes = await myProvider.getEvents({
+        const filter: RPC.RPCSPEC010.EventFilter = {
             from_block: {
                 block_number: Math.max(0, block.block_number - 30),
             },
@@ -146,7 +146,10 @@ async function main() {
             keys: keyFilter,
             chunk_size: 5,
             continuation_token: continuationToken === '0' ? undefined : continuationToken,
-        }) as RPC.RPCSPEC010.EVENTS_CHUNK;
+        }
+        const eventsRes  = (await myProvider.getEvents(filter)) as RPC.RPCSPEC010.EVENTS_CHUNK;
+        // const eventsRes0 = await myProvider.getEvents(filter);
+        // const eventsRes1 = await myProvider.getEvents<typeof constants.SupportedRpcVersion.v0_10_0>(filter);
         collectedEvents.push(...eventsRes.events);
         const nbEvents = eventsRes.events.length;
         continuationToken = eventsRes.continuation_token;

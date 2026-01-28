@@ -1,6 +1,6 @@
-// Test a Merkle tree hashed with Poseidon.
-// Coded with Starknet.js v9.2.1 and Starknet-devnet (compatible rpc 0.10.0)
-// launch with npx ts-node src/scripts/merkleTree/airdropSJS6Devnet/3.TestMerkleVerifPoseidonDevnet.ts
+// Test a Merkle tree hashed with Pedersen.
+// Coded with Starknet.js v9.3.0 and Starknet-devnet (compatible rpc 0.10.0)
+// launch with npx ts-node src/scripts/merkleTree/airdropSJS6Devnet/3a.TestMerkleVerifPedersenDevnet.ts
 
 import { Account, json, Contract, RpcProvider, RPC, num, shortString, CairoBytes31 } from "starknet";
 import * as dotenv from "dotenv";
@@ -10,7 +10,7 @@ import { account3BraavosMainnetAddress, account3BraavosMainnetPrivateKey, alchem
 dotenv.config({ quiet: true });
 
 //    👇👇👇
-// 🚨🚨🚨 Launch first the script src/scripts/merkleTree/2.deployMerkleVerifPoseidonDevnet.ts
+// 🚨🚨🚨 Launch first the script src/scripts/merkleTree/2a.deployMerkleVerifPedersenDevnet.ts
 // 🚨🚨🚨 launch starknet-devnet 'cargo run --release -- --seed 0' before using this script
 //    👆👆👆
 async function main() {
@@ -46,7 +46,7 @@ async function main() {
     // *** initialize existing Sepolia Testnet account
     // const accountAddress0 = account0OZSepoliaAddress;
     // const privateKey0 = account0OZSepoliaPrivateKey;
-    // *** initialize existing Argent X mainnet  account
+    // *** initialize existing Argent X Mainnet  account
     const accountAddress0 = account3BraavosMainnetAddress
     const privateKey0 = account3BraavosMainnetPrivateKey;
     // *** initialize existing Sepolia Integration account
@@ -58,13 +58,13 @@ async function main() {
     console.log('existing account connected.\n');
 
     // ************************************
-
+    
     // Connect the deployed contract in devnet
     //    👇👇👇
-    // modify with the MerkleVerify address resulting of script 2
-    const MerkleVerifyAddress = "0x76f0a9701d388e03890ff6268cab985c54df73583ca6e30352c7a4489de9495";
+    // modify with the MerkleVerify address resulting of script 2a
+    const MerkleVerifyAddress = "0x71b1816613705a408f8e727d6cb2b448522aa589b24123f7ec3e72c2c697bec";
     //    👆👆👆
-    const compiledTest = json.parse(fs.readFileSync("compiledContracts/cairo2150/merkle_verify_poseidon_Merkle.contract_class.json").toString("ascii"));
+    const compiledTest = json.parse(fs.readFileSync("compiledContracts/cairo2150/merkle_verify_pedersen_Merkle.contract_class.json").toString("ascii"));
     const myContract = new Contract({ abi: compiledTest.abi, address: MerkleVerifyAddress, providerOrAccount: account0 });
     console.log(myContract.functions);
     console.log('Contract connected at =', myContract.address, "\n");
@@ -76,19 +76,19 @@ async function main() {
     const resultRoot = await myContract.get_root();
     console.log("root =", num.toHex(resultRoot));
 
-    //    👇👇👇 result of script 1
+    //    👇👇👇 result of script 1a
     const proof = [
-        '0x3bd82955789dec88b769cb6aa58639609ffdcf7ecde330b4128e8c06ba33e96',
-        '0x625b514416c8d9ff4e042d99e2c36451ef4150b3dac7e90c7937205328e49fc',
-        '0x1cd267ee25c7e7f9a97aa795185c31d03665f935f7422a36234776fc48040c1',
-        '0x339252626ecdc1ad7a99f27077c0f544fadfb1ad818fd4ef9ffc9d7790b1c2f',
-        '0x533350ad52c8a0c25cce963a56755d8da5b7f27b01a7e2c0f48a4144ac5c4a9',
-        '0x354e60b7a5c80c6f61c807bd641d325dea1ea67578ba61da30c5e42e0987dc9',
-        '0x589e68e3645c2455fb11abf65a3e8aa80c8ca66cc6bd52ab5adb34c3c66c53d',
-        '0x4424f629835312830bcef6e13e870dee4fceb2afa4feeecdf418be10aadfa74',
-        '0x7a305492dec621662e5e63d6f722035632225db604bc8a1b6a66dd6ab1a7e3f',
-        '0xc9172a51337520b5762b6c0bc154b0575694b79f4b6605cf26d46562defd9b',
-        '0x75105bb3704484d154b4e073654845e8424d71538c0a8827462d6aa6b21d2a5'
+        '0x61cd7d1de14516d2dbc88ae5dfc652f058db5073a6af2e84b037d8bd81b5fd3',
+        '0x54d040a0fb15af62db14739f7b0dc71ae531e0f59dc9550990ba50affb51091',
+        '0x4bcecd0cb4eba4ecad6748d60200d190a61dba4f6e7f09b5e15fdb72106c0dc',
+        '0x433303296d255b42113ba28da5bbcc4006b1c27cb4e9402194b013d3b20d7cd',
+        '0x40e456da4b94bb3eb940d9442820d204a1f721113c506a9b2efa732065b51de',
+        '0x3cf57d0762b41e79ae7b36ddc43156776b2b2e2d3293a1b22e7a7407b4a396e',
+        '0x73438d07c54dbc566bed99e36483822350e1f3b39c4b5dc8a9086b7424a3e37',
+        '0x7ea27260aed1ce9e6674bf03c4659315ac3e751424c17bc0293435284702bae',
+        '0x689372ee01f46f4725933d805ac71bb0e51ab1cb92d9f0e269d872f2cfaf54b',
+        '0xf5befad1de7242f3b198c6b24c4794e992c62fed4d8d3633c1c6b118b6fad9'
+
     ];
 
     //    👇👇👇 result of script 1
@@ -100,7 +100,7 @@ async function main() {
     const hashed_leaf = await myContract.hash_leaf_array(leaf);
     console.log("hashed leaf =", num.toHex(hashed_leaf))
     //    👇👇👇 result of script 1
-    const leafH = "0x3bc66a9e50bd55b54b8e4adaff861ce8806122c8de4b26808fbabe1204c72a5"
+    const leafH = "0x61b70e86987702b2496b6faf482f87760a3239ae57a66b6c68a39965b2950b5"
     console.log("should be   =", leafH);
 
     //    👇👇👇 result of script 1

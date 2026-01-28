@@ -2,11 +2,11 @@
 // Coded with Starknet.js v6.17.0 and Starknet-devnet-rs v0.2.0
 // Launch with npx jest src/scripts/merkleTree/airdropSJS6Devnet/6.jestAirdropPoseidonDevnet.test.ts
 
-import { Account, json, Contract, RpcProvider, RPC, num, uint256, Uint256, Calldata, CallData, Call, encode, addAddressPadding } from "starknet";
+import { Account, json, Contract, RpcProvider, RPC, num, uint256, Uint256, Calldata, CallData, Call, encode, addAddressPadding, CairoBytes31 } from "starknet";
 import * as Merkle from "starknet-merkle-tree";
 import * as dotenv from "dotenv";
 import fs from "fs";
-import { resetDevnetNow } from "../../utils/resetDevnetFunc";
+import { DevnetProvider } from "starknet-devnet";
 dotenv.config();
 
 //    👇👇👇
@@ -23,35 +23,44 @@ describe('Airdrop contract tests', () => {
     console.log('OZ_ACCOUNT_ADDRESS=', process.env.OZ_ACCOUNT0_DEVNET_ADDRESS);
     const accountAddress0 = "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691";
     const privateKey0 = "0x71d7bb07b9a64f6f78ac4c816aff4da9";
-    const account0 = new Account(provider, accountAddress0, privateKey0);
+    const account0 = new Account({ provider, address: accountAddress0, signer: privateKey0 });
     const accountAddress1 = "0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1";
     const privateKey1 = "0xe1406455b7d66b1690803be066cbe5e";
-    const account1 = new Account(provider, accountAddress1, privateKey1);
+    const account1 = new Account({ provider, address: accountAddress1, signer: privateKey1 });
     const accountAddress2 = "0x49dfb8ce986e21d354ac93ea65e6a11f639c1934ea253e5ff14ca62eca0f38e";
     const privateKey2 = "0xa20a02f0ac53692d144b20cb371a60d7";
-    const account2 = new Account(provider, accountAddress2, privateKey2);
+    const account2 = new Account({ provider, address: accountAddress2, signer: privateKey2 });
     const accountAddress3 = "0x4f348398f859a55a0c80b1446c5fdc37edb3a8478a32f10764659fc241027d3";
     const privateKey3 = "0xa641611c17d4d92bd0790074e34beeb7";
-    const account3 = new Account(provider, accountAddress3, privateKey3);
+    const account3 = new Account({ provider, address: accountAddress3, signer: privateKey3 });
     const accountAddress8 = "0x4d8bb41636b42d3c69039f3537333581cc19356a0c93904fa3e569498c23ad0";
     const privateKey8 = "0xb467066159b295a7667b633d6bdaabac";
-    const account8 = new Account(provider, accountAddress8, privateKey8);
+    const account8 = new Account({ provider, address: accountAddress8, signer: privateKey8 });
     const accountAddress9 = "0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1";
     const privateKey9 = "0x57b2f8431c772e647712ae93cc616638";
-    const account9 = new Account(provider, accountAddress9, privateKey9);
+    const account9 = new Account({ provider, address: accountAddress9, signer: privateKey9 });
     //const account0 = new Account(provider, accountAddress0, privateKey0, undefined, RPC.ETransactionVersion.V2);
     let erc20Contract: Contract;
     let merkleVerifyContract: Contract;
     let airdropContract: Contract;
     let tree: Merkle.StarknetMerkleTree;
+    let l2DevnetProvider: DevnetProvider;
     const initialConsolation = 3n;
     beforeAll(async () => {
-        resetDevnetNow();
-        console.log("Provider connected to Starknet-devnet-rs");
+        l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
+        if (!(await l2DevnetProvider.isAlive())) {
+            console.log("No l2 devnet.");
+            process.exit();
+        }
+        console.log(
+            "chain Id =", new CairoBytes31(await provider.getChainId()).decodeUtf8(),
+            ", rpc", await provider.getSpecVersion(),
+            ", SN version =", (await provider.getBlock()).starknet_version);
+        console.log("Provider connected to Starknet-devnet");
         console.log("Account 0 connected.\n");
 
         tree = Merkle.StarknetMerkleTree.load(
-            JSON.parse(fs.readFileSync('./src/scripts/merkleTree/airdropSJS6Devnet/treeListAddressDevnet.json', 'ascii'))
+            JSON.parse(fs.readFileSync('./src/scripts/merkleTree/airdropSJS6Devnet/treeListAddressPoseidonDevnet.json', 'ascii'))
         );
 
         // ********* deploy ERC20
@@ -68,20 +77,21 @@ describe('Airdrop contract tests', () => {
             contract: compiledSierraERC20,
             casm: compiledCasmERC20,
             constructorCalldata: myConstructorERC20
-        });
+        }, { tip: 0 });
         const erc20Address = deployResponseERC20.deploy.contract_address;
         const erc20ClassHash = deployResponseERC20.declare.class_hash;
         console.log("ERC20 contract :");
         console.log("class_hash =", erc20ClassHash);
         console.log("address =", erc20Address);
-        erc20Contract = new Contract(compiledSierraERC20.abi, erc20Address, account0);
+        erc20Contract = new Contract({ abi: compiledSierraERC20.abi, address: erc20Address, providerOrAccount: account0 });
 
 
         // ******** deploy MerkleVerify
-        const compiledSierraMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo240/merkle_verify_poseidon.sierra.json").toString("ascii"));
-        const compiledCasmMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo240/merkle_verify_poseidon.casm.json").toString("ascii"));
+        const compiledSierraMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo2150/merkle_verify_poseidon_Merkle.contract_class.json").toString("ascii"));
+        const compiledCasmMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo2150/merkle_verify_poseidon_Merkle.compiled_contract_class.json").toString("ascii"));
         const myCallMerkleVerify = new CallData(compiledSierraMerkleVerify.abi);
         const root = tree.root;
+        console.log("root =", num.toHex64(root));
         const myConstructorMerkleVerify: Calldata = myCallMerkleVerify.compile("constructor", {
             merkle_root: root,
         });
@@ -89,18 +99,18 @@ describe('Airdrop contract tests', () => {
             contract: compiledSierraMerkleVerify,
             casm: compiledCasmMerkleVerify,
             constructorCalldata: myConstructorMerkleVerify
-        });
+        }, { tip: 0 });
         const merkleAddress = deployResponse0.deploy.contract_address;
         const merkleClassHash = deployResponse0.declare.class_hash;
         console.log("MerkleVerify contract :");
         console.log("class_hash =", merkleClassHash);
         console.log("address =", merkleAddress);
-        merkleVerifyContract = new Contract(compiledSierraMerkleVerify.abi, merkleAddress, account0);
+        merkleVerifyContract = new Contract({ abi: compiledSierraMerkleVerify.abi, address: merkleAddress, providerOrAccount: account0 });
 
 
         // ********* deploy airdrop contract
-        const compiledSierraAirdrop = json.parse(fs.readFileSync("./compiledContracts/cairo240/airdropSJS6.sierra.json").toString("ascii"));
-        const compiledCasmAirdrop = json.parse(fs.readFileSync("./compiledContracts/cairo240/airdropSJS6.casm.json").toString("ascii"));
+        const compiledSierraAirdrop = json.parse(fs.readFileSync("./compiledContracts/cairo2150/airdrop_airdrop.contract_class.json").toString("ascii"));
+        const compiledCasmAirdrop = json.parse(fs.readFileSync("./compiledContracts/cairo2150/airdrop_airdrop.compiled_contract_class.json").toString("ascii"));
         const myCallAirdrop = new CallData(compiledSierraAirdrop.abi);
         const myConstructorAirdrop: Calldata = myCallAirdrop.compile("constructor", {
             erc20_address: erc20Address,
@@ -113,20 +123,20 @@ describe('Airdrop contract tests', () => {
             contract: compiledSierraAirdrop,
             casm: compiledCasmAirdrop,
             constructorCalldata: myConstructorAirdrop
-        });
+        }, { tip: 0 });
         const airdropAddress = deployResponse.deploy.contract_address;
         const airdropClassHash = deployResponse.declare.class_hash;
         console.log("Airdrop contract :");
         console.log("class_hash =", airdropClassHash);
         console.log("address =", airdropAddress);
-        airdropContract = new Contract(compiledSierraAirdrop.abi, airdropAddress, account0);
+        airdropContract = new Contract({ abi: compiledSierraAirdrop.abi, address: airdropAddress, providerOrAccount: account0 });
 
         // ********* authorize the Airdrop contract to transfer some tokens
         const authorize: Call = erc20Contract.populate("approve", {
             spender: airdropAddress,
             amount: 40_000,
         });
-        const tx = await account0.execute(authorize);
+        const tx = await account0.execute(authorize, { tip: 0 });
         const txR = await provider.waitForTransaction(tx.transaction_hash);
         console.log("authorize success =", txR.isSuccess());
 
@@ -170,7 +180,7 @@ describe('Airdrop contract tests', () => {
             amount,
             proof
         });
-        const txResp = await account1.execute(myCall);
+        const txResp = await account1.execute(myCall, { tip: 0 });
 
         const txR = await provider.waitForTransaction(txResp.transaction_hash);
         expect(txR.isSuccess()).toBe(true);
@@ -191,7 +201,7 @@ describe('Airdrop contract tests', () => {
         expect(remainCons).toBe(initialConsolation);
 
         let mess: string = "";
-        try { const res = await account1.execute(myCall) } catch (err) {
+        try { const res = await account1.execute(myCall, { tip: 0 }) } catch (err) {
             mess = (err as Error).message;
         }
         expect(mess.includes("Address already airdropped")).toBe(true); // try to claim again
@@ -201,7 +211,7 @@ describe('Airdrop contract tests', () => {
             amount,
             proof: [0] //  voluntarily wrong proof
         });
-        try { const res = await account1.execute(myCall2) } catch (err) {
+        try { const res = await account1.execute(myCall2, { tip: 0 }) } catch (err) {
             mess2 = (err as Error).message;
         }
         expect(mess2.includes("Address already airdropped")).toBe(true); // malicious case : try to be consoled with a voluntarily wrong proof after airdropped performed with the proper proof.
@@ -214,7 +224,7 @@ describe('Airdrop contract tests', () => {
             amount: 1,
             proof: [0] // voluntarily wrong proof, to obtain a consolation
         });
-        const res3 = await account2.execute(myCall3); // get consolation 
+        const res3 = await account2.execute(myCall3, { tip: 0 }); // get consolation 
         await provider.waitForTransaction(res3.transaction_hash);
         const isCons3 = await airdropContract.call("is_address_consoled", [account2.address]);
         expect(isCons3).toBe(true);
@@ -229,7 +239,7 @@ describe('Airdrop contract tests', () => {
             proof: proof4 // with the proper proof
         });
         let mess4: string = "";
-        try { const res = await account2.execute(myCall4); } catch (err) {
+        try { const res = await account2.execute(myCall4, { tip: 0 }); } catch (err) {
             mess4 = (err as Error).message;
         }
         expect(mess4.includes("Malicious. Already consoled.")).toBe(true); // malicious case : try to claim with proper proof after consolation made by using voluntarily a wrong proof.
@@ -246,7 +256,7 @@ describe('Airdrop contract tests', () => {
             amount,
             proof: [0]
         });
-        const txResp = await account9.execute(myCall);
+        const txResp = await account9.execute(myCall, { tip: 0 });
 
         const txR = await provider.waitForTransaction(txResp.transaction_hash);
         expect(txR.isSuccess()).toBe(true);
@@ -267,19 +277,19 @@ describe('Airdrop contract tests', () => {
         expect(remainCons).toBe(initialConsolation - 2n);
 
         let mess: string = "";
-        try { const res = await account9.execute(myCall) } catch (err) {
+        try { const res = await account9.execute(myCall, { tip: 0 }) } catch (err) {
             mess = (err as Error).message;
         }
         expect(mess.includes("Address already consoled")).toBe(true); // try to claim again
 
-        
+
         const remainCons2 = await airdropContract.call("remaining_consolation", []);
         expect(remainCons2).toBe(1n);
-        const res = await account8.execute(myCall);
+        const res = await account8.execute(myCall, { tip: 0 });
         const remainCons3 = await airdropContract.call("remaining_consolation", []);
         expect(remainCons3).toBe(0n);
         let mess2: string = "";
-        try { const res = await account8.execute(myCall) } catch (err) {
+        try { const res = await account8.execute(myCall, { tip: 0 }) } catch (err) {
             mess2 = (err as Error).message;
         }
         expect(mess2.includes("Too late, no more consol. prize")).toBe(true); // 0 consolation prize
@@ -303,10 +313,10 @@ describe('Airdrop contract tests', () => {
             contract: compiledSierraAirdrop,
             casm: compiledCasmAirdrop,
             constructorCalldata: myConstructorAirdrop
-        });
+        }, { tip: 0 });
         const airdropAddress2 = deployResponse2.deploy.contract_address;
         const airdropClassHash2 = deployResponse2.declare.class_hash;
-        const airdrop2Contract = new Contract(compiledSierraAirdrop.abi, airdropAddress2, account1);
+        const airdrop2Contract = new Contract({ abi: compiledSierraAirdrop.abi, address: airdropAddress2, providerOrAccount: account1 });
         const blTime = await airdrop2Contract.call("get_current_time", []);
         console.log("current block time=", blTime);
         const claimAddress = encode.sanitizeHex(account1.address).toLowerCase();
@@ -321,7 +331,7 @@ describe('Airdrop contract tests', () => {
         });
         let mess: string = "";
         try {
-            const res = await account1.execute(myCall2);
+            const res = await account1.execute(myCall2, { tip: 0 });
             console.log("a")
         } catch (err) {
             mess = (err as Error).message;

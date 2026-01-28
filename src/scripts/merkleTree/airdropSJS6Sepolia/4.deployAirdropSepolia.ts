@@ -49,6 +49,7 @@ async function main() {
     const ERC20_ADDRESS = "0x37e0251e45a968a26fa503635c031d6020612a10d35c99e3496e10cb930f0a3";
     const MERKLE_VERIF_ADDRESS = "0x14877859e56be2beca0a332e169dc6bfbbfcf6bc3ab7fe33759794114efa2ff";
     //         👆👆👆
+    // for pedersen: addr 0x169adc4bfb30dc3280fc79368410e72c7eaec612c2fd69c327e36ce53d9aedd
     console.log('In progress...');
     const myCallAirdrop = new CallData(compiledSierraAirdrop.abi);
     const myConstructorAirdrop: Calldata = myCallAirdrop.compile("constructor", {

@@ -1,6 +1,6 @@
-// Declare/Deploy a contract to verify a Poseidon Merkle tree
+// Declare/Deploy a contract to verify a Pedersen Merkle tree
 // Coded with Starknet.js v9.3.0 and Starknet-devnet(compatible rpc 0.10.0)
-// launch with npx ts-node src/scripts/merkleTree/airdropSJS6Devnet/2.deployMerkleVerifPoseidonDevnet.ts
+// launch with npx ts-node src/scripts/merkleTree/airdropSJS6Devnet/2a.deployMerkleVerifPedersenDevnet.ts
 
 import { Account, CairoBytes31, Call, Calldata, CallData, Contract, json, RPC, RpcProvider } from 'starknet';
 import fs from "fs";
@@ -42,7 +42,7 @@ async function main() {
     // const privateKey0 = account2TestBraavosSepoliaPrivateKey;
 
     const account0 = new Account({ provider: myProvider, address: accountAddress0, signer: privateKey0 });
-    console.log("Account connected.\n In progress...");
+    console.log("Account 0 connected.\n In progress...");
 
     // deploy ERC20
     const compiledSierraERC20 = json.parse(fs.readFileSync("compiledContracts/cairo220/erc20OZ070.sierra.json").toString("ascii"));
@@ -67,11 +67,11 @@ async function main() {
     console.log("address =", erc20Address);
 
     // deploy MerkleVerify
-    const compiledSierraMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo2150/merkle_verify_poseidon_Merkle.contract_class.json").toString("ascii"));
-    const compiledCasmMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo2150/merkle_verify_poseidon_Merkle.compiled_contract_class.json").toString("ascii"));
+    const compiledSierraMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo2150/merkle_verify_pedersen_Merkle.contract_class.json").toString("ascii"));
+    const compiledCasmMerkleVerify = json.parse(fs.readFileSync("compiledContracts/cairo2150/merkle_verify_pedersen_Merkle.compiled_contract_class.json").toString("ascii"));
     const myCallMerkleVerify = new CallData(compiledSierraMerkleVerify.abi);
-    //    👇👇👇 result of script 1
-    const root = "0x2f9e76ae7d7c98e94b848e7bfa684a6158e5f285654d336c9d6524b9ccf7c36"
+    //    👇👇👇 result of script 1a
+    const root = "0x14623f721f74fcccb0f5377b30b765dcf06da4ff52a7c826a8bf1d5df4ceb87"
     const myConstructorMerkleVerify: Calldata = myCallMerkleVerify.compile("constructor", {
         merkle_root: root,
     });

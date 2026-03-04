@@ -2,16 +2,14 @@
 // Launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/3.Challenge10txsRPC.ts
 // Coded with Starknet.js v8.4.0
 
-import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce, logger, CairoBytes31 } from "starknet";
+import { RpcProvider, Account, json, Contract, type CompiledSierra, type CairoAssembly, BlockTag, type Call,  logger, CairoBytes31 } from "starknet";
 import fs from "fs";
-import axios from "axios";
 import * as dotenv from "dotenv";
-import { strkAddress } from "../../utils/constants";
 import { wait } from "../../utils/utils";
 import { account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, equilibriumPathfinderTestnetUrl, spaceShardJunoTestnetNodeUrl, spaceShardPathfinderTestnetNodeUrl } from "../../../A1priv/A1priv";
 import { DevnetProvider } from "starknet-devnet";
 import { alchemyKey, infuraKey } from "../../../A-MainPriv/mainPriv";
-dotenv.config();
+dotenv.config({ quiet: true });
 
 
 async function main() {
@@ -22,20 +20,22 @@ async function main() {
     // *** local 
     // 🚨🚨🚨 Put here the url of your node.
     //          👇👇👇
-    const url = "http://192.168.1.34:9545/rpc/v0_9"; // local Pathfinder Testnet node (Starlink network)
+    // const url = "http://192.168.1.34:9545/rpc/v0_10"; // local Pathfinder Testnet node (Starlink network)
+    // const url = "http://192.168.1.26:9545/rpc/v0_10"; // local Pathfinder Testnet node (Free network)
     // const url = "http://localhost:9545/rpc/v0_9"; // local Pathfinder Testnet node (Starlink network)
     // const url = "http://192.168.1.34:6070/rpc/v0_9"; // my local Juno Sepolia Testnet node (Starlink network)
     // const url = "http://localhost:6070/rpc/v0_9"; // my local Juno Sepolia Testnet node (Starlink network)
     // const url = equilibriumPathfinderTestnetUrl; // Pathfinder testnet from Equilibrium team
     // const url = spaceShardPathfinderTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
     // const url = spaceShardJunoTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
-    // const url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_9"; // Public Blast Pathfinder testnet
-    // const url = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_9/" + alchemyKey; // Alchemy
+    const url = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey; // Alchemy Testnet
     // const url = "https://starknet-sepolia.infura.io/v3/" + infuraKey; // Infura (rpc 0.8.1)
     // const url="https://rpc.starknet-testnet.lava.build/rpc/v0_9"; // Lava (no guaranty of rpc version usage)
+    // const url = "https://api.zan.top/public/starknet-sepolia/rpc/v0_10"; // Public Zan Sepolia
+
     const myProvider = new RpcProvider({
         nodeUrl: url,
-        specVersion: "0.9.0",
+        specVersion: "0.10.0",
         blockIdentifier: BlockTag.PRE_CONFIRMED,
     });
     // const myProvider = new RpcProvider({ nodeUrl: url, specVersion: "0.9.0" }); // my local Pathfinder Sepolia Testnet node (Starlink network)
@@ -49,7 +49,7 @@ async function main() {
     //     process.exit();
     // }
     console.log(
-        "chain Id =", new CairoBytes31 (await myProvider.getChainId()).decodeUtf8(),
+        "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
         ", rpc", await myProvider.getSpecVersion(),
         ", SN version =", (await myProvider.getBlock()).starknet_version);
     console.log("Provider connected to Starknet");
@@ -121,7 +121,7 @@ async function main() {
     logger.setLogLevel("INFO");
     for (const call of txList) {
         const start0 = new Date().getTime();
-         await wait(1000);
+        await wait(500);
         const resp = await account0.fastExecute(
             call,
             {

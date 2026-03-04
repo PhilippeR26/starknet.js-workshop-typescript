@@ -1,6 +1,6 @@
-// Test the status of transactions in Rpc0.9
-// launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/1.testSpeedTx.ts
-// Coded with Starknet.js v8.0.0-beta.1
+// Test the traces of transactions in Rpc0.9
+// launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/6.testAlchemyTrace.ts
+// Coded with Starknet.js v9.0.0
 
 import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, CairoBytes31 } from "starknet";
 import fs from "fs";

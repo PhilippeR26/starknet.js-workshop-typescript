@@ -8,6 +8,7 @@ import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { strkAddress } from "../../utils/constants";
+import { alchemyKey } from "../../../A-MainPriv/mainPriv";
 dotenv.config();
 
 
@@ -26,13 +27,15 @@ async function main() {
     // const url = "http://localhost:9545/rpc/v0_9";
     // const url = "http://192.168.1.34:6070/rpc/v0_9"; // my local Juno Sepolia Testnet node (Starlink network)
     // const url = "http://localhost:6070/rpc/v0_9";
-    const url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_9"; // Public Blast Pathfinder testnet
+    // const url = "https://starknet-sepolia.public.blastapi.io/rpc/v0_9"; // Public Blast Pathfinder testnet
     // const url = equilibriumPathfinderTestnetUrl; // Pathfinder testnet from Equilibrium team
     // const url = spaceShardPathfinderTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
     // const url = spaceShardJunoTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
     // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8", specVersion: constants.SupportedRpcVersion.v08 }); // Sepolia Testnet 
     //const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.44:9550/rpc/v0_6" }); // local Sepolia Integration node
-    //const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" }); //v0.6.0
+    // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" }); //v0.6.0
+        const url = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey; // Alchemy Testnet
+    
     const myProvider = new RpcProvider({
         nodeUrl: url,
     });

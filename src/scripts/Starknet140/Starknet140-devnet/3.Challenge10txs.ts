@@ -10,7 +10,7 @@ import { strkAddress } from "../../utils/constants";
 import { wait } from "../../utils/utils";
 import { account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, equilibriumPathfinderTestnetUrl, spaceShardPathfinderTestnetNodeUrl } from "../../../A1priv/A1priv";
 import { DevnetProvider } from "starknet-devnet";
-dotenv.config();
+dotenv.config({quiet:true});
 
 
 async function main() {

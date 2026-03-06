@@ -27,11 +27,11 @@ const handleVerify = (privKey: string) => {
     const coord2 = myPoint2.toRawBytes(false);
     const pubKey2: string = encode.addHexPrefix(encode.buf2hex(coord2));
     const isVerified2 = ec.starkCurve.verify(signature, encodedMessage, pubKey2);
-    assert(isVerified1||isVerified2==true,"Error: Full pub key not found.");
-    const fullPubKCalculated: string=isVerified1?pubKey1:pubKey2;
+    assert(isVerified1 || isVerified2 == true, "Error: Full pub key not found.");
+    const fullPubKCalculated: string = isVerified1 ? pubKey1 : pubKey2;
 
     const isVerifiedInitial = ec.starkCurve.verify(signature, encodedMessage, fullPubKey);
-    const isVerifiedCalculated = ec.starkCurve.verify(signature, encodedMessage,fullPubKCalculated );
+    const isVerifiedCalculated = ec.starkCurve.verify(signature, encodedMessage, fullPubKCalculated);
 
     console.log("priv: ", privKey);
     console.log("           fullPubK: ", fullPubKey);
@@ -55,7 +55,7 @@ const main = async () => {
     handleVerify("0x5b7d4f8710b3581ebb2b8b74efaa23d2eab0ffea2a4f3e269bf91bf9f63d633");
     handleVerify("0x5b7d4f8710b35815bb2b8b74efaa23d25ab0ffea2a4f3e269bf91bf9f63d633");
     handleVerify("0x5b7d4f8710b3581ebb2b8b74efaa23d25ab02fea2a4f3e269bf91bf9f63d633");
-    for (let i=0;i<10;i++) {
+    for (let i = 0; i < 10; i++) {
         handleVerify(stark.randomAddress());
     }
 }

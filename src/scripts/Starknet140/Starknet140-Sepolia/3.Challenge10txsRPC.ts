@@ -25,10 +25,10 @@ async function main() {
     // const url = "http://localhost:9545/rpc/v0_9"; // local Pathfinder Testnet node (Starlink network)
     // const url = "http://192.168.1.34:6070/rpc/v0_9"; // my local Juno Sepolia Testnet node (Starlink network)
     // const url = "http://localhost:6070/rpc/v0_9"; // my local Juno Sepolia Testnet node (Starlink network)
-    // const url = equilibriumPathfinderTestnetUrl; // Pathfinder testnet from Equilibrium team
+     const url = equilibriumPathfinderTestnetUrl; // Pathfinder testnet from Equilibrium team
     // const url = spaceShardPathfinderTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
     // const url = spaceShardJunoTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
-    const url = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey; // Alchemy Testnet
+    // const url = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey; // Alchemy Testnet
     // const url = "https://starknet-sepolia.infura.io/v3/" + infuraKey; // Infura (rpc 0.8.1)
     // const url="https://rpc.starknet-testnet.lava.build/rpc/v0_9"; // Lava (no guaranty of rpc version usage)
     // const url = "https://api.zan.top/public/starknet-sepolia/rpc/v0_10"; // Public Zan Sepolia

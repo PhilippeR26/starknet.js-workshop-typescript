@@ -147,7 +147,7 @@ async function main() {
   },
     estimatedFees.suggested_max_fee_in_gas_token
   );
-  const txR = await newAccount.waitForTransaction(respO.transaction_hash);
+  const txR = await newAccount.provider.waitForTransaction(respO.transaction_hash);
   console.log("txR =", txR);
 
   await displayBalances(account0.address, myProvider);

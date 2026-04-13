@@ -40,9 +40,11 @@
     "pako": "^2.1.0",
     "prompt-sync": "^4.2.0",
     "rpc-websockets": "^9.0.4",
-    "starknet": "file:/D/starknetFork/starknet.js",
+    "starknet": "^10.0.0-beta.6",
+    "starknet-proof": "github:PhilippeR26/starknet.js#buildExecute",
     "starknet-devnet": "^0.7.2",
     "starknet-merkle-tree": "^1.1.1",
+    "@starknet-io/starknet-types-0102": "npm:@starknet-io/types-js@0.10.2",
     "vm2": "^3.10.0",
     "web3-utils": "^4.3.3",
     "ws": "^8.19.0"

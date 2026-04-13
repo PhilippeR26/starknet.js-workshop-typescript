@@ -38,3 +38,17 @@ export async function waitNextBlock(provider: RpcProvider, delay: number) {
         }
     }
 }
+
+export function bigIntMax(...values: bigint[]): bigint {
+    if (values.length === 0) {
+        throw new Error('Empty list in bigintMax.');
+    }
+    return values.reduce((max, current) => current > max ? current : max, 0n);
+};
+
+export function bigIntMin(...values: bigint[]): bigint {
+    if (values.length === 0) {
+        throw new Error('Empty list in bigintMin.');
+    }
+    return values.reduce((max, current) => current < max ? current : max, values[0]);
+};

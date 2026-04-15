@@ -73,6 +73,9 @@ An account can pay a transaction fees on behalf of an other account. Explore thi
 You can pay your fees with alternate tokens. See scripts 9 to 14 [here](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/Starknet135/Starknet135-Sepolia/9.paymasterSNIP-29.ts).  
 A demo DAPP is [here](https://github.com/PhilippeR26/starknet-paymaster-SNIP-29).
 
+### SNIP-36 proofs
+Find examples of usage of proofs: proof of age, proof of heavy calculation, proof of private vote. [Cairo codes](./contracts/cairo2170/) and [test scripts](./src/scripts/Starknet142/starknet142-Sepolia/)
+
 ### Devnet :
 Devnet is launched and ended automatically in the main scripts of this tuto, using the `starknet-devnet` library : https://github.com/0xSpaceShard/starknet-devnet-js/blob/master/README.md  
 If you prefer to have a devnet already launched in its own console :

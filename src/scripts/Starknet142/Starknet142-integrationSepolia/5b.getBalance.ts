@@ -9,8 +9,8 @@ import devnetProvider, { DevnetProvider } from "starknet-devnet";
 import { account0OZSepoliaAddress, account0OZSepoliaPrivateKey, account1BraavosSepoliaAddress, account1TestBraavosSepoliaAddress, account1TestBraavosSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey, chainStackTestnet } from "../../../A1priv/A1priv";
 import { alchemyKey, infuraKey } from "../../../A-MainPriv/mainPriv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey, account2IntegrationAXaddress, account2IntegrationAXprivateKey, account3IntegrationOZ17address, account3IntegrationOZ17privateKey, account4IntegrationOZ20address, account4IntegrationOZ20privateKey, account5IntegrationOZ20address, account5IntegrationOZ20privateKey, accountIntegrationAdrienAddress, accountIntegrationAdrienPrivateKey, AdrienIntegrationUrl, equilibriumPathfinderIntegrationUrl } from "../../../A2priv/A2priv";
-import { ethAddress, strkAddress } from "../../../scripts/utils/constants";
-import { formatBalance } from "../../../scripts/utils/formatBalance";
+import { ethAddress, strkAddress } from "../../utils/constants";
+import { formatBalance } from "../../utils/formatBalance";
 
 import * as dotenv from "dotenv";
 import fs from "fs";

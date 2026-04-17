@@ -12,7 +12,6 @@ import { DevnetProvider } from "starknet-devnet";
 import { displayBalances } from "../../utils/displayBalances";
 import { alchemyKey } from "../../../A-MainPriv/mainPriv";
 import { requestProof, type ProveResult } from "./RequestProof";
-import { l1l2MessageAbi } from "./ageL1l2MessageAbi";
 
 dotenv.config({ quiet: true });
 
@@ -87,7 +86,7 @@ async function main() {
   }
   const pubData: PublicInputsForProof = {
 
-    nonce: 2, // ⚠️ to change each time
+    nonce: 3, // ⚠️ to change each time
   }
   type PrivateInputsForProof = {
     birth_date_timestamp: BigNumberish,
@@ -116,8 +115,7 @@ async function main() {
   const proofRes: ProveResult = await requestProof(currentBlock, tx);
   console.log("proof size =", proofRes.proof.length, ", start =", proofRes.proof.slice(0, 8), ", end =", proofRes.proof.slice(-8));
 
-  const messageCallData = new CallData(l1l2MessageAbi);
-  const messageContent = messageCallData.decodeParameters("proof_of_age::L1L2message", (proofRes.l2ToL1Messages![0].payload) as string[]);
+  const messageContent = testCallData.decodeParameters("proof_of_age::L1L2message", (proofRes.l2ToL1Messages![0].payload) as string[]);
   type L1L2message = {
     current_date: BigNumberish, // date of proof in u64 timestamp format (seconds)
     nullifier: BigNumberish, // a nullifier to avoid replay attacks
@@ -125,6 +123,7 @@ async function main() {
   }
   const messageFromProof = messageContent as L1L2message;
   console.log({ messageFromProof });
+  fs.writeFileSync('./src/scripts/Starknet142/Starknet142-Sepolia/proofResult.json', json.stringify({ proofRes, messageFromProof }, undefined, 2));
   console.log("✅ Proof calculated.");
 
   const myCalldata2 = myTestContract.populate("verify_proof_of_age",

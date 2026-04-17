@@ -1,6 +1,6 @@
-// Build a signed transaction.
-// Launch with npx src/scripts/starknet142/starknet142-devnet/1.buildSignedTx.ts
-// Coded with Starknet.js v10.0.0-B2+experimental
+// declare in Devnet the proof contract
+// launch with npx src/scripts/Starknet142/Starknet142-devnet/2.declareSecretProofContract.ts
+// Coded with Starknet.js v10.0.0-B6
 
 import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo } from "starknet-proof";
 import fs from "fs";
@@ -11,7 +11,7 @@ import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
 import { hexU32ArrayToBase64 } from "../../utils/encode";
 import { displayBalances } from "../../utils/displayBalances";
-import type { INVOKE_TXN_V3 } from "@starknet-io/types-js";
+import { alchemyKey } from "../../../A-MainPriv/mainPriv";
 
 dotenv.config({ quiet: true });
 
@@ -23,11 +23,13 @@ async function main() {
   const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc", }); // only starknet-devnet
   const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
   if (!(await l2DevnetProvider.isAlive())) {
-    console.log("No l2 devnet.");
-    process.exit();
+      console.log("No l2 devnet.");
+      process.exit();
   }
 
   // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno/v0_8", specVersion: constants.SupportedRpcVersion.v08 }); // Sepolia Testnet 
+  // const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
+  // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9545/rpc/v0_10" }); // local Sepolia node
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9550/rpc/v0_10" }); // local Sepolia Integration node
   //const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" }); //v0.6.0
 
@@ -46,8 +48,8 @@ async function main() {
   const privateKey0 = accData[0].private_key;
 
   // *** initialize existing Sepolia Testnet account
-  // const accountAddress0 = account1OZSepoliaAddress;
-  // const privateKey0 = account1OZSepoliaPrivateKey;
+  //  const accountAddress0 = account1OZSepoliaAddress;
+  //  const privateKey0 = account1OZSepoliaPrivateKey;
 
   // *** initialize existing Sepolia Integration account
   // const accountAddress0 = account1IntegrationOZaddress;
@@ -67,8 +69,8 @@ async function main() {
   console.log("Account address=", account0.address);
   console.log(await displayBalances(account0.address, myProvider));
   // Declare & deploy Test contract in devnet
-  const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2122/hello2_HelloStarknet.contract_class.json").toString("ascii")) as CompiledSierra;
-  const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2122/hello2_HelloStarknet.compiled_contract_class.json").toString("ascii")) as CairoAssembly;
+  const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2170/proof_of_secret_SuperSecret.contract_class.json").toString("ascii")) as CompiledSierra;
+  const compiledCasm = json.parse(fs.readFileSync("./compiledContracts/cairo2170/proof_of_secret_SuperSecret.compiled_contract_class.json").toString("ascii")) as CairoAssembly;
   const dummyContract = new Contract({ abi: compiledSierra.abi, address: "0x123" });
   console.log("functions =", dummyContract.functions);
 
@@ -97,27 +99,9 @@ async function main() {
 
   console.log('✅ Test Contract connected at =', myTestContract.address);
 
-  // // proof contract 
-  // // classH= 0x203367a056efe1292baa7961cb667348b8aa6122b9229f796c5c18c3e7b967c
-  // // address= 0x3ef1a9bef65bfb7452ee257745c9979ebfb1b1da9390333a9b400b365e3ac58
-
-
-
-  // const proofH32 = json.parse(fs.readFileSync("./src/scripts/starknet142/starknet142-integrationSepolia/array_sum.proof").toString("ascii")) as string[];
-  // const proofB64 = hexU32ArrayToBase64(proofH32);
-
-  const myCall = myTestContract.populate("Say_HelloPhil126",
-    {
-      messages: "0x123",
-    });
-
-
-  const tx3: INVOKE_TXN_V3 = await account0.getSignedTransaction(myCall);
-  console.log({ tx3 });
-
-  const res = await account0.provider.channel.invokeSignedTx(tx3);
-  const txR3 = await account0.provider.waitForTransaction(res.transaction_hash);
-  console.log({ txR3 });
+  // proof contract 
+  // classH = 0x60adbc5374c318235c9052cdcf88c179e4bf2af0a5dc2d26aa3c34e8c97d6bb
+  // address = 0x1dc2ec4c182d406255149160ecbc5821cb20eadab9edc74fea18634dfc1157d
 
   console.log("✅ Test completed.");
 }

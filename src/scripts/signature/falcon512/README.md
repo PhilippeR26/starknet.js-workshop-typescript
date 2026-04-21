@@ -14,6 +14,7 @@ const falcon512Account = new Account({ address, provider: myProvider, signer: fa
 A script to declare the account contract in Devnet is [here](./1.declareFalcon512.ts)
 
 A script to deploy a Falcon-512 account is [here](./2.deployFalcon512.ts)
+
 And a script to execute a transfer of token from this account is [here](./3.useFalcon512Account.ts)
 
 > [!TIP]

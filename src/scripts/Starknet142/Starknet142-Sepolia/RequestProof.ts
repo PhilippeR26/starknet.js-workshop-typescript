@@ -1,6 +1,6 @@
 // send a virtual transaction to a execute/proof server
 
-import type { INVOKE_TXN_V3 } from "@starknet-io/starknet-types-0102";
+import type { INVOKE_TXN_V3 } from "@starknet-io/types-js";
 import type { BigNumberish } from "starknet";
 
 export type ProofMessage = {

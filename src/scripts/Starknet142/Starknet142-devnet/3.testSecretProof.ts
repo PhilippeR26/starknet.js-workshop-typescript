@@ -12,7 +12,7 @@ import { DevnetProvider } from "starknet-devnet";
 import { displayBalances } from "../../utils/displayBalances";
 import { alchemyKey } from "../../../A-MainPriv/mainPriv";
 import { requestProof, type ProveResult } from "../Starknet142-Sepolia/RequestProof";
-import type { INVOKE_TXN_V3 } from "@starknet-io/starknet-types-0102";
+import type { INVOKE_TXN_V3 } from "@starknet-io/types-js";
 
 dotenv.config({ quiet: true });
 

@@ -79,7 +79,7 @@ async function main() {
     // deploy Test account in devnet
     const compiledSierra = json.parse(fs.readFileSync("./src/scripts/signature/falcon512/falcon512Account.sierra.json").toString("ascii")) as CompiledSierra;
     // *** crypto init
-    const seed = randomBytes(32);
+    const seed = randomBytes(48);
     const keyPair = falcon.keygen(seed) as { sk: Uint8Array, vk: Uint8Array };
     const falcon512signer2 = new Falcon512Signer(keyPair.sk, keyPair.vk);
     const packedPubK: string[] = falcon512signer2.gets2morrowPubKey(); // 29 x felt252

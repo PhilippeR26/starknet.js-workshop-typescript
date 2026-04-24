@@ -1,8 +1,8 @@
-// Test the secret proof contract in Testnet, with an existing account and a pre-deployed contract (deployed in the previous script 20)
-// launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/21.testSecretProof.ts
+// Test an invalid proof
+// launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/22.wrongTest.ts
 // Coded with Starknet.js v10.0.0-B6 + experimental
 
-import { constants,  json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider as RpcProviderProof, Account as AccountProof } from "starknet-proof";
+import { constants, json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider as RpcProviderProof, Account as AccountProof } from "starknet-proof";
 import { RpcProvider, Account, Contract } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
@@ -30,7 +30,6 @@ async function main() {
   // }
 
   const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
-  const myProviderProof = new RpcProviderProof({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9545/rpc/v0_10" }); // local Sepolia node
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9550/rpc/v0_10" }); // local Sepolia Integration node
   //const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" }); //v0.6.0
@@ -63,7 +62,6 @@ async function main() {
   // const privateKey0 = account4MainnetPrivateKey;
   // const accountAddress0 = account4MainnetAddress
   const account0 = new Account({ provider: myProvider, address: accountAddress0, signer: privateKey0 });
-  const account0Proof = new AccountProof({ provider: myProviderProof, address: accountAddress0, signer: privateKey0 });
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   console.log('existing account connected.\n');
 
@@ -78,61 +76,48 @@ async function main() {
   const address = "0x2529eb0dd994b6012b4bd496aea13c3714c13ea8db86d09aeecc5f3164181a6";
   const myTestContract = new Contract({ abi: compiledSierra.abi, address, providerOrAccount: account0 });
 
-  console.log("Test Contract connected at =", myTestContract.address);
-  console.log(myTestContract.functions);
-  const testCallData = new CallData(compiledSierra.abi);
-  type PublicInputsForProof = {
-    user_id: BigNumberish,
+  // totally random proof, just to test the call with a proof that will not be valid, and see that the contract call is working and returns false as expected
+  const alteredProof0 = Buffer.alloc(300_000);
+  for (let i = 0; i < 300_000; i++) {
+    alteredProof0[i] = i % 256;
   }
-  const pubData: PublicInputsForProof = {
-    user_id: 1234,
-  }
-  type PrivateInputsForProof = {
-    super_secret: BigNumberish,
-  }
-  const privData: PrivateInputsForProof = {
-    super_secret: 100 // Needs to be <1000 to be whitelisted
-  }
-  console.log({ privData });
-  const myCalldata = myTestContract.populate("create_proof_of_secret",
-    {
-      public_input: pubData,
-      private_input: privData,
-    });
-  const tx = await account0Proof.getSignedTransaction(myCalldata);
-  console.log(tx);
-  const currentBlock: number = await myProvider.getBlockNumber();
-  console.log({ currentBlock });
-  // =====================================================
-  // ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
-  // A proof server shall be running locally using port 3030.
-  // See here: https://github.com/PhilippeR26/secure-voty/tree/main/proofServer
-  // Needs 15Gb free RAM 
-  // =====================================================
+  const alteredProof = alteredProof0.toString('base64');
 
-  
-  const proofRes: ProveResult = await requestProof(currentBlock, tx);
-  console.log("proof size =", proofRes.proof.length, ", start =", proofRes.proof.slice(0, 8), ", end =", proofRes.proof.slice(-8));
+  // Valid proofFacts
+  const proofFacts = [
+    "0x50524f4f4630",
+    "0x5649525455414c5f534e4f53",
+    "0x3e98c2d7703b03a7edb73ed7f075f97f1dcbaa8f717cdf6e1a57bf058265473",
+    "0x5649525455414c5f534e4f5330",
+    "0x89ffb1",
+    "0x376d2f11185b2bcd78ae1bdb807660a2d9e7e35f7ebe5974d46d00a79b85153",
+    "0x1b9900f77ff5923183a7795fcfbb54ed76917bc1ddd4160cc77fa96e36cf8c5",
+    "0x1",
+    "0x12596e27d4c96afca11bd25940c704d457e9bd4450fcb1f6dbb6c2fc4955721"
+  ];
+  console.log(
+      'proof size =',
+      alteredProof.length,
+      ', start =',
+      alteredProof.slice(0, 15),
+      ', end =',
+      alteredProof.slice(-15)
+    );
 
-  const messageContent = testCallData.decodeParameters("proof_of_secret::L1L2message", (proofRes.l2ToL1Messages![0].payload) as string[]);
-  type L1L2message = {
-    user_id: BigNumberish,
-    is_whitelisted: boolean,
-  }
-  const messageFromProof = messageContent as L1L2message;
-  console.log({ messageFromProof });
-  fs.writeFileSync('./src/scripts/Starknet142/Starknet142-Sepolia/proofResult.json', json.stringify({ proofRes, messageFromProof }, undefined, 2));
-  // fs.writeFileSync('./src/scripts/Starknet142/Starknet142-Sepolia/proofResult.json', json.stringify({ proofRes, messageFromProof }, undefined, 2));
-  console.log("✅ Proof1 calculated.");
+  console.log("✅ Proof calculated.");
 
+  // valid L1L2 message
   const myCalldata2 = myTestContract.populate("verify_proof_of_secret",
     {
-      public_message: messageFromProof,
+      public_message: {
+        "user_id": 1234,
+        "is_whitelisted": true
+      },
     }
   );
 
-  console.log("Calling verify_proof_of_age with the proof...");
-  const tx2 = await account0.execute(myCalldata2, { proof: proofRes.proof, proofFacts: proofRes.proofFacts });
+  console.log("Calling verify_proof_of_secret with the proof...");
+  const tx2 = await account0.execute(myCalldata2, { proof: alteredProof, proofFacts: proofFacts });
   const txR2 = await account0.provider.waitForTransaction(tx2.transaction_hash);
   console.log("Tx success =", txR2.isSuccess());
   const res = await myTestContract.read_result();

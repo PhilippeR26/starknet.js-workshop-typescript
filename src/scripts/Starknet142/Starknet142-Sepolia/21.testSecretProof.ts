@@ -2,12 +2,11 @@
 // launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/21.testSecretProof.ts
 // Coded with Starknet.js v10.0.0-B6 + experimental
 
-import { constants,  json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider as RpcProviderProof, Account as AccountProof } from "starknet-proof";
-import { RpcProvider, Account, Contract } from "starknet";
-import fs from "fs";
+import { constants,  json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider,  Account, Contract  } from "starknet-proof";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey, account3IntegrationOZ17address, account3IntegrationOZ17privateKey } from "../../../A2priv/A2priv";
 import { ethAddress, strkAddress } from "../../utils/constants";
+import fs from "fs";
 import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
 import { displayBalances } from "../../utils/displayBalances";
@@ -30,7 +29,6 @@ async function main() {
   // }
 
   const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
-  const myProviderProof = new RpcProviderProof({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9545/rpc/v0_10" }); // local Sepolia node
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9550/rpc/v0_10" }); // local Sepolia Integration node
   //const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" }); //v0.6.0
@@ -63,7 +61,6 @@ async function main() {
   // const privateKey0 = account4MainnetPrivateKey;
   // const accountAddress0 = account4MainnetAddress
   const account0 = new Account({ provider: myProvider, address: accountAddress0, signer: privateKey0 });
-  const account0Proof = new AccountProof({ provider: myProviderProof, address: accountAddress0, signer: privateKey0 });
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   console.log('existing account connected.\n');
 
@@ -99,7 +96,7 @@ async function main() {
       public_input: pubData,
       private_input: privData,
     });
-  const tx = await account0Proof.getSignedTransaction(myCalldata);
+  const tx = await account0.getSignedTransaction(myCalldata);
   console.log(tx);
   const currentBlock: number = await myProvider.getBlockNumber();
   console.log({ currentBlock });
@@ -122,7 +119,6 @@ async function main() {
   const messageFromProof = messageContent as L1L2message;
   console.log({ messageFromProof });
   fs.writeFileSync('./src/scripts/Starknet142/Starknet142-Sepolia/proofResult.json', json.stringify({ proofRes, messageFromProof }, undefined, 2));
-  // fs.writeFileSync('./src/scripts/Starknet142/Starknet142-Sepolia/proofResult.json', json.stringify({ proofRes, messageFromProof }, undefined, 2));
   console.log("✅ Proof1 calculated.");
 
   const myCalldata2 = myTestContract.populate("verify_proof_of_secret",
@@ -131,7 +127,7 @@ async function main() {
     }
   );
 
-  console.log("Calling verify_proof_of_age with the proof...");
+  console.log("Calling verify_proof_of_secret with the proof...");
   const tx2 = await account0.execute(myCalldata2, { proof: proofRes.proof, proofFacts: proofRes.proofFacts });
   const txR2 = await account0.provider.waitForTransaction(tx2.transaction_hash);
   console.log("Tx success =", txR2.isSuccess());

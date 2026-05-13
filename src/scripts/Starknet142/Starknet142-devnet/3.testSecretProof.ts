@@ -75,7 +75,7 @@ async function main() {
 
   // Connect the new contract instance (deployed in Testnet) :
   // ⚠️⚠️⚠️ update the address from result of script 2:
-  const address = "0x69f4ef660ca0e81a4bfaf672f4ea7c53cf0014533de07ca266d5defbfa25d53";
+  const address = "0x5cf22e39bfc4e01bf2e3306362a0d4b626368829f43a055135528acecb55dff";
   // const compiledSierra =await myProvider.getClassAt(address);
   const myTestContract = new Contract({ abi: compiledSierra.abi, address, providerOrAccount: account0 });
 
@@ -184,25 +184,27 @@ async function main() {
     }
   );
   // correction of wrong proof_facts:
-  const correctedProofFacts=[...result.proof_facts];
+  const correctedProofFacts = [...result.proof_facts];
   correctedProofFacts.pop();
   correctedProofFacts.pop();
   correctedProofFacts.push(encode.addHexPrefix(result.l2_to_l1_messages.length.toString(16)));
-  const arrayToHash:string[]=[
-    result.l2_to_l1_messages[0].from_address, 
-    result.l2_to_l1_messages[0].to_address, 
-    result.l2_to_l1_messages[0].payload.length.toString() 
+  const arrayToHash: string[] = [
+    result.l2_to_l1_messages[0].from_address,
+    result.l2_to_l1_messages[0].to_address,
+    result.l2_to_l1_messages[0].payload.length.toString()
   ];
-  result.l2_to_l1_messages[0].payload.reduce((myArray:string[],payloadItem:string)=>{
-    myArray.push(payloadItem); 
+  result.l2_to_l1_messages[0].payload.reduce((myArray: string[], payloadItem: string) => {
+    myArray.push(payloadItem);
     return myArray;
-  },arrayToHash);
+  }, arrayToHash);
 
   correctedProofFacts.push(hash.computePoseidonHashOnElements(arrayToHash));
-  console.log({correctedProofFacts});
-  console.log("Calling verify_proof_of_age with the proof...");
+  console.log({ correctedProofFacts });
+  console.log("Calling verify_proof_of_secret with the proof...");
   // const tx5=await accountSepolia.execute(myCalldata2, { proof: proofRes.proof, proofFacts: proofRes.proofFacts });
-  const tx2 = await account0.execute(myCalldata2, { proof: result.proof, proofFacts: result.proof_facts });
+  const correctedProof = json.parse(fs.readFileSync("./src/scripts/Starknet142/Starknet142-Sepolia/proofResult.json").toString("ascii")) ;
+  
+  const tx2 = await account0.execute(myCalldata2, { proof: correctedProof.proofRes.proof, proofFacts: correctedProofFacts });
   const txR2 = await account0.provider.waitForTransaction(tx2.transaction_hash);
   console.log("Tx success =", txR2.isSuccess());
   const res = await myTestContract.read_result();

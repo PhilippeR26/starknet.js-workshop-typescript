@@ -1,0 +1,15 @@
+{
+    "cairo1.languageServerExtraEnv": {
+        "RUST_LOG": "error"
+    },
+    "files.watcherExclude": {
+        "**/target/**": true,
+        "**/.cairo_cache/**": true,
+        "**/.snfoundry_cache/**": true,
+    },
+    "search.exclude": {
+        "**/target": true
+    },
+    "cairo1.enableProcMacros": false,
+    "cairo1.traceMacroDiagnostics": false,
+}

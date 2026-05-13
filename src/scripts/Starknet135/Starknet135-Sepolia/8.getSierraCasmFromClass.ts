@@ -1,16 +1,17 @@
 // Get Sierra and Casm files from a contract class, in Sepolia  network
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/8.getSierraCasmFromClass.ts
-// Coded with Starknet.js v7.1.0
+// Coded with Starknet.js v10.0.2
 
-import { RpcProvider, shortString, json, logger, type RPC08, } from "starknet";
+import { RpcProvider, shortString, json, logger, CairoBytes31 } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
-dotenv.config();
+import { alchemyKey } from "../../../A-MainPriv/mainPriv";
+dotenv.config({ quiet: true });
 
 
 async function main() {
   // ********* Sepolia Testnet **************
-   const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8", specVersion: "0.8.1" });
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey });
   // local pathfinder Sepolia Testnet node
   // const myProvider = await RpcProvider.create({ nodeUrl: "http:////localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
@@ -23,17 +24,17 @@ async function main() {
   //const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.11:9550/rpc/v0_8" }); // local pathfinder Sepolia Integration node
 
 
-  // logger.setLogLevel("ERROR");
-  // config.set("legacyMode",true);
+  // Check that communication with provider is OK
+  const chainId = await myProvider.getChainId();
   console.log(
-    "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+    "chain Id =", new CairoBytes31(chainId).decodeUtf8(),
     ", rpc", await myProvider.getSpecVersion(),
     ", SN version =", (await myProvider.getBlock()).starknet_version);
-  console.log("Provider connected to Starknet Sepolia testnet");
+  console.log("Provider connected.");
 
 
   //const classHash = await myProvider.getClassHashAt(strkAddress);
-  const classHash = "0x01b2df6d8861670d4a8ca4670433b2418d78169c2947f46dc614e69f333745c8"; 
+  const classHash = "0x073414441639dcd11d1846f287650a00c60c416b9d3ba45d31c651672125b2c2";
   const sierra = await myProvider.getClassByHash(classHash);
   fs.writeFileSync('./compiledContracts/sierra.json', json.stringify(sierra, undefined, 2));
   const casm = await myProvider.getCompiledCasm(classHash);

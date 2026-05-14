@@ -44,7 +44,7 @@ In the folder 'scripts', you can find many pedagogical codes :
 ### Accounts :
 - Create accounts
     - Create OZ account [script2](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/2.createNewOZaccount.ts)
-    - Create ArgentX account [script3](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/3.createNewArgentXaccount.ts)
+    - Create ArgentX account [script3](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/3.createNewReadyAccount.ts)
     - Create Ethereum account [script15](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/15.createNewETHaccount.ts)
     -  Create Braavos v1.2.0 account [script14](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/14.createNewBraavosAccount.ts)
     - Create your abstracted account [script10](https://github.com/PhilippeR26/starknet.js-workshop-typescript/blob/main/src/scripts/10.createAccountAbstraction.ts)

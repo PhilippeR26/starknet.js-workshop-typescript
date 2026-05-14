@@ -1,5 +1,6 @@
 /// Test the heavy calculation proof contract on Sepolia testnet, with an existing account and a pre-deployed contract (deployed in the previous script 1.declareCalculationProofContract.ts)
-// launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/28.testGovernance2Proof.ts
+// launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/28.testGovernance2Proof.ts 
+// ⚠️ Uses contracts deployed in script 27.
 // Coded with Starknet.js v10.0.2
 
 import { constants, Contract, Account, json, shortString, RpcProvider, RPC, CairoBytes31, type CompiledSierra, CallData, type BigNumberish, type TypedData } from "starknet-proof";
@@ -139,7 +140,7 @@ async function main() {
   console.log("Delegation to account1 OK, voting power activated.");
 
 
-  const description = "ppp"; /// ⚠️ to change at each execution
+  const description = "Proposal to send 100 token to protocol"; /// ⚠️ to change at each execution. A proposal can be used only once
   type CairoCall = {
     to: BigNumberish,
     selector: BigNumberish,

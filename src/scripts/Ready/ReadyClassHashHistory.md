@@ -1,4 +1,4 @@
-# ArgentX class hashes history
+# Ready class hashes history
 
 | version | class hash |
 | --- | --- |

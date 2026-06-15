@@ -40,7 +40,7 @@ function buildVoteTypedData(
     primaryType: "AnonVoteIntent",
     domain: {
       name: "AnonGovernor",
-      version: shortString.encodeShortString("1"),  // 0x31 — shortstring, pas entier
+      version: shortString.encodeShortString("1"),  // 0x31 — shortstring, not an integer
       chainId,
       revision: "1",
     },
@@ -64,8 +64,7 @@ async function main() {
   const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9545/rpc/v0_10" }); // local Sepolia node
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9550/rpc/v0_10" }); // local Sepolia Integration node
-  //const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" }); //v0.6.0
-
+  
   // Check that communication with provider is OK
   const chainId = await myProvider.getChainId();
   console.log(
@@ -203,15 +202,15 @@ async function main() {
   const AMOUNT_MULT = 2n;
   const resourceBounds: ResourceBoundsBN = {
     l2_gas: {
-      max_amount: BigInt("0x279fc0") * AMOUNT_MULT,
+      max_amount: 0x279fc0n * AMOUNT_MULT,
       max_price_per_unit: gasPrices.l2GasPrice * PRICE_MULT,
     },
     l1_gas: {
-      max_amount: BigInt("0xbd2a") * AMOUNT_MULT,
+      max_amount: 0xbd2an * AMOUNT_MULT,
       max_price_per_unit: gasPrices.l1GasPrice * PRICE_MULT,
     },
     l1_data_gas: {
-      max_amount: BigInt("0xc0") * AMOUNT_MULT,
+      max_amount: 0xc0n * AMOUNT_MULT,
       max_price_per_unit: gasPrices.l1DataGasPrice * PRICE_MULT,
     },
   };

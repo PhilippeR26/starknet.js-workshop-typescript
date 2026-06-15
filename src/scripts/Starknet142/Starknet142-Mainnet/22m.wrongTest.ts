@@ -1,9 +1,8 @@
 // Test an invalid proof
 // launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/22.wrongTest.ts
-// Coded with Starknet.js v10.0.0-B6 + experimental
+// Coded with Starknet.js v10.3.0
 
-import { constants, json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider as RpcProviderProof, Account as AccountProof } from "starknet-proof";
-import { RpcProvider, Account, Contract } from "starknet";
+import { constants, json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode,  RpcProvider, Account, Contract } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey, account3IntegrationOZ17address, account3IntegrationOZ17privateKey } from "../../../A2priv/A2priv";
@@ -12,8 +11,6 @@ import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
 import { displayBalances } from "../../utils/displayBalances";
 import { account1ReadyMainnetAddress, account1ReadyMainnetPrivateKey, alchemyKey } from "../../../A-MainPriv/mainPriv";
-import { requestProof, type ProveResult } from "../Starknet142-Sepolia/RequestProof";
-import type { INVOKE_TXN_V3 } from "@starknet-io/types-js";
 
 dotenv.config({ quiet: true });
 

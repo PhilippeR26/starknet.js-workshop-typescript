@@ -11,7 +11,7 @@ import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
 import { hexU32ArrayToBase64 } from "../../utils/encode";
 import { displayBalances } from "../../utils/displayBalances";
-import { alchemyKey } from "../../../A-MainPriv/mainPriv";
+import { account1ReadyMainnetAddress, account1ReadyMainnetPrivateKey, alchemyKey } from "../../../A-MainPriv/mainPriv";
 
 dotenv.config({ quiet: true });
 
@@ -27,10 +27,12 @@ async function main() {
   //   process.exit();
   // }
 
-  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
+  // const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9545/rpc/v0_10" }); // local Sepolia node
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9550/rpc/v0_10" }); // local Sepolia Integration node
-  
+
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // mainnet
+
   // Check that communication with provider is OK
   console.log(
     "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
@@ -46,8 +48,8 @@ async function main() {
   // const privateKey0 = accData[0].private_key;
 
   // *** initialize existing Sepolia Testnet account
-  const accountAddress0 = account1OZSepoliaAddress;
-  const privateKey0 = account1OZSepoliaPrivateKey;
+  // const accountAddress0 = account1OZSepoliaAddress;
+  // const privateKey0 = account1OZSepoliaPrivateKey;
 
   // *** initialize existing Sepolia Integration account
   // const accountAddress0 = account1IntegrationOZaddress;
@@ -56,8 +58,9 @@ async function main() {
   // const privateKey0 = account3IntegrationOZ17privateKey;
 
   // *** initialize existing Argent X mainnet  account
-  // const privateKey0 = account4MainnetPrivateKey;
-  // const accountAddress0 = account4MainnetAddress
+  const accountAddress0 = account1ReadyMainnetAddress
+  const privateKey0 = account1ReadyMainnetPrivateKey;
+
   const account0 = new Account({ provider: myProvider, address: accountAddress0, signer: privateKey0 });
   console.log('existing_ACCOUNT_ADDRESS=', accountAddress0);
   console.log('existing account connected.\n');
@@ -92,8 +95,6 @@ async function main() {
   const PROPOSAL_THRESHOLD = 1_000_000_000_000_000_000n; // 1 * 1e18
   const QUORUM = 100_000_000_000_000_000_000_000n; // 100_000 * 1e18
 
-  const NULLIFIER_DOMAIN = 'anon_governor_nullifier_v1';
-
   const constructor1 = erc20CallData.compile("constructor", {
     name: "testToken",
     symbol: "TTKN",
@@ -115,7 +116,7 @@ async function main() {
 
   // erc20
   // classH = 0x1f7a5b0ee31ba88038f26c6eccab5f1c18bdc7b5adbd5a51b51f1e0cb74d1e
-  const addressErc20 = "0x7e3b05750d37c5cbf3d17182fa1ebafb2663e893735c3b11969ac65239118a6"
+  // const addressErc20 = "0x4713a80db5e910a0218dd1a3e1ee9218c8076c5c9e005a31e8b8f8dc226877a"
 
   // Declare & deploy governance contract in devnet
   const compiledSierra2 = json.parse(fs.readFileSync("./compiledContracts/cairo2180/erc20_anon_gov_AnonGovernor2.contract_class.json").toString("ascii")) as CompiledSierra;
@@ -138,7 +139,7 @@ async function main() {
 
   const governorCallData = new CallData(compiledSierra2.abi);
   const constructor2 = governorCallData.compile("constructor", {
-    votes_token: addressErc20,
+    votes_token: myTestContract.address,
     owner: account0.address,
     voting_delay: VOTING_DELAY,
     voting_period: VOTING_PERIOD,
@@ -155,11 +156,13 @@ async function main() {
   const myTestContract2 = new Contract({ abi: compiledSierra2.abi, address: deployResponse2.contract_address });
   myTestContract2.providerOrAccount = account0;
 
+  console.log(await displayBalances(account0.address, myProvider));
+
   console.log('✅ Test Contract connected at =', myTestContract2.address);
 
   // governance
   // classH = 0x387309022a39568f85ca67730aa1a38ba271ab63c367d38522401f9da54337
-  // addr = 0x64834acb5abf44bc0173291722679c41bad701517033bb6c64b0bb9a2342a89
+  // addr = 0xdb568a74d33ecf4582265d1196b946f40743c08c39dcdc692bf1053bef14f2
 
   console.log("✅ Test completed.");
 }

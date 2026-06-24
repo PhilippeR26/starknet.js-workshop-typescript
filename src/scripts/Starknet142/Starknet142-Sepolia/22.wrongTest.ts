@@ -2,8 +2,7 @@
 // launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/22.wrongTest.ts
 // Coded with Starknet.js v10.0.0-B6 + experimental
 
-import { constants, json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider as RpcProviderProof, Account as AccountProof } from "starknet-proof";
-import { RpcProvider, Account, Contract } from "starknet";
+import { constants, json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider, Account, Contract } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey, account3IntegrationOZ17address, account3IntegrationOZ17privateKey } from "../../../A2priv/A2priv";
@@ -12,8 +11,6 @@ import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
 import { displayBalances } from "../../utils/displayBalances";
 import { alchemyKey } from "../../../A-MainPriv/mainPriv";
-import { requestProof, type ProveResult } from "./RequestProof";
-import type { INVOKE_TXN_V3 } from "@starknet-io/types-js";
 
 dotenv.config({ quiet: true });
 
@@ -31,8 +28,9 @@ async function main() {
 
   const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9545/rpc/v0_10" }); // local Sepolia node
+  // const myProvider = new RpcProvider({ nodeUrl: equilibriumPathfinderTestnetUrl }); // Sepolia Testnet v0.10.0
+   
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9550/rpc/v0_10" }); // local Sepolia Integration node
-  //const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" }); //v0.6.0
 
   // Check that communication with provider is OK
   console.log(
@@ -77,32 +75,33 @@ async function main() {
   const myTestContract = new Contract({ abi: compiledSierra.abi, address, providerOrAccount: account0 });
 
   // totally random proof, just to test the call with a proof that will not be valid, and see that the contract call is working and returns false as expected
-  const alteredProof0 = Buffer.alloc(300_000);
-  for (let i = 0; i < 300_000; i++) {
+  const proofLength = 300_000;
+  const alteredProof0 = Buffer.alloc(proofLength);
+  for (let i = 0; i < proofLength; i++) {
     alteredProof0[i] = i % 256;
   }
   const alteredProof = alteredProof0.toString('base64');
 
   // Valid proofFacts
   const proofFacts = [
-    "0x50524f4f4630",
+    "0x50524f4f4631",
     "0x5649525455414c5f534e4f53",
-    "0x3e98c2d7703b03a7edb73ed7f075f97f1dcbaa8f717cdf6e1a57bf058265473",
+    "0x53f6c9fcfd31d27279ff7d7e422b44623550a732b59fe193354a7316a96daa1",
     "0x5649525455414c5f534e4f5330",
-    "0x89ffb1",
-    "0x376d2f11185b2bcd78ae1bdb807660a2d9e7e35f7ebe5974d46d00a79b85153",
-    "0x1b9900f77ff5923183a7795fcfbb54ed76917bc1ddd4160cc77fa96e36cf8c5",
+    "0xaa0eb1",
+    "0x20440f7bf440ff497a37285ea3d80680a357ef880a0efa93bca2bb870af42fd",
+    "0x57ed4d5e20d617d8cc087a5882eae4f71d005172326be6439b2e1fd8b4dc57",
     "0x1",
     "0x12596e27d4c96afca11bd25940c704d457e9bd4450fcb1f6dbb6c2fc4955721"
   ];
   console.log(
-      'proof size =',
-      alteredProof.length,
-      ', start =',
-      alteredProof.slice(0, 15),
-      ', end =',
-      alteredProof.slice(-15)
-    );
+    'proof size =',
+    alteredProof.length,
+    ', start =',
+    alteredProof.slice(0, 15),
+    ', end =',
+    alteredProof.slice(-15)
+  );
 
   console.log("✅ Proof calculated.");
 

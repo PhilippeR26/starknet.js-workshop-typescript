@@ -1,6 +1,6 @@
-// Execute transactions (Strk transfer) as fast as possible in Rpc0.9
+// Execute transactions (Strk transfer) as fast as possible in Rpc0.10.3
 // Launch with : npx ts-node src/scripts/Starknet140/Starknet140-Sepolia/3a.Challenge10txsRpcStrk.ts
-// Coded with Starknet.js v8.4.0
+// Coded with Starknet.js v10.3.1
 
 import { RpcProvider, Account, json, Contract, shortString, type CompiledSierra, type CairoAssembly, BlockTag, type Call, type Nonce, CairoBytes31 } from "starknet";
 import fs from "fs";
@@ -34,19 +34,18 @@ async function axiosGetNonce(url: string): Promise<string> {
 
 async function main() {
     // *** devnet
-    const url="http://127.0.0.1:5050/rpc";
+    // const url="http://127.0.0.1:5050/rpc";
      //const myProvider = new RpcProvider({ nodeUrl: "http://127.0.0.1:5050/rpc" });
-        const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
+    //    const l2DevnetProvider = new DevnetProvider({ timeout: 40_000 });
 
     // *** local 
     // const url = "http://192.168.1.34:6070/rpc/v0_9"; // my local Juno Sepolia Testnet node (Starlink network)
-    // const url = "http://192.168.1.34:9545/rpc/v0_9"; // local Pathfinder
+     const url = "http://192.168.1.26:9545/rpc/v0_10"; // local Pathfinder Testnet (Freebox)
     // const url = equilibriumPathfinderTestnetUrl; // Pathfinder testnet from Equilibrium team
     // const url = spaceShardPathfinderTestnetNodeUrl; // private Pathfinder testnet from SpaceShard team
 
     const myProvider = new RpcProvider({
         nodeUrl: url,
-        specVersion: "0.9.0",
         blockIdentifier: BlockTag.PRE_CONFIRMED,
     }); 
     // const myProvider = new RpcProvider({ nodeUrl: url, specVersion: "0.9.0" }); // my local Pathfinder Sepolia Testnet node (Starlink network)
@@ -66,16 +65,16 @@ async function main() {
     console.log("Provider connected to Starknet");
 
     // *** initialize existing predeployed account 0 of Devnet
-    const accData = await l2DevnetProvider.getPredeployedAccounts();
-    const accountAddress0 = accData[0].address;
-    const privateKey0 = accData[0].private_key;
+    // const accData = await l2DevnetProvider.getPredeployedAccounts();
+    // const accountAddress0 = accData[0].address;
+    // const privateKey0 = accData[0].private_key;
 
     // *** initialize existing Sepolia Integration account
     // const accountAddress0 = account3IntegrationOZ17address;
     // const privateKey0 = account3IntegrationOZ17privateKey;
     // **** Sepolia
-    // const accountAddress0 = account2TestBraavosSepoliaAddress;
-    // const privateKey0 = account2TestBraavosSepoliaPrivateKey;
+     const accountAddress0 = account2TestBraavosSepoliaAddress;
+     const privateKey0 = account2TestBraavosSepoliaPrivateKey;
     // **** Mainnet
     //  const accountAddress0 = account1BraavosMainnetAddress;
     //  const privateKey0 = account1BraavosMainnetPrivateKey;

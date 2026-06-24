@@ -1,9 +1,9 @@
 // Test the secret proof contract in Testnet, with an existing account and a pre-deployed contract (deployed in the previous script 20)
 // launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/21.testSecretProof.ts
-// Coded with Starknet.js v10.0.0-B6 + experimental
+// Coded with Starknet.js v10.3.2
 
-import { constants,  json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider,  Account, Contract  } from "starknet-proof";
-import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
+import { constants, json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider, Account, Contract } from "starknet";
+import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey, equilibriumPathfinderTestnetUrl } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey, account3IntegrationOZ17address, account3IntegrationOZ17privateKey } from "../../../A2priv/A2priv";
 import { ethAddress, strkAddress } from "../../utils/constants";
 import fs from "fs";
@@ -12,7 +12,6 @@ import { DevnetProvider } from "starknet-devnet";
 import { displayBalances } from "../../utils/displayBalances";
 import { alchemyKey } from "../../../A-MainPriv/mainPriv";
 import { requestProof, type ProveResult } from "./RequestProof";
-import type { INVOKE_TXN_V3 } from "@starknet-io/types-js";
 
 dotenv.config({ quiet: true });
 
@@ -30,8 +29,9 @@ async function main() {
 
   const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9545/rpc/v0_10" }); // local Sepolia node
+  // const myProvider = new RpcProvider({ nodeUrl: equilibriumPathfinderTestnetUrl }); // Sepolia Testnet v0.10.0
+   
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9550/rpc/v0_10" }); // local Sepolia Integration node
-  //const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/sepolia-juno" }); //v0.6.0
 
   // Check that communication with provider is OK
   console.log(
@@ -107,9 +107,15 @@ async function main() {
   // Needs 15Gb free RAM 
   // =====================================================
 
-  
+
   const proofRes: ProveResult = await requestProof(currentBlock, tx);
+  // const proofRes: ProveResult = { ...proofRes0 };
+  // proofRes.proofFacts[0] = "0x50524f4f4630";
+  // proofRes.proofFacts[2] = "0x3e98c2d7703b03a7edb73ed7f075f97f1dcbaa8f717cdf6e1a57bf058265473";
+  // proofRes.proofFacts[6] = "0x57ed4d5e20d617d8cc087a5882eae4f71d005172326be6439b2e1fd8b4dc57";
+  
   console.log("proof size =", proofRes.proof.length, ", start =", proofRes.proof.slice(0, 8), ", end =", proofRes.proof.slice(-8));
+  console.log("ProofFacts=", proofRes.proofFacts);
 
   const messageContent = testCallData.decodeParameters("proof_of_secret::L1L2message", (proofRes.l2ToL1Messages![0].payload) as string[]);
   type L1L2message = {
@@ -135,8 +141,6 @@ async function main() {
   console.log("is whitelisted, read from contract =", res);
 
   console.log("✅ Test completed.");
-
-
 }
 main()
   .then(() => process.exit(0))

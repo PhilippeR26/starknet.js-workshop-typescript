@@ -2,8 +2,8 @@
 // Coded with Starknet.js v7.4.0
 // Handle Rpc0.8V3
 
-import { ec, hash, num, constants, CallData, stark, BigNumberish, type RpcProvider, type DeployAccountSignerDetails, type V3DeployAccountSignerDetails, type V3InvocationsSignerDetails, type UniversalDetails, type V3TransactionDetails, type EstimateFeeResponse } from "starknet";
-import { type DeployContractResponse, type Calldata, type DeployAccountContractPayload, type EstimateFeeDetails, type CairoVersion, type DeployAccountContractTransaction, } from "starknet";
+import { ec, hash, num, constants, CallData, stark, BigNumberish, type RpcProvider, type DeployAccountSignerDetails, type V3DeployAccountSignerDetails, type V3InvocationsSignerDetails, type UniversalDetails, type V3TransactionDetails } from "starknet";
+import { type DeployContractResponse, type Calldata, type DeployAccountContractPayload, type CairoVersion, type DeployAccountContractTransaction, } from "starknet";
 import { EDAMode, EDataAvailabilityMode, ETransactionVersion, ETransactionVersion3, type ResourceBounds } from "@starknet-io/types-js";
 
 

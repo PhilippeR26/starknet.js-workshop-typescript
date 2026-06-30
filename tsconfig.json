@@ -10,6 +10,7 @@
     "incremental": true,
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "preserveSymlinks": true,
     "resolveJsonModule": true,
     "strict": true,
     "esModuleInterop": true,

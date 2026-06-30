@@ -5,7 +5,7 @@ import { CallData, ec, hash, type BigNumberish } from "starknet";
 import * as mStarknet from '@scure/starknet';
 import * as bip32 from "@scure/bip32";
 import * as bip39 from '@scure/bip39';
-import { calculateAddressBraavos } from "./3b.deployBraavos1";
+import { calculateAddressBraavos } from "./3h.deployBraavos120rpc08SNIP29";
 
 const mnemonic = "inquiry tuition toe harvest vanish dress doctor maid divorce mystery cross loyal";
 const BraavosBaseClassHash: BigNumberish = "0x013bfe114fb1cf405bfc3a7f8dbe2d91db146c17521d40dcf57e16d6b59fa8e6";

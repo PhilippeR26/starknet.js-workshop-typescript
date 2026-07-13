@@ -17,6 +17,9 @@
 // Everything in ONE tx / one proof: UseNote×n (phase 4) -> CreateEncNote change (phase 5)
 // -> Withdraw (phase 6). No Deposit => no screening attestation needed.
 //
+// ⚠️ PREREQUISITE: the pool must already be deployed — run 4.init.strk20DeployPool.ts
+//    first (once). This script checks it and STOPS if the pool is missing.
+//
 // launch with : npx ts-node src/scripts/Starknet143/Starknet143-Sepolia/7.strk20Unshield.ts
 // Coded with Starknet.js v10.4.0
 //
@@ -56,7 +59,7 @@ const USER_PRIVATE_KEY = accountETHoz17snip9PrivateKey;     // its stark private
 const POOL_GOVERNANCE_ADMIN = "0x04761f1bf6b5f11f6b5beb2fd862a468e4d7666f674ac544e2a502e4d8483747";
 // Official STRK20 pool class — already DECLARED on Sepolia (same hash as Mainnet).
 const POOL_CLASS_HASH = "0x067dddd89d80fedadc06b6f160798f94800a4a70164e5a24301cd0d6076b554d";
-const PROOF_VALIDITY_BLOCKS = 450;     // must match scripts 5/6 (part of the pool address)
+const PROOF_VALIDITY_BLOCKS = 450;     // must match 4.init (part of the pool address)
 // Fixed screener/auditor public keys of OUR pool — only used to recompute the pool
 // address (no deposit here, so the screener private key is never used to sign).
 const SCREENER_PRIVATE_KEY = "0xCAFEBABE";
@@ -479,7 +482,7 @@ async function main() {
         return;
     }
 
-    // ---------- deterministic pool address (same computation as scripts 5/6) ----------
+    // ---------- deterministic pool address (same computation as 4.init) ----------
     const constructorCalldata: Calldata = new CallData(abi).compile("constructor", {
         governance_admin: POOL_GOVERNANCE_ADMIN,
         auditor_public_key: derivePublicKey(AUDITOR_PRIVATE_KEY),
@@ -491,12 +494,14 @@ async function main() {
     pool = new Contract({ abi, address: poolAddress, providerOrAccount: myProvider });
     serdeSelfChecks(); // needs the pool ABI, hence after pool creation
 
-    // The pool must already exist (deployed by script 4 or 5) — nothing to unshield otherwise.
+    // The pool must already exist (deployed by 4.init.strk20DeployPool.ts) — nothing to
+    // unshield otherwise.
     let onchainClassHash: string;
     try {
         onchainClassHash = num.toHex(await myProvider.getClassHashAt(poolAddress));
     } catch {
-        throw new Error(`Pool not deployed at ${poolAddress}. Run 5 or 6 first (they deploy it).`);
+        throw new Error(`Pool not deployed at ${poolAddress}. ` +
+            "Deploy it first with 4.init.strk20DeployPool.ts.");
     }
     if (BigInt(onchainClassHash) !== BigInt(POOL_CLASS_HASH)) {
         throw new Error(`Address ${poolAddress} holds a DIFFERENT class (${onchainClassHash}).`);
@@ -547,7 +552,7 @@ async function main() {
     // The change note goes to the SELF channel (next free note index there).
     const selfChannel = channels.find((c) => c.isSelf);
     if (change > 0n && selfChannel === undefined) {
-        throw new Error("Change needed but no self channel found (open it with script 4 or 5), " +
+        throw new Error("Change needed but no self channel found (open it with script 5 or 6), " +
             "or unshield \"ALL\" / an exact notes total.");
     }
 

@@ -1,9 +1,12 @@
 // STRK20 SHIELD only, WITHOUT a wallet — SEPOLIA, on our self-deployed pool.
-// Companion of 5.strk20ShieldUnshield.ts (same pool, same keys derivation): deploys the
-// pool if missing, then SHIELDS `AMOUNT` STRK into a new encrypted note. Each run adds one
-// note. Any one-time onboarding still needed (registration/channel/subchannel) is BATCHED
-// with the deposit into a SINGLE proof (one apply_actions tx), so a first run costs the
-// same one proof as any later run. Unshield with 7.strk20Unshield.ts.
+// Companion of 5.strk20ShieldUnshield.ts (same pool, same keys derivation): SHIELDS
+// `AMOUNT` STRK into a new encrypted note. Each run adds one note. Any one-time
+// onboarding still needed (registration/channel/subchannel) is BATCHED with the deposit
+// into a SINGLE proof (one apply_actions tx), so a first run costs the same one proof
+// as any later run. Unshield with 7.strk20Unshield.ts.
+//
+// ⚠️ PREREQUISITE: the pool must already be deployed — run 4.init.strk20DeployPool.ts
+//    first (once). This script checks it and STOPS if the pool is missing.
 //
 // launch with : npx ts-node src/scripts/Starknet143/Starknet143-Sepolia/6.strk20Shield.ts
 // Coded with Starknet.js v10.4.0
@@ -39,8 +42,8 @@ dotenv.config({ quiet: true });
 // It pays the Sepolia gas. Change it freely between runs: all accounts share the same pool.
 const USER_ADDRESS = accountOZ2SepoliaAddress;
 const USER_PRIVATE_KEY = accountOZ2SepoliaPrivateKey;     // its stark private key (standard SRC-6 account: OZ/Ready)
-// Governance admin of OUR pool (only used at deployment; admin ops are never needed by
-// this script). ⚠️ DO NOT CHANGE THIS VALUE. Part of the deterministic pool address
+// Governance admin of OUR pool (admin ops are never needed by this script; only used
+// here to recompute the pool address). ⚠️ DO NOT CHANGE THIS VALUE. Part of the deterministic pool address
 const POOL_GOVERNANCE_ADMIN = "0x04761f1bf6b5f11f6b5beb2fd862a468e4d7666f674ac544e2a502e4d8483747";
 // Official STRK20 pool class — already DECLARED on Sepolia (same hash as Mainnet).
 // Constructor (verified on-chain 2026-07-12):
@@ -59,7 +62,7 @@ const AMOUNT = 10n ** 18n;             // 1 STRK (18 decimals), u128, shielded i
 const PROOF_SERVER_URL = "http://localhost:3030";
 const MAX_NOTE_SCAN = 100;             // safety cap for the on-chain note index scan
 // true  : read-only — checks env/class/pool/state, displays the plan, sends NOTHING.
-// false : REALLY executes on Sepolia (pool deployment if needed + proofs + apply_actions txs).
+// false : REALLY executes on Sepolia (proof + apply_actions tx).
 const CHECK_ONLY = false;
 // =========================================================
 
@@ -170,8 +173,9 @@ function cryptoSelfChecks(): void {
 // ================== deposit screening (self-signed attestation) ==================
 // The pool class REQUIRES a screener-signed SNIP-12 attestation on every Deposit
 // (privacy.cairo apply_actions -> _verify_screening; a zero screener key does NOT
-// bypass it). Since WE deployed the pool with OUR fixed screener public key, this
-// script signs the attestation itself. Recipe from packages/privacy/src/snip12.cairo:
+// bypass it). Since OUR pool (deployed by 4.init.strk20DeployPool.ts) uses OUR fixed
+// screener public key, this script signs the attestation itself. Recipe from
+// packages/privacy/src/snip12.cairo:
 //   msg = poseidon('StarkNet Message', domainHash, screener_pub, structHash)
 //   domainHash = poseidon(STARKNET_DOMAIN_TYPE_HASH, 'Screening', 2, chain_id, 1)
 //   structHash = poseidon(DEPOSITOR_VALIDATION_TYPE_HASH, depositor, issued_at)
@@ -435,11 +439,6 @@ type Strk20State = {
     nextNoteIndex: number;
 };
 
-// State of a fresh pool / unknown user — used when the pool is not deployed yet.
-const EMPTY_STATE: Strk20State = {
-    registeredKey: 0n, channelOpen: false, subchannelOpen: false, notes: [], nextNoteIndex: 0,
-};
-
 // Shielded balance = sum of the unspent notes (what wallet_strk20Balances would report).
 function shieldedBalance(state: Strk20State): bigint {
     return state.notes.filter((n) => !n.spent).reduce((acc, n) => acc + n.amount, 0n);
@@ -509,34 +508,33 @@ async function main() {
         screener_public_key: derivePublicKey(SCREENER_PRIVATE_KEY),
         proof_validity_blocks: PROOF_VALIDITY_BLOCKS,
     });
-    // unique:false UDC deployment => address independent of the deployer (deployer felt = 0).
-    // Salt and constructor calldata are script constants => same address at every run,
-    // whatever the account => deploy once, then always reuse. Nothing stored on disk.
+    // unique:false UDC deployment => address independent of the deployer (deployer felt = 0)
+    // => same address at every run, whatever the account. Nothing stored on disk.
+    // The deployment itself is done (once) by 4.init.strk20DeployPool.ts.
     poolAddress = hash.calculateContractAddressFromHash(
         POOL_DEPLOY_SALT, POOL_CLASS_HASH, constructorCalldata, 0);
     pool = new Contract({ abi, address: poolAddress, providerOrAccount: myProvider });
     serdeSelfChecks(); // needs the pool ABI, hence after pool creation
 
-    let poolDeployed = false;
+    // The pool must already exist (deployed by 4.init.strk20DeployPool.ts).
+    let onchainClassHash: string;
     try {
-        const onchainClassHash = num.toHex(await myProvider.getClassHashAt(poolAddress));
-        if (BigInt(onchainClassHash) !== BigInt(POOL_CLASS_HASH)) {
-            throw new Error(`Address ${poolAddress} holds a DIFFERENT class (${onchainClassHash}).`);
-        }
-        poolDeployed = true;
-    } catch (e) {
-        if (e instanceof Error && e.message.includes("DIFFERENT class")) throw e;
-        // contract not found => not deployed yet
+        onchainClassHash = num.toHex(await myProvider.getClassHashAt(poolAddress));
+    } catch {
+        throw new Error(`Pool not deployed at ${poolAddress}. ` +
+            "Deploy it first with 4.init.strk20DeployPool.ts.");
     }
-    console.log(`\nOur pool address (deterministic): ${poolAddress}`);
-    console.log("Pool deployed:", poolDeployed ? "yes ✅" : "not yet (will be deployed)");
+    if (BigInt(onchainClassHash) !== BigInt(POOL_CLASS_HASH)) {
+        throw new Error(`Address ${poolAddress} holds a DIFFERENT class (${onchainClassHash}).`);
+    }
+    console.log(`\nOur pool address (deterministic): ${poolAddress} ✅`);
 
     // ---------- derive user keys & discover on-chain state ----------
     const vk = deriveViewingKey(USER_PRIVATE_KEY);
     const vkPub = derivePublicKey(vk);
     const channelKey = computeChannelKey(USER_ADDRESS, vk, vkPub);
-    feeAmount = poolDeployed ? BigInt(await pool.get_fee_amount()) : 0n;
-    const state = poolDeployed ? await discoverState(vk, vkPub, channelKey) : EMPTY_STATE;
+    feeAmount = BigInt(await pool.get_fee_amount());
+    const state = await discoverState(vk, vkPub, channelKey);
 
     if (state.registeredKey !== 0n && state.registeredKey !== BigInt(vkPub)) {
         throw new Error("This account is already registered in the pool with a DIFFERENT " +
@@ -583,10 +581,9 @@ async function main() {
     // ---------- costs & confirmation ----------
     const totalFees = feeAmount * BigInt(txPlans.length);
     console.log("\n--- Plan ---");
-    if (!poolDeployed) console.log(" • Deploy our own pool (once; fixed screener/auditor keys, fee = 0)");
     for (const t of txPlans) console.log(" •", t.name);
     console.log(`Pool fees: ${txPlans.length} x ${formatBalance(feeAmount, 18)} = ${formatBalance(totalFees, 18)} STRK` +
-        ` (+ Sepolia gas of ${poolDeployed ? "" : "the deployment tx + "}${txPlans.length} apply_actions tx,` +
+        ` (+ Sepolia gas of ${txPlans.length} apply_actions tx,` +
         ` + ${formatBalance(AMOUNT, 18)} STRK shielded)`);
 
     if (CHECK_ONLY) {
@@ -601,22 +598,6 @@ async function main() {
     // ---------- execution ----------
     const userAccount = new Account({ provider: myProvider, address: USER_ADDRESS, signer: USER_PRIVATE_KEY });
     await displayBalances(userAccount.address, myProvider);
-
-    if (!poolDeployed) {
-        console.log("\n===== Deploy pool =====");
-        const deployRes = await userAccount.deployContract({
-            classHash: POOL_CLASS_HASH,
-            constructorCalldata,
-            salt: POOL_DEPLOY_SALT,
-            unique: false,
-        });
-        await myProvider.waitForTransaction(deployRes.transaction_hash);
-        if (BigInt(deployRes.contract_address) !== BigInt(poolAddress)) {
-            throw new Error(`Deployed at ${deployRes.contract_address}, expected ${poolAddress}!`);
-        }
-        console.log(`Pool deployed at ${poolAddress} ✅ (tx ${deployRes.transaction_hash})`);
-    }
-
     await ensureAllowance(userAccount, AMOUNT + totalFees);
     for (const t of txPlans) {
         await proveAndApply(t.name, t.actions, userAccount, vk, t.needsScreening);

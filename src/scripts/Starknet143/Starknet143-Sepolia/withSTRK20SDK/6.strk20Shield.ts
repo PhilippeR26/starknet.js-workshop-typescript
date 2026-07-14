@@ -90,10 +90,10 @@ async function main() {
         console.log("\nCHECK_ONLY = true → nothing sent. Set CHECK_ONLY = false to execute for real.");
         return;
     }
+    await displayBalances(ctx.account.address, provider);
     if (!await askConfirmation()) return;
 
     // ---------- execution ----------
-    await displayBalances(ctx.account.address, provider);
     await ensureStrkAllowance(ctx, AMOUNT + feeAmount);
 
     // The builder call: deposit AMOUNT of STRK.

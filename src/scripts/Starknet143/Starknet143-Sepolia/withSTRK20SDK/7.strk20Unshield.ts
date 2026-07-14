@@ -107,10 +107,10 @@ async function main() {
         console.log("\nCHECK_ONLY = true → nothing sent. Set CHECK_ONLY = false to execute for real.");
         return;
     }
+    await displayBalances(ctx.account.address, provider);
     if (!await askConfirmation()) return;
 
     // ---------- execution ----------
-    await displayBalances(ctx.account.address, provider);
     await ensureStrkAllowance(ctx, feeAmount); // fee = 0 on our pool: normally a no-op
 
     // The official one-liner: SimplePrivateTransfers.withdraw discovers the notes,

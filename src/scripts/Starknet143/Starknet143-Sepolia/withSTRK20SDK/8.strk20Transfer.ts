@@ -47,7 +47,7 @@ const RECIPIENT_ADDRESS = accountSTRKoz20snip9Address;
 const TRANSFER_AMOUNT = 10n ** 18n;    // 1 STRK (18 decimals), u128, transferred shielded
 // true  : read-only — checks env/pool/state, displays the plan, sends NOTHING.
 // false : REALLY executes on Sepolia (proof + apply_actions tx).
-const CHECK_ONLY = false;
+const CHECK_ONLY = true;
 // =========================================================
 
 async function main() {

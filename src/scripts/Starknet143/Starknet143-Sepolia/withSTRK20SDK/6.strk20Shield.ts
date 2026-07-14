@@ -42,7 +42,7 @@ const USER_PRIVATE_KEY = accountOZSepoliaPrivateKey;    // its stark private key
 const AMOUNT = 10n ** 18n;             // 1 STRK (18 decimals), u128, shielded into a new note
 // true  : read-only — checks env/pool/state, displays the plan, sends NOTHING.
 // false : REALLY executes on Sepolia (proof + apply_actions tx).
-const CHECK_ONLY = false;
+const CHECK_ONLY = true;
 // =========================================================
 
 async function main() {
@@ -97,6 +97,10 @@ async function main() {
     await ensureStrkAllowance(ctx, AMOUNT + feeAmount);
 
     // The builder call: deposit AMOUNT of STRK.
+    // Simpler equivalent for the common case (like scripts 7/8):
+    //   new SimplePrivateTransfersImpl(ctx.transfers).deposit(STRK_ADDRESS, AMOUNT)
+    // We use the builder HERE on purpose, to expose the onboarding/selection options
+    // (autoRegister/autoSetup/autoSelectNotes) the one-liner would hide behind defaults.
     //  - autoRegister/autoSetup add SetViewingKey/OpenChannel/OpenSubchannel if missing;
     //  - the deposit's surplus handling creates the encrypted note to self;
     //  - our proof provider gets the proof and self-signs the screening attestation.

@@ -87,6 +87,9 @@ async function main() {
     // ---------- execution ----------
     // One raw SDK action: { setViewingKey: {} }. The SDK generates the random, compiles
     // the ClientAction, builds & signs the virtual tx, and calls our proof provider.
+    // No one-liner exists for this: SimplePrivateTransfersImpl only covers value moves
+    // (deposit/withdraw/transfer/swap), not registration — so this raw action IS the
+    // simplest form. (The fluent builder also has .register() if you prefer that style.)
     const result = await ctx.transfers.execute({ setViewingKey: {} });
     await submitExecuteResult("REGISTER (SetViewingKey)", ctx, result);
 

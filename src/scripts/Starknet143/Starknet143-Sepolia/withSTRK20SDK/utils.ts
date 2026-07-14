@@ -145,19 +145,29 @@ export function computePoolAddress(): string {
         POOL_DEPLOY_SALT, POOL_CLASS_HASH, constructorCalldata, 0);
 }
 
-// The pool must already exist (deployed by ../4.init.strk20DeployPool.ts).
-export async function assertPoolDeployed(provider: RpcProvider, poolAddress: string): Promise<void> {
+// Generic: asserts a contract of the EXPECTED class is deployed at `address`.
+// Shared by the pool check below and script 9's echo-helper check. `notDeployedHint`
+// is appended to the "not deployed" error (e.g. how to deploy it).
+export async function assertClassDeployed(
+    provider: RpcProvider, address: string, expectedClassHash: string,
+    label: string, notDeployedHint = "",
+): Promise<void> {
     let onchainClassHash: string;
     try {
-        onchainClassHash = num.toHex(await provider.getClassHashAt(poolAddress));
+        onchainClassHash = num.toHex(await provider.getClassHashAt(address));
     } catch {
-        throw new Error(`Pool not deployed at ${poolAddress}. ` +
-            "Deploy it first with ../4.init.strk20DeployPool.ts.");
+        throw new Error(`${label} not deployed at ${address}.${notDeployedHint}`);
     }
-    if (BigInt(onchainClassHash) !== BigInt(POOL_CLASS_HASH)) {
-        throw new Error(`Address ${poolAddress} holds a DIFFERENT class (${onchainClassHash}).`);
+    if (BigInt(onchainClassHash) !== BigInt(expectedClassHash)) {
+        throw new Error(`${label} at ${address} holds a DIFFERENT class (${onchainClassHash}).`);
     }
-    console.log(`\nOur pool address (deterministic): ${poolAddress} ✅`);
+    console.log(`${label} deployed at ${address} ✅`);
+}
+
+// The pool must already exist (deployed by ../4.init.strk20DeployPool.ts).
+export async function assertPoolDeployed(provider: RpcProvider, poolAddress: string): Promise<void> {
+    await assertClassDeployed(provider, poolAddress, POOL_CLASS_HASH,
+        "\nOur pool (deterministic address)", " Deploy it first with ../4.init.strk20DeployPool.ts.");
 }
 
 // ================== secure-voty proof provider (SDK adapter) ==================

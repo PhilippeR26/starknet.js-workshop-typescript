@@ -1,5 +1,5 @@
-// Test modified waitForTransaction with  execute
-// Launch with npx ts-node src/scripts/Starknet143/Starknet143-Sepolia/3.testWaitForTx-execute.ts
+// Test modified waitForTransaction with  deploy Contract
+// Launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/32.testWaitForTx-deployC.ts
 // Coded with Starknet.js PR#1632
 
 import { constants, json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider, Account, Contract } from "starknet";
@@ -11,7 +11,6 @@ import * as dotenv from "dotenv";
 import { DevnetProvider } from "starknet-devnet";
 import { displayBalances } from "../../utils/displayBalances";
 import { alchemyKey } from "../../../A-MainPriv/mainPriv";
-import type { EVENT } from "@starknet-io/types-js";
 
 dotenv.config({ quiet: true });
 
@@ -28,7 +27,6 @@ async function main() {
   // }
 
    const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
-  // const myProvider = new RpcProvider({ nodeUrl: "https://api.zan.top/public/starknet-sepolia/rpc/v0_10" }); // Sepolia Testnet 
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9545/rpc/v0_10" }); // local Sepolia node
   // const myProvider = new RpcProvider({ nodeUrl: equilibriumPathfinderTestnetUrl }); // Sepolia Testnet v0.10.0
 
@@ -39,7 +37,7 @@ async function main() {
     "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
     ", rpc", await myProvider.getSpecVersion(),
     ", SN version =", (await myProvider.getBlock()).starknet_version);
-  console.log("Provider connected to Starknet.");
+  console.log("Provider connected to Starknet Devnet.");
 
   //process.exit(5);
   // *** Devnet
@@ -49,8 +47,8 @@ async function main() {
   // const privateKey0 = accData[0].private_key;
 
   // *** initialize existing Sepolia Testnet account
-  const accountAddress0 = account1OZSepoliaAddress;
-  const privateKey0 = account1OZSepoliaPrivateKey;
+   const accountAddress0 = account1OZSepoliaAddress;
+   const privateKey0 = account1OZSepoliaPrivateKey;
 
   // *** initialize existing Sepolia Integration account
   // const accountAddress0 = account1IntegrationOZaddress;
@@ -70,39 +68,31 @@ async function main() {
   console.log("Account address=", account0.address);
   await displayBalances(account0.address, myProvider);
 
-  const compiledSierra = json.parse(fs.readFileSync("./src/scripts/Starknet143/Starknet143-Sepolia/counter_test_counter.contract_class.json").toString("ascii")) as CompiledSierra;
+  const compiledSierra = json.parse(fs.readFileSync("./src/scripts/Starknet142/Starknet142-Sepolia/counter_test_counter.contract_class.json").toString("ascii")) as CompiledSierra;
+  const classH = "0x273bf0754b201f1683fa4ffecfaeba8a0d320436d6619a4e6e3b37153817886"
+  const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo264/openZeppelin14/openzeppelin_ERC20Upgradeable.sierra.json").toString("ascii")) as CompiledSierra;
+  const ethContract = new Contract({ abi: compiledERC20Contract.abi, address: ethAddress, providerOrAccount: account0 });
+  const strkContract = new Contract({ abi: compiledERC20Contract.abi, address: strkAddress, providerOrAccount: account0 });
 
-  const addr = "0x379aa39fd27aeb5204d9c58ff99eb2a7e775f00c680da601c45fab454917795" // Testnet
-  // const addr = "0x4daa424019a315414982ff6ff48654cd42dd1259ed9d7548b6ea0468016a8b" // Devnet
-  const testContract = new Contract({ abi: compiledSierra.abi, address: addr, providerOrAccount: account0 });
-  const retryI = 500; // 1s
-  console.log("retryInterval:", retryI);
-  for (let i = 0; i < 20; i++) {
-    console.log("tx #" + i);
-    const setCall = testContract.populate("setCounter", {
-      x: i
-    });
-    console.time("duration");
-    const res1 = await account0.execute(setCall);
-    const txR1 = await account0.provider.waitForTransaction(res1.transaction_hash, { retryInterval: retryI });
-    console.timeEnd("duration");
-    const count = await testContract.getCounter();
-    console.log("counter:", count);
-    if (Number(count) !== i) console.log(`❌ STALE READ: Expected ${i}, get ${count}`);
-    if (txR1.isSuccess()) {
-      if (!txR1.events?.length) {
-        console.log('Emitted event is empty.');
-      }
-      const event = txR1.events.find(
-        (it: any) => num.toHex(it.from_address) === num.toHex(addr)
-      ) || {
-        data: [],
-      };
-       console.log("Event is saying:",Number((event as EVENT).keys[1]));
-    } else {
-      console.log("No Tx receipt.");
-    }
-  }
+  const myCallData=new CallData(compiledSierra.abi);
+  const constructorCalldata=myCallData.compile("constructor",{init:1});
+  console.time("deploy contract");
+  const resDeploy = await account0.deployContract({ classHash:classH,constructorCalldata}); // includes waitForTx()
+  // addr = 0x379aa39fd27aeb5204d9c58ff99eb2a7e775f00c680da601c45fab454917795 // Testnet
+  console.log("Deployed with address:", resDeploy.address);
+  const testContract=new Contract({abi:compiledSierra.abi,address:resDeploy.address,providerOrAccount:account0});
+  console.timeEnd("deploy contract");
+  const count = await testContract.getCounter();
+  console.log("counter:", count);
+  // verify no nonce pbs.
+  console.log("transfer...");
+  const trCall = strkContract.populate("transfer", {
+    recipient: account0.address,
+    amount: 1n * 10n ** 3n
+  });
+  const res1 = await account0.execute(trCall);
+  const txR1 = await account0.provider.waitForTransaction(res1.transaction_hash);
+
   console.log("✅ Test completed.");
 }
 main()

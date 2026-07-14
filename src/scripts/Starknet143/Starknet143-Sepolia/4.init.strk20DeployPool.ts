@@ -1,3 +1,4 @@
+// ⚠️ ⚠️ ⚠️ Do not run! Already deployed ⚠️ ⚠️ ⚠️ 
 // STRK20 pool INITIALIZATION — SEPOLIA. Deploys the shared pool used by scripts 4-8.
 // The pool is OUR OWN instance of the official STRK20 pool class (already declared on
 // Sepolia, same hash as Mainnet). Its address is deterministic (fixed UDC salt + fixed

@@ -1,5 +1,5 @@
-// Test modified waitForTransaction with  deploy Contract
-// Launch with npx ts-node src/scripts/Starknet143/Starknet143-Sepolia/2.testWaitForTx-deployC.ts
+// Test modified waitForTransaction with  declare
+// Launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/31.testWaitForTx-declare.ts
 // Coded with Starknet.js PR#1632
 
 import { constants, json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider, Account, Contract } from "starknet";
@@ -26,7 +26,7 @@ async function main() {
   //   process.exit();
   // }
 
-   const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9545/rpc/v0_10" }); // local Sepolia node
   // const myProvider = new RpcProvider({ nodeUrl: equilibriumPathfinderTestnetUrl }); // Sepolia Testnet v0.10.0
 
@@ -68,22 +68,20 @@ async function main() {
   console.log("Account address=", account0.address);
   await displayBalances(account0.address, myProvider);
 
-  const compiledSierra = json.parse(fs.readFileSync("./src/scripts/Starknet143/Starknet143-Sepolia/counter_test_counter.contract_class.json").toString("ascii")) as CompiledSierra;
-  const classH = "0x273bf0754b201f1683fa4ffecfaeba8a0d320436d6619a4e6e3b37153817886"
+  const compiledSierra = json.parse(fs.readFileSync("./src/scripts/Starknet142/Starknet142-Sepolia/counter_test_counter.contract_class.json").toString("ascii")) as CompiledSierra;
+  const compiledCasm = json.parse(fs.readFileSync("./src/scripts/Starknet144/Starknet142-Sepolia/counter_test_counter.compiled_contract_class.json").toString("ascii")) as CairoAssembly;
+  // classH = 0x273bf0754b201f1683fa4ffecfaeba8a0d320436d6619a4e6e3b37153817886
   const compiledERC20Contract = json.parse(fs.readFileSync("./compiledContracts/cairo264/openZeppelin14/openzeppelin_ERC20Upgradeable.sierra.json").toString("ascii")) as CompiledSierra;
   const ethContract = new Contract({ abi: compiledERC20Contract.abi, address: ethAddress, providerOrAccount: account0 });
   const strkContract = new Contract({ abi: compiledERC20Contract.abi, address: strkAddress, providerOrAccount: account0 });
 
-  const myCallData=new CallData(compiledSierra.abi);
-  const constructorCalldata=myCallData.compile("constructor",{init:1});
-  console.time("deploy contract");
-  const resDeploy = await account0.deployContract({ classHash:classH,constructorCalldata}); // includes waitForTx()
-  // addr = 0x379aa39fd27aeb5204d9c58ff99eb2a7e775f00c680da601c45fab454917795 // Testnet
-  console.log("Deployed with address:", resDeploy.address);
-  const testContract=new Contract({abi:compiledSierra.abi,address:resDeploy.address,providerOrAccount:account0});
-  console.timeEnd("deploy contract");
-  const count = await testContract.getCounter();
-  console.log("counter:", count);
+  console.time("declare");
+  const resDec = await account0.declare({ contract: compiledSierra, casm: compiledCasm });
+  console.log("Declared with Class Hash:", resDec.class_hash);
+  const txR0 = await account0.provider.waitForTransaction(resDec.transaction_hash);
+  const clH = await myProvider.getClassByHash(resDec.class_hash);
+  console.log("recovered class:", !!clH);
+  console.timeEnd("declare");
   // verify no nonce pbs.
   console.log("transfer...");
   const trCall = strkContract.populate("transfer", {

@@ -1,6 +1,6 @@
-// Test an invalid proof
-// launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/22.wrongTest.ts
-// Coded with Starknet.js v10.3.0
+// Create a dummy proof that works in Testnet.
+// launch with npx ts-node src/scripts/Starknet142/Starknet142-Sepolia/29.createDummyProof.ts
+// Coded with Starknet.js v10.4.0
 
 import { constants, json, shortString, RPC, num, hash, CairoBytes31, type CairoAssembly, config, type CompiledSierra, CallData, cairo, type BigNumberish, type Uint256, type ResourceBoundsBN, encode, RpcProvider, Account, Contract } from "starknet";
 import fs from "fs";
@@ -26,10 +26,10 @@ async function main() {
   //   process.exit();
   // }
 
-  // const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9545/rpc/v0_10" }); // local Sepolia node
   // const myProvider = new RpcProvider({ nodeUrl: "http://192.168.1.26:9550/rpc/v0_10" }); // local Sepolia Integration node
-  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // mainnet
+  // const myProvider = new RpcProvider({ nodeUrl: "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // mainnet
 
   // Check that communication with provider is OK
   const latestBlock = await myProvider.getBlock("latest")
@@ -38,7 +38,7 @@ async function main() {
     "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
     ", rpc", await myProvider.getSpecVersion(),
     ", SN version =", blockData.starknet_version);
-  console.log("Provider connected to Starknet Devnet.");
+  console.log("Provider connected to Starknet.");
 
   //process.exit(5);
   // *** Devnet
@@ -48,8 +48,8 @@ async function main() {
   // const privateKey0 = accData[0].private_key;
 
   // *** initialize existing Sepolia Testnet account
-  // const accountAddress0 = account1OZSepoliaAddress;
-  // const privateKey0 = account1OZSepoliaPrivateKey;
+  const accountAddress0 = account1OZSepoliaAddress;
+  const privateKey0 = account1OZSepoliaPrivateKey;
 
   // *** initialize existing Sepolia Integration account
   // const accountAddress0 = account1IntegrationOZaddress;
@@ -60,8 +60,8 @@ async function main() {
   // *** initialize existing mainnet  account
   // const privateKey0 = account4MainnetPrivateKey;
   // const accountAddress0 = account4MainnetAddress
-  const accountAddress0 = account1ReadyMainnetAddress
-  const privateKey0 = account1ReadyMainnetPrivateKey;
+  // const accountAddress0 = account1ReadyMainnetAddress
+  // const privateKey0 = account1ReadyMainnetPrivateKey;
 
 
   const account0 = new Account({ provider: myProvider, address: accountAddress0, signer: privateKey0 });
@@ -76,8 +76,8 @@ async function main() {
   const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2170/proof_of_secret_SuperSecret.contract_class.json").toString("ascii")) as CompiledSierra;
 
   // Connect the new contract instance (deployed in Testnet) :
-  const address = "0x748f59171d32188f023fe2dfcdc86fe7a733e95866349f9037db2d24535c303";
-  const myTestContract = new Contract({ abi: compiledSierra.abi, address, providerOrAccount: account0 });
+  const contractAddress = "0x2529eb0dd994b6012b4bd496aea13c3714c13ea8db86d09aeecc5f3164181a6";
+  const myTestContract = new Contract({ abi: compiledSierra.abi, address: contractAddress, providerOrAccount: account0 });
 
   // totally random proof, just to test the call with a proof that will not be valid, and see that the contract call is working and returns false as expected
   const alteredProof0 = Buffer.alloc(300_000);
@@ -96,7 +96,22 @@ async function main() {
     block_hash: string,
     OS_config_hash: string,
   };
-  const l1l2messages = ["0x37eda4fdff7b514b4f817a5fe3a1650f9f459d6b5fa0c2ba9c97f8180541506"];
+  type ProofMessage = {
+    from_address: string,
+    payload: string[],
+    to_address: string,
+  };
+  const message: ProofMessage = {
+    from_address: myTestContract.address,
+    payload: CallData.compile({
+      user_id: 1234,
+      is_whitelisted: true
+    }),
+    to_address: "0x0",
+  };
+  const messageHash = hash.computePoseidonHashOnElements([message.from_address, message.to_address, message.payload.length, ...message.payload]);
+  console.log("messageH =", messageHash);
+  const l1l2messages = [messageHash];
   const proofFactsObject: ProofFacts = {
     PROOF0_marker: "0x50524f4f4631", // PROOF1
     VIRTUAL_SNOS_marker: "0x5649525455414c5f534e4f53",
@@ -104,7 +119,7 @@ async function main() {
     VIRTUAL_SNOS0_marker: "0x5649525455414c5f534e4f5330",
     block_number: num.toHex(blockData.block_number),
     block_hash: num.toHex(blockData.block_hash!),
-    OS_config_hash: num.toHex(2579130946496422157802313572919622021390761807038780433165936715591440018810n),
+    OS_config_hash: num.toHex(155353494348665658624236724160728902643094265960890343456308270214333914199n),
   };
   const proofFacts: string[] = [...Object.values(proofFactsObject), num.toHex(l1l2messages.length), ...l1l2messages];
   console.log(
@@ -128,7 +143,7 @@ async function main() {
       },
     }
   );
-
+  // process.exit(5);
   console.log("Calling verify_proof_of_secret with the proof...");
   const tx2 = await account0.execute(myCalldata2, { proof: alteredProof, proofFacts: proofFacts });
   const txR2 = await account0.provider.waitForTransaction(tx2.transaction_hash);

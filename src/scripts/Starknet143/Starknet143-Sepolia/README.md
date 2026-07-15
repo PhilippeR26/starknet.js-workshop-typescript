@@ -67,7 +67,7 @@ flowchart TB
     PA -->|5. screening: depositor = user_addr| SC
     SC -.->|6. ScreeningAttestation r,s SIGNED by screener| PA
     PA -.->|7. proof commits sig-check + L2->L1 msg<br/>+ attestation| W
-    W -->|8. submit apply_actions + proof<br/>pays STRK fee, may be a relayer| PS
+    W -->|8. submit apply_actions + proof<br/>any consenting account sponsors + pays L2 fee| PS
     PS -->|9. transaction_hash| U
     PS -.->|10. emit events| IX
     IX -.->|11. note found -> shielded balance| W
@@ -106,8 +106,16 @@ This is the heart of the design (confirmed in `privacy.cairo` / `utils.cairo`):
 - On-chain, the pool's *other* face — `apply_actions` (the solid box) — only runs `validate_proof`
   (checks `program_variant == VIRTUAL_SNOS`, the `proof_facts`, and that the message hash matches),
   collects the STRK fee, and applies. It **never re-checks your account signature and never checks
-  who submits** — authorization already lives in the proof. That is why the L2 tx carrying the proof
-  (and paying the fee from `get_caller_address`) can be sent by **anyone, including a relayer**.
+  who submits** — authorization already lives in the proof, and the submitter's address is **not**
+  part of it (`validate_proof` binds the proof to the *actions*, not to the caller).
+- **The on-chain tx can be sponsored (and executed) by another account.** Because of the above, the
+  L2 transaction that carries the proof can be signed, submitted, and paid by **any consenting
+  account** (a sponsor / relayer / paymaster), fully **decoupled from the depositor**. That sponsor
+  is `get_caller_address()`: it pays the **L2 gas** and — if `fee_amount != 0` — must have
+  **approved the pool** for the STRK `collect_fee` (which does `transfer_from` from
+  `get_caller_address()`). It must consent (it signs and pays); you cannot bill an unrelated third
+  party. The depositor stays bound only inside the proof (and, for deposits, by the screened
+  `user_addr`).
 
 ### Who signs what, and where each signature travels
 
@@ -126,8 +134,8 @@ This is the heart of the design (confirmed in `privacy.cairo` / `utils.cairo`):
 - **Two keys, both consumed *virtually* (neither is checked by the on-chain tx).** The **viewing
   key `k`** feeds `compile_actions`; the **account key** signs the virtual INVOKE that the
   pool-account verifies via `is_valid_signature`. Both live inside the VIRTUAL_SNOS proof. The
-  on-chain `apply_actions` checks only the proof — so the submitter/fee-payer can be a **relayer**
-  distinct from the depositor.
+  on-chain `apply_actions` checks only the proof — so the on-chain tx can be **sponsored and paid by
+  any consenting account**, decoupled from the depositor (see the sponsorship point above).
 - Facts above were read from a **local, slightly stale** copy of `privacy.cairo` / `utils.cairo`
   (`assert_valid_os_call`, `assert_valid_signature`, `validate_proof`). The deployed contract adds
   the `screening` parameter to `apply_actions` but keeps this caller/proof/signature logic.

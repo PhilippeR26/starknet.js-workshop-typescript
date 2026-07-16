@@ -410,6 +410,11 @@ async function proveAndApply(
         actions: serverActions,
         screening: new CairoOption<object>(CairoOptionVariant.None),
     });
+    // DEMO SHORTCUT (privacy leak): the token owner submits and pays this tx itself, so its
+    // address is published on-chain. apply_actions authorizes on the proof alone and never
+    // checks the caller, so in production ANY account can submit it — a sponsor/paymaster
+    // (AVNU sponsored_private), reimbursed by a withdraw fee action inside the proven bundle,
+    // keeping the user's account out of the block. One account is used here to keep the demo simple.
     const { transaction_hash } = await userAccount.execute(applyCall,
         { proof: proofRes.proof, proofFacts: proofRes.proofFacts });
     console.log("apply_actions tx:", transaction_hash);

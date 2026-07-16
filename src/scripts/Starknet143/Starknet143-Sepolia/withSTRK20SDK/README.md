@@ -190,10 +190,20 @@ dapp's job — standard starknet.js, with the proof attached (SNIP-36):
 
 ```ts
 const { call, proof } = result.callAndProof;
+// DEMO SHORTCUT (privacy leak): ctx.account is the token owner, so submitting from it
+// publishes its address on-chain. See the note below.
 const { transaction_hash } = await ctx.account.execute(call,
     { proof: proof.data, proofFacts: proof.proofFacts });
 await ctx.account.provider.waitForTransaction(transaction_hash);
 ```
+
+⚠️ **Who submits is a privacy decision.** These demos submit from `ctx.account` — the token
+owner itself — which puts its address in the block and defeats much of the point of the pool.
+`apply_actions` authorizes on the **proof alone** and never checks the caller, so in production
+**any** account can submit it: a sponsor / paymaster (AVNU `sponsored_private`) pays the gas from
+its own address and is reimbursed by a `withdraw` fee action inserted **inside the proven bundle**,
+so the user's account never appears on-chain. The demos use a single account only to keep the code
+simple.
 
 Reading the shielded balance is one discovery call — it returns only UNSPENT notes
 (spent ones are filtered out via their nullifier):

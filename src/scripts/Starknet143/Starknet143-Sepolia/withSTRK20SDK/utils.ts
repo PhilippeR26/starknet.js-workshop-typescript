@@ -353,6 +353,11 @@ export async function submitExecuteResult(
     for (const w of result.warnings) console.log(`⚠️ SDK warning [${w.code}]: ${w.message}`);
     const { call, proof } = result.callAndProof;
     console.log(`Proof OK. Submitting apply_actions (${name})...`);
+    // DEMO SHORTCUT (privacy leak): ctx.account is the token owner, so it submits and pays this
+    // tx itself and its address is published on-chain. apply_actions authorizes on the proof alone
+    // and never checks the caller, so in production ANY account can submit it — a sponsor/paymaster
+    // (AVNU sponsored_private), reimbursed by a withdraw fee action inside the proven bundle,
+    // keeping the user's account out of the block. One account is used here to keep the demos simple.
     const { transaction_hash } = await ctx.account.execute(call as Call,
         { proof: proof.data, proofFacts: proof.proofFacts as string[] });
     console.log("apply_actions tx:", transaction_hash);

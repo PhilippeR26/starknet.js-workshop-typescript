@@ -9,8 +9,8 @@ import fs from "fs";
 import { LogC } from "../../utils/logColors"
 import * as dotenv from "dotenv";
 import { alchemyKey, blastKey, infuraKey, lavaMainnetKey } from "../../../A-MainPriv/mainPriv";
-import { equilibriumPathfinderTestnetUrl } from "../../../A1priv/A1priv";
-dotenv.config({quiet:true});
+import { equilibriumPathfinderTestnetUrl, SNFnodeUrl } from "../../../A1priv/A1priv";
+dotenv.config({ quiet: true });
 
 
 async function testProvider(providerUrl: string): Promise<string> {
@@ -45,7 +45,7 @@ async function main() {
     // const resp = await provider.getSpecVersion();
     // console.log("default =", chId, resp);
 
-    const localIP="26";
+    const localIP = "26";
 
     const listProvider = [
         constants.NetworkName.SN_SEPOLIA, // default Sepolia Testnet
@@ -88,20 +88,23 @@ async function main() {
         // 'http://192.168.1.167:9545/rpc/v0_4', // my local pathfinder 
         // 'http://192.168.1.167:9545/rpc/v0.5', // my local pathfinder 
         // 'http://192.168.1.167:9545/rpc/v0_5', // my local pathfinder 
-        'http://192.168.1.'+localIP+':9545/rpc/v0_6', // my local pathfinder 
-        'http://192.168.1.'+localIP+':9545/rpc/v0_7', // my local pathfinder
-        'http://192.168.1.'+localIP+':9545/rpc/v0_8', // my local pathfinder
-        'http://192.168.1.'+localIP+':9545/rpc/v0_9', // my local pathfinder
-        'http://192.168.1.'+localIP+':9545/rpc/v0_10', // my local pathfinder
+        // 'http://192.168.1.' + localIP + ':9545/rpc/v0_6', // my local pathfinder 
+        // 'http://192.168.1.' + localIP + ':9545/rpc/v0_7', // my local pathfinder
+        'http://192.168.1.' + localIP + ':9545/rpc/v0_8', // my local pathfinder
+        'http://192.168.1.' + localIP + ':9545/rpc/v0_9', // my local pathfinder
+        'http://192.168.1.' + localIP + ':9545/rpc/v0_10', // my local pathfinder
         equilibriumPathfinderTestnetUrl,
         "https://api.zan.top/public/starknet-sepolia/rpc/v0_10",
-                
+        "https://sepolia."+SNFnodeUrl+"/pathfinder/rpc/v0_10",
+        "https://sepolia."+SNFnodeUrl+"/pathfinder/rpc/v0_9",
+        "https://sepolia."+SNFnodeUrl+"/juno/rpc/v0_10",
+
         // *************** Mainnet
         "https://starknet-mainnet.g.alchemy.com/v2/" + alchemyKey,
         // "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.5/" + alchemyKey,
         // "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0.6/" + alchemyKey,
-        "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_6/" + alchemyKey,
-        "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/" + alchemyKey,
+        // "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_6/" + alchemyKey,
+        // "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_7/" + alchemyKey,
         "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_8/" + alchemyKey,
         "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_9/" + alchemyKey,
         "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey,
@@ -137,12 +140,14 @@ async function main() {
         "https://rpc.starknet.lava.build/rpc/v0_10",
         // "http://192.168.1.11:6060/v0_4", // my Juno no more working
         // "http://192.168.1.11:6060/v0_5", // my Juno no more working
-        "http://192.168.1."+localIP+":6060/v0_6", //my local Juno
-        "http://192.168.1."+localIP+":6060/v0_7", //my local Juno
-        "http://192.168.1."+localIP+":6060/v0_8", //my local Juno
-        "http://192.168.1."+localIP+":6060/v0_9", //my local Juno
-        "http://192.168.1."+localIP+":6060/v0_10", //my local Juno
-        "https://api.zan.top/public/starknet-mainnet/rpc/v0_10"
+        // "http://192.168.1." + localIP + ":6060/v0_6", //my local Juno
+        // "http://192.168.1." + localIP + ":6060/v0_7", //my local Juno
+        "http://192.168.1." + localIP + ":6060/v0_8", //my local Juno
+        "http://192.168.1." + localIP + ":6060/v0_9", //my local Juno
+        "http://192.168.1." + localIP + ":6060/v0_10", //my local Juno
+        "https://api.zan.top/public/starknet-mainnet/rpc/v0_10",
+        "https://mainnet."+SNFnodeUrl+"/pathfinder/rpc/v0_10",
+
     ]
 
     for (const url of listProvider) {

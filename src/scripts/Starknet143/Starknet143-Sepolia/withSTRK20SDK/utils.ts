@@ -8,21 +8,27 @@
 // ClientAction serde, on-chain state discovery, note selection and change notes,
 // action phase ordering.
 //
-// The SDK is NOT an npm dependency of this repo: it is only published on the GitHub
-// Packages registry (auth required) and is an ES module (ts-node cannot require it).
-// It is therefore vendored here as a self-contained CommonJS bundle + type bundle:
-//   strk20sdk.js / strk20sdk.d.ts — generated from starkware-libs/starknet-privacy
-//   @ commit 91a54f1, `starknet` kept external (this repo's copy is used at runtime).
-// To regenerate (then delete the clone):
-//   git clone --depth 1 https://github.com/starkware-libs/starknet-privacy.git
+// The SDK is NOT an npm dependency of this repo: it is NOT on the public npm registry
+// (checked again 2026-08-14 — 404, under every plausible name), only on GitHub Packages
+// (auth required), and it is ESM-only (ts-node cannot require it). It is therefore
+// vendored here as a self-contained CommonJS bundle + type bundle, built FROM SOURCE —
+// which needs no token, since the repo itself is public:
+//   strk20sdk.js / strk20sdk.d.ts — starkware-libs/starknet-privacy, tag PRIVACY-0.14.3-RC.5
+//   (commit 66e3caa, SDK 0.14.3-rc.5, the release that renamed sub-account → shadow account).
+//   `starknet` is kept EXTERNAL: the SDK pins 10.5.0, but this repo's copy is what runs.
+// Needs Node >= 24 (ohttp-ts). To regenerate (then delete the clone):
+//   git clone --depth 1 --branch PRIVACY-0.14.3-RC.5 \
+//       https://github.com/starkware-libs/starknet-privacy.git
 //   cd starknet-privacy/sdk && npm install && npm run build
+//   # ⚠️ the entry MUST be .ts, not .mjs: it carries an `export type`, which esbuild
+//   #    rejects in a .js/.mjs file ("Expected identifier but found \"type\"").
 //   echo 'export * from "./dist/index.js";
 //         export { ContractDiscoveryProvider } from "./dist/internal/contract-discovery.js";
 //         export type { PoolContractInterface } from "./dist/internal/contract-discovery.js";
-//         export { PrivacyPoolABI } from "./dist/internal/abi.js";' > bundle-entry.mjs
-//   npx esbuild bundle-entry.mjs --bundle --platform=node --target=node20 --format=cjs \
+//         export { PrivacyPoolABI } from "./dist/internal/abi.js";' > bundle-entry.ts
+//   npx esbuild bundle-entry.ts --bundle --platform=node --target=node20 --format=cjs \
 //       --external:starknet --external:starknet-devnet --outfile=<here>/strk20sdk.js
-//   npm i -D --no-save dts-bundle-generator && cp bundle-entry.mjs bundle-entry-types.ts \
+//   npm i -D --no-save dts-bundle-generator && cp bundle-entry.ts bundle-entry-types.ts \
 //       && npx dts-bundle-generator --no-check --external-inlines \
 //       "@starknet-io/starknet-types-0101" "ohttp-ts" "zod" -o <here>/strk20sdk.d.ts bundle-entry-types.ts
 //

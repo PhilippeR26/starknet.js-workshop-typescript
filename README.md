@@ -1,6 +1,6 @@
-# Starkware Starknet network ^0.14.2
+# Starkware Starknet network ^0.14.3
 # Cairo Accounts and ERC20 Demo 
-# Typescript code, using Starknet.js v10.3.0 and local Starknet-devnet 0.8.2
+# Typescript code, using Starknet.js v10.7.0 and local Starknet-devnet 0.9.2
 ![Starknet.js](/src/img/starknet-js.png)
 
 If you want to implement the Starknet network in your DAPP, you can use starknet.js to interact with it.
@@ -75,6 +75,9 @@ A demo DAPP is [here](https://github.com/PhilippeR26/starknet-paymaster-SNIP-29)
 
 ### SNIP-36 proofs
 Find examples of usage of proofs: proof of age, proof of heavy calculation, proof of private vote. [Cairo codes](./contracts/cairo2170/) and [test scripts](./src/scripts/Starknet142/starknet142-Sepolia/)
+
+### STRK20 privacy pool
+Shield your ERC-20 tokens in the privacy pool, transfer them privately, unshield them. See the [low level scripts](./src/scripts/Starknet143/Starknet143-Sepolia/), the same operations with the [privacy SDK](./src/scripts/Starknet143/Starknet143-Sepolia/withSTRK20SDK/), and the [shadow accounts](./src/scripts/Starknet143/Starknet143-Sepolia/shadow-accounts-STRK20/README.md).
 
 ### Devnet :
 Devnet is launched and ended automatically in the main scripts of this tuto, using the `starknet-devnet` library : https://github.com/0xSpaceShard/starknet-devnet-js/blob/master/README.md  

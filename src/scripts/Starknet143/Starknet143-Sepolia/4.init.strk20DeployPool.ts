@@ -143,7 +143,7 @@ async function main() {
     console.log("Pool NOT deployed yet — deployment needed.");
     console.log("\n--- Plan ---");
     console.log(" • Deploy our own pool (once; fixed screener/auditor keys, fee = 0)");
-    console.log(`(Sepolia gas of 1 UDC deployment tx, paid by ${DEPLOYER_ADDRESS})`);
+    console.log(`(cost: the Sepolia gas of a single deployment tx, paid by ${DEPLOYER_ADDRESS})`);
 
     if (CHECK_ONLY) {
         console.log("\nCHECK_ONLY = true → nothing sent. Set CHECK_ONLY = false to execute for real.");

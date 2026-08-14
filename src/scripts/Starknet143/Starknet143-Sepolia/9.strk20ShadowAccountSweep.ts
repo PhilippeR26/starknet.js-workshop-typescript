@@ -1,14 +1,14 @@
-// STRK20 sub-account "sweep" WITHOUT a wallet — SEPOLIA, on the SELF-DEPLOYED pool.
+// STRK20 shadow account "sweep" WITHOUT a wallet — SEPOLIA, on the SELF-DEPLOYED pool.
 //
-// GOAL — prove that funds sitting on a sub-account can be pulled INTO the shielded
+// GOAL — prove that funds sitting on a shadow account can be pulled INTO the shielded
 // balance WITHOUT any Deposit action, hence WITHOUT an AML screening attestation.
 //
 // Scenario:
 //   1. account0 (the STRK20 user of script 5, already registered) sends a few STRK
-//      publicly to its DAPP-"test" sub-account #0 — as if received from the outside.
+//      publicly to its DAPP-"test" shadow account #0 — as if received from the outside.
 //   2. We read account0's shielded balance (before).
 //   3. In ONE proof, we sweep those STRK back: create an OPEN note owned by account0 +
-//      a ComputeAndInvoke action that runs a harmless call AS the sub-account and
+//      a ComputeAndInvoke action that runs a harmless call AS the shadow account and
 //      collects its whole STRK balance into that open note.  → NO Deposit, NO screening.
 //   4. We read account0's shielded balance (after): it grew by the swept amount.
 //
@@ -17,22 +17,31 @@
 // Deposit ClientAction. apply_actions only demands a ScreeningAttestation for a Deposit
 // (privacy.cairo _verify_screening); supplying one here would even panic UNEXPECTED_SCREENING.
 //
+// ⚠️ NAMING — "sub-account" was renamed "shadow account" across the wallet API, the Cairo
+// anonymizer and the privacy SDK. The contract is now ShadowAccountAnonymizer, the views are
+// get_shadow_accounts (with a 4th arg, until_undeployed) / get_shadow_account, and the event
+// is ShadowAccountDeployed. Renamed views change their SELECTOR: this script cannot read a
+// pre-rename anonymizer. The deployed ACCOUNT contract was NOT renamed — it is still
+// starkware_accounts::sub_account::SubAccount, from another repo — so "SubAccount" is correct
+// wherever it appears, not a leftover. privacy_compute / privacy_invoke_with_computation are
+// unchanged (the pool dispatches them by hardcoded selector).
+//
 // PREREQUISITES (run once, in order):
-//   - 4.init.strk20DeployPool.ts   → the pool exists.
-//   - 5.strk20ShieldUnshield.ts    → account0 is registered (viewing key + STRK channel/subchannel).
-//   - the SubAccountAnonymizer is deployed (see ANONYMIZER_ADDRESS below) and bound to OUR pool.
+//   - 4.init.strk20DeployPool.ts    → the pool exists.
+//   - 5.strk20ShieldUnshield.ts     → account0 is registered (viewing key + STRK channel/subchannel).
+//   - 9.init.deployAnonymizer.ts    → the ShadowAccountAnonymizer exists, bound to OUR pool
+//     (that script prints the deterministic address hard-coded in ANONYMIZER_ADDRESS below).
 //   - the SNIP-36 proof server (secure-voty) is running on SEPOLIA (port 3030) — see script 5 header.
 //
-// launch with : npx ts-node src/scripts/Starknet143/Starknet143-Sepolia/9.strk20SubAccountSweep.ts
-// Coded with Starknet.js v10.4.0
+// launch with : npx ts-node src/scripts/Starknet143/Starknet143-Sepolia/9.strk20ShadowAccountSweep.ts
+// Coded with Starknet.js v10.7.0
 
 import {
-    RpcProvider, Account, Contract, ec, num, hash, stark, cairo, json, shortString,
+    RpcProvider, Account, Contract, ec, num, hash, stark, cairo,
     constants, CairoBytes31, CairoCustomEnum, CairoOption, CairoOptionVariant,
     CallData, type BigNumberish, type Call, type Abi, type Calldata,
 } from "starknet";
 import type { INVOKE_TXN_V3 } from "@starknet-io/types-js";
-import fs from "fs";
 import { alchemyKey } from "../../../A-MainPriv/mainPriv";
 import { formatBalance } from "../../utils/formatBalance";
 import * as dotenv from "dotenv";
@@ -51,21 +60,25 @@ const POOL_CLASS_HASH = "0x067dddd89d80fedadc06b6f160798f94800a4a70164e5a24301cd
 const PROOF_VALIDITY_BLOCKS = 450;
 const SCREENER_PRIVATE_KEY = "0xCAFEBABE";
 const AUDITOR_PRIVATE_KEY = "0xa0d17042";
-// Sub-account anonymizer — self-deployed on Sepolia, bound to OUR pool (constructor:
-// privacy_contract = pool, sub_account_class_hash = 0x956ddc..., governance_admin above).
-const ANONYMIZER_ADDRESS = "0x597e600b8085453b28a28614e401f88b216cbba679ff7fa3ea7d71614da2803";
-const ANONYMIZER_ARTIFACT =
-    "compiledContracts/cairo2170/sub_account_anonymizer_SubAccountAnonymizer.contract_class.json";
-// The dapp scoping the sub-accounts, and which nonce (identity) we use.
+// Shadow account anonymizer — self-deployed on Sepolia by 9.init.deployAnonymizer.ts and
+// bound to OUR pool. This is the deterministic address that script produces (fixed salt +
+// fixed constructor calldata); if you ever change its constants, re-run it and paste the
+// address it prints here.
+const ANONYMIZER_ADDRESS = "0x4673569205981d00e07d995cf1cf3da400413eaeb4bbb1fafbb0b2925b2550e";
+// Post-rename ShadowAccountAnonymizer class — asserted on-chain below. A PRE-rename instance
+// (e.g. the workshop's previous one, 0x597e600b…) exposes get_sub_accounts instead: renaming
+// a view changes its selector, so this script simply cannot read it.
+const ANONYMIZER_CLASS_HASH = "0x7ffaf4f427c8de0ca35d32d44d97a31da3c24641e32b72f340660d5b9e7f5e6";
+// The dapp scoping the shadow accounts, and which nonce (identity) we use.
 const DAPP_NAME = "test";
-const SUBACCOUNT_NONCE = 0n;
+const SHADOW_ACCOUNT_NONCE = 0n;
 
 const STRK_ADDRESS = "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d";
-const AMOUNT = 10n ** 18n;        // 1 STRK sent to the sub-account, then swept back
+const AMOUNT = 10n ** 18n;        // 1 STRK sent to the shadow account, then swept back
 const PROOF_SERVER_URL = "http://localhost:3030";
 const MAX_NOTE_SCAN = 100;
 // true  : read-only — checks + plan, sends NOTHING. false : REALLY executes on Sepolia.
-const CHECK_ONLY = false;
+const CHECK_ONLY = true;
 // =========================================================
 
 const myProvider = new RpcProvider({
@@ -87,7 +100,6 @@ async function checkProofServer(): Promise<boolean> {
 
 // ================== STRK20 crypto helpers (identical to script 5) ==================
 const TAG = (s: string) => new CairoBytes31(s).toHexString();
-const poseidon = (vals: BigNumberish[]) => hash.computePoseidonHashOnElements(vals);
 const CURVE_ORDER = BigInt(ec.starkCurve.CURVE.n);
 const HALF_ORDER = CURVE_ORDER / 2n;
 const TWO_POW_128 = 2n ** 128n;
@@ -98,34 +110,34 @@ const POOL_DEPLOY_SALT = TAG("STRK20_POC_POOL_SALT:V1");
 const IDENTITY_KEY_TAG = TAG("IDENTITY_KEY_TAG:V1");
 
 function deriveViewingKey(accountPrivKey: string): string {
-    let h = BigInt(poseidon([VK_DERIVATION_TAG, accountPrivKey]));
+    let h = BigInt(hash.computePoseidonHashOnElements([VK_DERIVATION_TAG, accountPrivKey]));
     let vk = h % HALF_ORDER;
-    while (vk === 0n) { h = BigInt(poseidon([h])); vk = h % HALF_ORDER; }
+    while (vk === 0n) { h = BigInt(hash.computePoseidonHashOnElements([h])); vk = h % HALF_ORDER; }
     return num.toHex(vk);
 }
 function derivePublicKey(privKey: string): string {
     return num.toHex(ec.starkCurve.getStarkKey(privKey));
 }
 function computeChannelKey(userAddr: string, vk: string, vkPub: string): string {
-    return poseidon([TAG("CHANNEL_KEY_TAG:V1"), userAddr, vk, userAddr, vkPub]);
+    return hash.computePoseidonHashOnElements([TAG("CHANNEL_KEY_TAG:V1"), userAddr, vk, userAddr, vkPub]);
 }
 function computeChannelMarker(channelKey: string, userAddr: string, vkPub: string): string {
-    return poseidon([TAG("CHANNEL_MARKER_TAG:V1"), channelKey, userAddr, userAddr, vkPub]);
+    return hash.computePoseidonHashOnElements([TAG("CHANNEL_MARKER_TAG:V1"), channelKey, userAddr, userAddr, vkPub]);
 }
 function computeSubchannelMarker(channelKey: string, userAddr: string, vkPub: string, token: string): string {
-    return poseidon([TAG("SUBCHANNEL_MARKER_TAG:V1"), channelKey, userAddr, vkPub, token]);
+    return hash.computePoseidonHashOnElements([TAG("SUBCHANNEL_MARKER_TAG:V1"), channelKey, userAddr, vkPub, token]);
 }
 function computeNoteId(channelKey: string, token: string, index: number): string {
-    return poseidon([TAG("NOTE_ID_TAG:V1"), channelKey, token, index, 0]);
+    return hash.computePoseidonHashOnElements([TAG("NOTE_ID_TAG:V1"), channelKey, token, index, 0]);
 }
 function computeNullifier(channelKey: string, token: string, index: number, vk: string): string {
-    return poseidon([TAG("NULLIFIER_TAG:V1"), channelKey, token, index, 0, vk]);
+    return hash.computePoseidonHashOnElements([TAG("NULLIFIER_TAG:V1"), channelKey, token, index, 0, vk]);
 }
 function decryptNote(packed: bigint, channelKey: string, token: string, index: number): { salt: bigint; amount: bigint } {
     const salt = packed >> 128n;
     const enc = packed & (TWO_POW_128 - 1n);
     if (salt === 1n) return { salt, amount: enc }; // open note: plaintext amount
-    const h = BigInt(poseidon([TAG("ENC_AMOUNT_TAG:V1"), channelKey, token, index, 0, num.toHex(salt)]));
+    const h = BigInt(hash.computePoseidonHashOnElements([TAG("ENC_AMOUNT_TAG:V1"), channelKey, token, index, 0, num.toHex(salt)]));
     return { salt, amount: (enc - (h % TWO_POW_128) + TWO_POW_128) % TWO_POW_128 };
 }
 function randomFelt(): string {
@@ -133,13 +145,15 @@ function randomFelt(): string {
     return BigInt(r) === 0n ? randomFelt() : r;
 }
 
-// ================== anonymizer identity (mirrors sdk/src/internal/sub-accounts.ts) ==================
+// ================== anonymizer identity (mirrors sdk/src/internal/shadow-accounts.ts) ==================
 // identity_key = h(IDENTITY_KEY_TAG, user, vk, anonymizer)   (derived by the pool in-proof)
 // partial      = h(identity_key, dapp_name)
-// commitment   = h(partial, nonce)   = deploy salt → deterministic sub-account address
-const dappNameFelt = (): string => num.toHex(shortString.encodeShortString(DAPP_NAME));
+// commitment   = h(partial, nonce)   = deploy salt → deterministic shadow account address
+// ⚠️ identity_key hashes the anonymizer ADDRESS: redeploying the anonymizer moves every
+// shadow account of every user, even for identical (dapp_name, nonce).
+const dappNameFelt = (): string => TAG(DAPP_NAME);
 function computeIdentityKey(userAddr: string, vk: string): string {
-    return poseidon([IDENTITY_KEY_TAG, userAddr, vk, ANONYMIZER_ADDRESS]);
+    return hash.computePoseidonHashOnElements([IDENTITY_KEY_TAG, userAddr, vk, ANONYMIZER_ADDRESS]);
 }
 function partialCommitment(userAddr: string, vk: string): string {
     // Poseidon hash of exactly two elements (no length prefix) — matches PoseidonTrait chain.
@@ -317,7 +331,7 @@ async function discoverState(vk: string, vkPub: string, channelKey: string): Pro
     return { registeredKey, channelOpen, subchannelOpen, notes, nextNoteIndex: i };
 }
 
-// ERC-20 helpers (public balances of the sub-account / user).
+// ERC-20 helpers (public balances of the shadow account / user).
 let strk: Contract;
 async function strkBalance(addr: string): Promise<bigint> {
     return BigInt(await strk.balance_of(addr));
@@ -358,14 +372,24 @@ async function main() {
     }
     console.log(`Pool address (deterministic): ${poolAddress} ✅`);
 
-    // --- anonymizer: load ABI, check it is deployed and bound to OUR pool ---
-    anonymizerAbi = json.parse(fs.readFileSync(ANONYMIZER_ARTIFACT).toString("ascii")).abi as Abi;
+    // --- anonymizer: check it is deployed, post-rename, and bound to OUR pool ---
+    // ABI read ON-CHAIN (like the pool's above) rather than from a local .contract_class.json:
+    // the rename shipped a new class, so any vendored artifact goes stale — and this ABI is
+    // what encodes privacy_invoke_with_computation below, including OpenNote.collect_policy.
     let anonClassHash: string;
     try {
         anonClassHash = num.toHex(await myProvider.getClassHashAt(ANONYMIZER_ADDRESS));
     } catch {
-        throw new Error(`Anonymizer not deployed at ${ANONYMIZER_ADDRESS}.`);
+        throw new Error(`Anonymizer not deployed at ${ANONYMIZER_ADDRESS}. ` +
+            `Run 9.init.deployAnonymizer.ts first.`);
     }
+    if (BigInt(anonClassHash) !== BigInt(ANONYMIZER_CLASS_HASH)) {
+        throw new Error(`Anonymizer at ${ANONYMIZER_ADDRESS} holds class ${anonClassHash}, ` +
+            `expected the post-rename ShadowAccountAnonymizer ${ANONYMIZER_CLASS_HASH}. ` +
+            `A pre-rename instance exposes get_sub_accounts (different selector) and cannot be ` +
+            `read by this script — run 9.init.deployAnonymizer.ts.`);
+    }
+    anonymizerAbi = (await myProvider.getClassAt(ANONYMIZER_ADDRESS)).abi as Abi;
     const anonymizer = new Contract({ abi: anonymizerAbi, address: ANONYMIZER_ADDRESS, providerOrAccount: myProvider });
     const boundPool: bigint = BigInt(await anonymizer.get_privacy_contract());
     if (boundPool !== BigInt(poolAddress)) {
@@ -373,15 +397,18 @@ async function main() {
     }
     console.log(`Anonymizer ${ANONYMIZER_ADDRESS} deployed (class ${anonClassHash}), bound to our pool ✅`);
 
-    // --- derive user keys, locate the DAPP-"test" sub-account #0 ---
+    // --- derive user keys, locate the DAPP-"test" shadow account #0 ---
     const vk = deriveViewingKey(USER_PRIVATE_KEY);
     const vkPub = derivePublicKey(vk);
     const channelKey = computeChannelKey(USER_ADDRESS, vk, vkPub);
     const partial = partialCommitment(USER_ADDRESS, vk);
-    // Deterministic address of sub-account #0 (deployed lazily on first sweep).
-    const [info] = await anonymizer.get_sub_accounts(partial, SUBACCOUNT_NONCE, SUBACCOUNT_NONCE + 1n);
-    const subAccountAddress = num.toHex(info.address);
-    console.log(`\nDAPP "${DAPP_NAME}" sub-account #${SUBACCOUNT_NONCE}: ${subAccountAddress}` +
+    // Deterministic address of shadow account #0 (deployed lazily on first sweep).
+    // 4th arg until_undeployed: false => resolve every nonce of the range, deployed or not.
+    // true would stop at the first undeployed one and return nothing here.
+    const [info] = await anonymizer.get_shadow_accounts(
+        partial, SHADOW_ACCOUNT_NONCE, SHADOW_ACCOUNT_NONCE + 1n, false);
+    const shadowAccountAddress = num.toHex(info.address);
+    console.log(`\nDAPP "${DAPP_NAME}" shadow account #${SHADOW_ACCOUNT_NONCE}: ${shadowAccountAddress}` +
         ` (deployed: ${info.is_deployed})`);
 
     // --- state BEFORE ---
@@ -394,17 +421,17 @@ async function main() {
     }
     const shieldedBefore = shieldedBalance(state);
     strk = new Contract({ abi: (await myProvider.getClassAt(STRK_ADDRESS)).abi, address: STRK_ADDRESS, providerOrAccount: myProvider });
-    const subBalBefore = await strkBalance(subAccountAddress);
+    const shadowBalBefore = await strkBalance(shadowAccountAddress);
     console.log("\n--- BEFORE ---");
     console.log(`account0 shielded STRK balance : ${formatBalance(shieldedBefore, 18)}`);
-    console.log(`sub-account public STRK balance: ${formatBalance(subBalBefore, 18)}`);
+    console.log(`shadow account public STRK balance: ${formatBalance(shadowBalBefore, 18)}`);
 
     // --- plan ---
     const openIndex = state.nextNoteIndex;
     console.log("\n--- Plan ---");
-    console.log(` 1. public transfer ${formatBalance(AMOUNT, 18)} STRK: account0 → sub-account`);
+    console.log(` 1. public transfer ${formatBalance(AMOUNT, 18)} STRK: account0 → shadow account`);
     console.log(` 2. sweep (1 proof, NO screening): CreateOpenNote #${openIndex} + ComputeAndInvoke(collect All)`);
-    console.log(`    → account0 shielded balance grows by the sub-account's whole STRK balance`);
+    console.log(`    → account0 shielded balance grows by the shadow account's whole STRK balance`);
 
     if (CHECK_ONLY) {
         console.log("\nCHECK_ONLY = true → nothing sent.");
@@ -419,45 +446,45 @@ async function main() {
 
 
 
-    // --- step 1: public ERC-20 transfer to the (not-yet-deployed) sub-account ---
-    console.log("\n===== 1/2 public transfer to sub-account =====");
+    // --- step 1: public ERC-20 transfer to the (not-yet-deployed) shadow account ---
+    console.log("\n===== 1/2 public transfer to shadow account =====");
     const strkUser = new Contract({ abi: strk.abi, address: STRK_ADDRESS, providerOrAccount: userAccount });
-    const t = await strkUser.transfer(subAccountAddress, cairo.uint256(AMOUNT));
+    const t = await strkUser.transfer(shadowAccountAddress, cairo.uint256(AMOUNT));
     console.log("transfer tx:", t.transaction_hash);
     await myProvider.waitForTransaction(t.transaction_hash);
-    const subBal = await strkBalance(subAccountAddress);
-    console.log(`sub-account public STRK balance now: ${formatBalance(subBal, 18)} ✅`);
+    const shadowBal = await strkBalance(shadowAccountAddress);
+    console.log(`shadow account public STRK balance now: ${formatBalance(shadowBal, 18)} ✅`);
 
     // --- step 2: the sweep, in ONE proof (no Deposit, no screening) ---
-    // A harmless call executed AS the sub-account (satisfies the "≥ 1 call" rule); its
-    // return value is ignored. collect_policy = All → grab the sub-account's whole STRK.
+    // A harmless call executed AS the shadow account (satisfies the "≥ 1 call" rule); its
+    // return value is ignored. collect_policy = All → grab the shadow account's whole STRK.
     const harmlessCall: Call = {
         contractAddress: STRK_ADDRESS,
         entrypoint: "balance_of",
-        calldata: [subAccountAddress],
+        calldata: [shadowAccountAddress],
     };
     const openNoteId = computeNoteId(channelKey, STRK_ADDRESS, openIndex);
     const invokeAdditionalData = buildInvokeAdditionalData(
         [harmlessCall], [{ note_id: openNoteId, token: STRK_ADDRESS }]);
     const sweepActions: ClientAction[] = [
         action.createOpenNote(USER_ADDRESS, vkPub, STRK_ADDRESS, openIndex, randomFelt()), // phase 5
-        action.computeAndInvoke(dappNameFelt(), SUBACCOUNT_NONCE, invokeAdditionalData),    // phase 7
+        action.computeAndInvoke(dappNameFelt(), SHADOW_ACCOUNT_NONCE, invokeAdditionalData),    // phase 7
     ];
-    await proveAndApply(`2/2 SWEEP sub-account → shielded (open note #${openIndex})`,
+    await proveAndApply(`2/2 SWEEP shadow account → shielded (open note #${openIndex})`,
         sweepActions, userAccount, vk);
 
     // --- state AFTER ---
     const finalState = await discoverState(vk, vkPub, channelKey);
     const shieldedAfter = shieldedBalance(finalState);
-    const subBalAfter = await strkBalance(subAccountAddress);
+    const shadowBalAfter = await strkBalance(shadowAccountAddress);
     console.log("\n--- AFTER ---");
     for (const n of finalState.notes) {
         console.log(`note #${n.index}: ${formatBalance(n.amount, 18)} STRK ${n.spent ? "(spent)" : "(unspent)"}`);
     }
     console.log(`account0 shielded STRK balance : ${formatBalance(shieldedAfter, 18)}` +
         `  (was ${formatBalance(shieldedBefore, 18)}, +${formatBalance(shieldedAfter - shieldedBefore, 18)})`);
-    console.log(`sub-account public STRK balance: ${formatBalance(subBalAfter, 18)}`);
-    console.log("\nSwept sub-account funds into the shielded balance WITHOUT any Deposit / AML screening 🎉");
+    console.log(`shadow account public STRK balance: ${formatBalance(shadowBalAfter, 18)}`);
+    console.log("\nSwept shadow account funds into the shielded balance WITHOUT any Deposit / AML screening 🎉");
     await displayBalances(userAccount.address, myProvider);
 
 }

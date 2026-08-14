@@ -17,7 +17,7 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// bundle-entry.mjs
+// bundle-entry.ts
 var bundle_entry_exports = {};
 __export(bundle_entry_exports, {
   AddressMap: () => AddressMap,
@@ -36,6 +36,7 @@ __export(bundle_entry_exports, {
   ScreeningRejected: () => ScreeningRejected,
   ScreeningUnavailable: () => ScreeningUnavailable,
   SetupRequirement: () => SetupRequirement,
+  ShadowAccountAnonymizerABI: () => ShadowAccountAnonymizerABI,
   SimplePrivateTransfersImpl: () => SimplePrivateTransfersImpl,
   WarningCode: () => WarningCode,
   Witness: () => Witness,
@@ -1543,228 +1544,15 @@ var ActionCompiler = class {
   }
 };
 
-// dist/internal/builders.js
-var TokenOperationsBuilderImpl = class {
-  parentBuilder;
-  // Actions stored without context - context resolved during execute
-  openTokenChannels = [];
-  useNotes = [];
-  deposits = [];
-  createNotes = [];
-  withdraws = [];
-  // Surplus recipient (overrides parent builder's surplus recipient for this token)
-  surplusAction;
-  token;
-  constructor(parentBuilder, token) {
-    this.parentBuilder = parentBuilder;
-    this.token = toBigInt(token);
-    debugLog("builder", `TokenBuilder created for ${token}`);
-  }
-  setup(recipient) {
-    debugLog("builder", `TokenBuilder.setup for ${this.token} -> ${recipient}`);
-    this.openTokenChannels.push({ recipient: toBigInt(recipient), token: this.token });
-    return this;
-  }
-  inputs(...notes) {
-    for (const note of notes) {
-      this.useNotes.push({ token: this.token, note });
-    }
-    return this;
-  }
-  deposit(...inputs) {
-    debugLog("builder", `TokenBuilder.deposit for ${this.token}`, inputs);
-    for (const input of inputs) {
-      this.deposits.push({ token: this.token, amount: input.amount });
-      if (input.recipient !== void 0) {
-        this.createNotes.push({
-          token: this.token,
-          amount: input.amount,
-          recipient: toBigInt(input.recipient)
-        });
-      }
-    }
-    return this;
-  }
-  withdraw(...outputs) {
-    for (const output of outputs) {
-      this.withdraws.push({
-        token: this.token,
-        recipient: toBigInt(output.recipient ?? this.parentBuilder.userAddress),
-        amount: output.amount
-      });
-    }
-    return this;
-  }
-  transfer(...outputs) {
-    for (const output of outputs) {
-      if (isOpenNote(output)) {
-        this.createNotes.push({
-          token: this.token,
-          recipient: toBigInt(output.recipient),
-          amount: Open
-        });
-      } else {
-        this.createNotes.push({
-          token: this.token,
-          recipient: toBigInt(output.recipient),
-          amount: output.amount
-        });
-      }
-    }
-    return this;
-  }
-  surplusTo(recipient, withdraw) {
-    this.surplusAction = { recipient: toBigInt(recipient), token: this.token, withdraw };
-    return this;
-  }
-  with(token, ops) {
-    if (ops) {
-      ops(this.parentBuilder.with(token));
-      return this;
-    }
-    return this.parentBuilder.with(token);
-  }
-  done() {
-    return this.parentBuilder;
-  }
-  async execute(options) {
-    return this.parentBuilder.execute(options);
-  }
-  async createProofInvocation(options) {
-    return this.parentBuilder.createProofInvocation(options);
-  }
-  async simulate(options) {
-    return this.parentBuilder.simulate(options);
-  }
-};
-var PrivateTransfersBuilderImpl = class {
-  transfers;
-  userAddress;
-  setViewingKey;
-  openChannels = [];
-  invokeExternal;
-  computeAndInvokeAction;
-  tokenBuilders = new AddressMap((token) => new TokenOperationsBuilderImpl(this, token));
-  // Default surplus recipient for all tokens
-  defaultSurplusAction;
-  // Options passed at build time
-  buildOptions;
-  constructor(transfers, userAddress, options) {
-    this.transfers = transfers;
-    this.userAddress = userAddress;
-    this.buildOptions = options;
-  }
-  register() {
-    this.setViewingKey = {};
-    return this;
-  }
-  setup(recipient) {
-    this.openChannels.push({ recipient: toBigInt(recipient) });
-    return this;
-  }
-  invoke(callBuilder) {
-    this.assertNoInvokePhaseAction();
-    this.invokeExternal = {
-      callBuilder
-    };
-    return this;
-  }
-  computeAndInvoke(callBuilder) {
-    this.assertNoInvokePhaseAction();
-    this.computeAndInvokeAction = {
-      callBuilder
-    };
-    return this;
-  }
-  // `invoke` and `computeAndInvoke` both occupy the single invoke phase the contract allows
-  // per transaction, so only one of them may be queued.
-  assertNoInvokePhaseAction() {
-    if (this.invokeExternal !== void 0 || this.computeAndInvokeAction !== void 0) {
-      throw new Error("At most one invoke-phase action (.invoke() / .computeAndInvoke()) per transaction; already set.");
-    }
-  }
-  surplusTo(recipient, withdraw) {
-    this.defaultSurplusAction = { recipient: toBigInt(recipient), token: void 0, withdraw };
-    return this;
-  }
-  with(token, ops) {
-    const tokenBuilder = this.tokenBuilders.get(token);
-    if (ops) {
-      ops(tokenBuilder);
-      return this;
-    }
-    return tokenBuilder;
-  }
-  collectActionsAndOptions(options) {
-    const mergedOptions = {
-      ...this.buildOptions,
-      ...options,
-      autoDiscover: {
-        ...this.buildOptions?.autoDiscover,
-        ...options?.autoDiscover
-      }
-    };
-    const openTokenChannels = [];
-    const deposits = [];
-    const useNotes = [];
-    const createNotes = [];
-    const withdraws = [];
-    const surpluses = [];
-    for (const [token, tokenBuilder] of this.tokenBuilders.entries()) {
-      debugLog("builder", `Collecting actions for ${token}`, {
-        openTokenChannels: tokenBuilder.openTokenChannels,
-        deposits: tokenBuilder.deposits.length
-      });
-      openTokenChannels.push(...tokenBuilder.openTokenChannels);
-      deposits.push(...tokenBuilder.deposits);
-      useNotes.push(...tokenBuilder.useNotes);
-      createNotes.push(...tokenBuilder.createNotes);
-      withdraws.push(...tokenBuilder.withdraws);
-      const surplusToAction = tokenBuilder.surplusAction ?? this.defaultSurplusAction;
-      if (surplusToAction) {
-        surpluses.push({ ...surplusToAction, token });
-      }
-    }
-    const actions = {
-      setViewingKey: this.setViewingKey,
-      openChannels: this.openChannels,
-      openTokenChannels,
-      deposits,
-      useNotes,
-      createNotes,
-      withdraws,
-      surpluses,
-      invoke: this.invokeExternal,
-      computeAndInvoke: this.computeAndInvokeAction
-    };
-    return { actions, mergedOptions };
-  }
-  async execute(options) {
-    debugLog("builder", "PrivateTransfersBuilderImpl.execute called");
-    const { actions, mergedOptions } = this.collectActionsAndOptions(options);
-    return this.transfers.execute(actions, mergedOptions);
-  }
-  async createProofInvocation(options) {
-    debugLog("builder", "PrivateTransfersBuilderImpl.createProofInvocation called");
-    const { actions, mergedOptions } = this.collectActionsAndOptions(options);
-    return this.transfers.createProofInvocation(actions, mergedOptions);
-  }
-  async simulate(options) {
-    debugLog("builder", "PrivateTransfersBuilderImpl.simulate called");
-    const { actions, mergedOptions } = this.collectActionsAndOptions();
-    return this.transfers.simulate(actions, { ...mergedOptions, ...options });
-  }
-};
-
-// dist/internal/sub-accounts.js
+// dist/internal/shadow-accounts.js
 var import_starknet9 = require("starknet");
 
 // dist/internal/anonymizer-abi.js
-var SubAccountAnonymizerABI = [
+var ShadowAccountAnonymizerABI = [
   {
     type: "impl",
-    name: "SubAccountAnonymizerImpl",
-    interface_name: "sub_account_anonymizer::sub_account_anonymizer::ISubAccountAnonymizer"
+    name: "ShadowAccountAnonymizerImpl",
+    interface_name: "shadow_account_anonymizer::shadow_account_anonymizer::IShadowAccountAnonymizer"
   },
   {
     type: "struct",
@@ -1795,8 +1583,26 @@ var SubAccountAnonymizerABI = [
     ]
   },
   {
+    type: "enum",
+    name: "shadow_account_anonymizer::shadow_account_anonymizer::CollectPolicy",
+    variants: [
+      {
+        name: "All",
+        type: "()"
+      },
+      {
+        name: "Diff",
+        type: "()"
+      },
+      {
+        name: "Exact",
+        type: "core::integer::u128"
+      }
+    ]
+  },
+  {
     type: "struct",
-    name: "sub_account_anonymizer::sub_account_anonymizer::OpenNote",
+    name: "shadow_account_anonymizer::shadow_account_anonymizer::OpenNote",
     members: [
       {
         name: "note_id",
@@ -1805,16 +1611,20 @@ var SubAccountAnonymizerABI = [
       {
         name: "token",
         type: "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        name: "collect_policy",
+        type: "shadow_account_anonymizer::shadow_account_anonymizer::CollectPolicy"
       }
     ]
   },
   {
     type: "struct",
-    name: "core::array::Span::<sub_account_anonymizer::sub_account_anonymizer::OpenNote>",
+    name: "core::array::Span::<shadow_account_anonymizer::shadow_account_anonymizer::OpenNote>",
     members: [
       {
         name: "snapshot",
-        type: "@core::array::Array::<sub_account_anonymizer::sub_account_anonymizer::OpenNote>"
+        type: "@core::array::Array::<shadow_account_anonymizer::shadow_account_anonymizer::OpenNote>"
       }
     ]
   },
@@ -1862,7 +1672,7 @@ var SubAccountAnonymizerABI = [
   },
   {
     type: "struct",
-    name: "sub_account_anonymizer::sub_account_anonymizer::SubAccountInfo",
+    name: "shadow_account_anonymizer::shadow_account_anonymizer::ShadowAccountInfo",
     members: [
       {
         name: "nonce",
@@ -1880,17 +1690,17 @@ var SubAccountAnonymizerABI = [
   },
   {
     type: "struct",
-    name: "core::array::Span::<sub_account_anonymizer::sub_account_anonymizer::SubAccountInfo>",
+    name: "core::array::Span::<shadow_account_anonymizer::shadow_account_anonymizer::ShadowAccountInfo>",
     members: [
       {
         name: "snapshot",
-        type: "@core::array::Array::<sub_account_anonymizer::sub_account_anonymizer::SubAccountInfo>"
+        type: "@core::array::Array::<shadow_account_anonymizer::shadow_account_anonymizer::ShadowAccountInfo>"
       }
     ]
   },
   {
     type: "interface",
-    name: "sub_account_anonymizer::sub_account_anonymizer::ISubAccountAnonymizer",
+    name: "shadow_account_anonymizer::shadow_account_anonymizer::IShadowAccountAnonymizer",
     items: [
       {
         type: "function",
@@ -1930,7 +1740,7 @@ var SubAccountAnonymizerABI = [
           },
           {
             name: "open_notes",
-            type: "core::array::Span::<sub_account_anonymizer::sub_account_anonymizer::OpenNote>"
+            type: "core::array::Span::<shadow_account_anonymizer::shadow_account_anonymizer::OpenNote>"
           }
         ],
         outputs: [
@@ -1942,7 +1752,7 @@ var SubAccountAnonymizerABI = [
       },
       {
         type: "function",
-        name: "get_sub_accounts",
+        name: "get_shadow_accounts",
         inputs: [
           {
             name: "partial_commitment",
@@ -1955,11 +1765,31 @@ var SubAccountAnonymizerABI = [
           {
             name: "end_nonce",
             type: "core::integer::u64"
+          },
+          {
+            name: "until_undeployed",
+            type: "core::bool"
           }
         ],
         outputs: [
           {
-            type: "core::array::Span::<sub_account_anonymizer::sub_account_anonymizer::SubAccountInfo>"
+            type: "core::array::Span::<shadow_account_anonymizer::shadow_account_anonymizer::ShadowAccountInfo>"
+          }
+        ],
+        state_mutability: "view"
+      },
+      {
+        type: "function",
+        name: "get_shadow_account",
+        inputs: [
+          {
+            name: "identity_commitment",
+            type: "core::felt252"
+          }
+        ],
+        outputs: [
+          {
+            type: "core::starknet::contract_address::ContractAddress"
           }
         ],
         state_mutability: "view"
@@ -1977,7 +1807,7 @@ var SubAccountAnonymizerABI = [
       },
       {
         type: "function",
-        name: "get_sub_account_class_hash",
+        name: "get_shadow_account_class_hash",
         inputs: [],
         outputs: [
           {
@@ -2298,7 +2128,7 @@ var SubAccountAnonymizerABI = [
         type: "core::starknet::contract_address::ContractAddress"
       },
       {
-        name: "sub_account_class_hash",
+        name: "shadow_account_class_hash",
         type: "core::starknet::class_hash::ClassHash"
       },
       {
@@ -2516,7 +2346,24 @@ var SubAccountAnonymizerABI = [
   },
   {
     type: "event",
-    name: "sub_account_anonymizer::sub_account_anonymizer::SubAccountAnonymizer::Event",
+    name: "shadow_account_anonymizer::shadow_account_anonymizer::ShadowAccountAnonymizer::ShadowAccountDeployed",
+    kind: "struct",
+    members: [
+      {
+        name: "identity_commitment",
+        type: "core::felt252",
+        kind: "key"
+      },
+      {
+        name: "shadow_account",
+        type: "core::starknet::contract_address::ContractAddress",
+        kind: "key"
+      }
+    ]
+  },
+  {
+    type: "event",
+    name: "shadow_account_anonymizer::shadow_account_anonymizer::ShadowAccountAnonymizer::Event",
     kind: "enum",
     variants: [
       {
@@ -2538,40 +2385,47 @@ var SubAccountAnonymizerABI = [
         name: "SRC5Event",
         type: "openzeppelin_introspection::src5::SRC5Component::Event",
         kind: "flat"
+      },
+      {
+        name: "ShadowAccountDeployed",
+        type: "shadow_account_anonymizer::shadow_account_anonymizer::ShadowAccountAnonymizer::ShadowAccountDeployed",
+        kind: "nested"
       }
     ]
   }
 ];
 
-// dist/internal/sub-accounts.js
+// dist/internal/shadow-accounts.js
 function encodeDappName(dappName) {
   return typeof dappName === "string" ? toBigInt(import_starknet9.shortString.encodeShortString(dappName)) : toBigInt(dappName);
 }
-var SubAccountsBuilderImpl = class {
+var ShadowAccountsBuilderImpl = class {
   params;
   dappName;
-  subAccountAnonymizerAddress;
+  shadowAccountAnonymizerAddress;
   constructor(params) {
     this.params = params;
     this.dappName = encodeDappName(params.dappName);
-    this.subAccountAnonymizerAddress = toBigInt(params.subAccountAnonymizerAddress);
+    this.shadowAccountAnonymizerAddress = toBigInt(params.shadowAccountAnonymizerAddress);
   }
   invoke(nonce, options) {
-    const { dappName, subAccountAnonymizerAddress } = this;
+    const { dappName, shadowAccountAnonymizerAddress } = this;
     const nonceFelt = toBigInt(nonce);
     const anonymizerCalls = options.calls.map((call) => ({
       to: call.contractAddress,
       selector: import_starknet9.hash.getSelectorFromName(call.entrypoint),
       calldata: import_starknet9.CallData.compile(call.calldata ?? [])
     }));
-    return this.params.transfers.build().computeAndInvoke((args) => {
+    const collectPolicy = toCollectPolicyEnum(options.collectPolicy ?? { type: "all" });
+    return this.params.builder.computeAndInvoke((args) => {
       const openNotes = args.openNotes.map((note) => ({
         note_id: note.noteId,
-        token: note.token
+        token: note.token,
+        collect_policy: collectPolicy
       }));
-      const invokeAdditionalData = new import_starknet9.CallData(SubAccountAnonymizerABI).compile("privacy_invoke_with_computation", [0n, anonymizerCalls, openNotes]).slice(1).map(toBigInt);
+      const invokeAdditionalData = new import_starknet9.CallData(ShadowAccountAnonymizerABI).compile("privacy_invoke_with_computation", [0n, anonymizerCalls, openNotes]).slice(1).map(toBigInt);
       return {
-        contractAddress: toHex(subAccountAnonymizerAddress),
+        contractAddress: toHex(shadowAccountAnonymizerAddress),
         computeAdditionalData: [dappName, nonceFelt],
         invokeAdditionalData
       };
@@ -2579,11 +2433,246 @@ var SubAccountsBuilderImpl = class {
   }
   async partialCommitment() {
     const viewingKey = await this.params.getViewingKey();
-    const identityKey = compute_identity_key(this.params.user, toBigInt(viewingKey), this.subAccountAnonymizerAddress);
+    const identityKey = compute_identity_key(this.params.user, toBigInt(viewingKey), this.shadowAccountAnonymizerAddress);
     return hash(identityKey, this.dappName);
   }
   async commitment(nonce) {
     return hash(await this.partialCommitment(), toBigInt(nonce));
+  }
+};
+function toCollectPolicyEnum(policy) {
+  return new import_starknet9.CairoCustomEnum({
+    All: policy.type === "all" ? {} : void 0,
+    Diff: policy.type === "diff" ? {} : void 0,
+    Exact: policy.type === "exact" ? policy.amount : void 0
+  });
+}
+
+// dist/internal/builders.js
+var TokenOperationsBuilderImpl = class {
+  parentBuilder;
+  // Actions stored without context - context resolved during execute
+  openTokenChannels = [];
+  useNotes = [];
+  deposits = [];
+  createNotes = [];
+  withdraws = [];
+  // Surplus recipient (overrides parent builder's surplus recipient for this token)
+  surplusAction;
+  token;
+  constructor(parentBuilder, token) {
+    this.parentBuilder = parentBuilder;
+    this.token = toBigInt(token);
+    debugLog("builder", `TokenBuilder created for ${token}`);
+  }
+  setup(recipient) {
+    debugLog("builder", `TokenBuilder.setup for ${this.token} -> ${recipient}`);
+    this.openTokenChannels.push({ recipient: toBigInt(recipient), token: this.token });
+    return this;
+  }
+  inputs(...notes) {
+    for (const note of notes) {
+      this.useNotes.push({ token: this.token, note });
+    }
+    return this;
+  }
+  deposit(...inputs) {
+    debugLog("builder", `TokenBuilder.deposit for ${this.token}`, inputs);
+    for (const input of inputs) {
+      this.deposits.push({ token: this.token, amount: input.amount });
+      if (input.recipient !== void 0) {
+        this.createNotes.push({
+          token: this.token,
+          amount: input.amount,
+          recipient: toBigInt(input.recipient)
+        });
+      }
+    }
+    return this;
+  }
+  withdraw(...outputs) {
+    for (const output of outputs) {
+      this.withdraws.push({
+        token: this.token,
+        recipient: toBigInt(output.recipient ?? this.parentBuilder.userAddress),
+        amount: output.amount
+      });
+    }
+    return this;
+  }
+  transfer(...outputs) {
+    for (const output of outputs) {
+      if (isOpenNote(output)) {
+        this.createNotes.push({
+          token: this.token,
+          recipient: toBigInt(output.recipient),
+          amount: Open
+        });
+      } else {
+        this.createNotes.push({
+          token: this.token,
+          recipient: toBigInt(output.recipient),
+          amount: output.amount
+        });
+      }
+    }
+    return this;
+  }
+  surplusTo(recipient, withdraw) {
+    this.surplusAction = { recipient: toBigInt(recipient), token: this.token, withdraw };
+    return this;
+  }
+  with(token, ops) {
+    if (ops) {
+      ops(this.parentBuilder.with(token));
+      return this;
+    }
+    return this.parentBuilder.with(token);
+  }
+  done() {
+    return this.parentBuilder;
+  }
+  async execute(options) {
+    return this.parentBuilder.execute(options);
+  }
+  async createProofInvocation(options) {
+    return this.parentBuilder.createProofInvocation(options);
+  }
+  async simulate(options) {
+    return this.parentBuilder.simulate(options);
+  }
+};
+var PrivateTransfersBuilderImpl = class {
+  transfers;
+  userAddress;
+  shadowAccountDeps;
+  setViewingKey;
+  openChannels = [];
+  invokeExternal;
+  computeAndInvokeAction;
+  tokenBuilders = new AddressMap((token) => new TokenOperationsBuilderImpl(this, token));
+  // Default surplus recipient for all tokens
+  defaultSurplusAction;
+  // Options passed at build time
+  buildOptions;
+  constructor(transfers, userAddress, options, shadowAccountDeps) {
+    this.transfers = transfers;
+    this.userAddress = userAddress;
+    this.shadowAccountDeps = shadowAccountDeps;
+    this.buildOptions = options;
+  }
+  register() {
+    this.setViewingKey = {};
+    return this;
+  }
+  setup(recipient) {
+    this.openChannels.push({ recipient: toBigInt(recipient) });
+    return this;
+  }
+  invoke(callBuilder) {
+    this.assertNoInvokePhaseAction();
+    this.invokeExternal = {
+      callBuilder
+    };
+    return this;
+  }
+  computeAndInvoke(callBuilder) {
+    this.assertNoInvokePhaseAction();
+    this.computeAndInvokeAction = {
+      callBuilder
+    };
+    return this;
+  }
+  // `invoke` and `computeAndInvoke` both occupy the single invoke phase the contract allows
+  // per transaction, so only one of them may be queued.
+  assertNoInvokePhaseAction() {
+    if (this.invokeExternal !== void 0 || this.computeAndInvokeAction !== void 0) {
+      throw new Error("At most one invoke-phase action (.invoke() / .computeAndInvoke()) per transaction; already set.");
+    }
+  }
+  shadowAccounts(dappName) {
+    const deps = this.shadowAccountDeps;
+    if (deps?.anonymizerAddress === void 0) {
+      throw new Error("shadowAccounts(...) requires `shadowAccountAnonymizerAddress` in the createPrivateTransfers config.");
+    }
+    return new ShadowAccountsBuilderImpl({
+      builder: this,
+      dappName,
+      shadowAccountAnonymizerAddress: deps.anonymizerAddress,
+      user: toBigInt(this.userAddress),
+      getViewingKey: deps.getViewingKey
+    });
+  }
+  surplusTo(recipient, withdraw) {
+    this.defaultSurplusAction = { recipient: toBigInt(recipient), token: void 0, withdraw };
+    return this;
+  }
+  with(token, ops) {
+    const tokenBuilder = this.tokenBuilders.get(token);
+    if (ops) {
+      ops(tokenBuilder);
+      return this;
+    }
+    return tokenBuilder;
+  }
+  collectActionsAndOptions(options) {
+    const mergedOptions = {
+      ...this.buildOptions,
+      ...options,
+      autoDiscover: {
+        ...this.buildOptions?.autoDiscover,
+        ...options?.autoDiscover
+      }
+    };
+    const openTokenChannels = [];
+    const deposits = [];
+    const useNotes = [];
+    const createNotes = [];
+    const withdraws = [];
+    const surpluses = [];
+    for (const [token, tokenBuilder] of this.tokenBuilders.entries()) {
+      debugLog("builder", `Collecting actions for ${token}`, {
+        openTokenChannels: tokenBuilder.openTokenChannels,
+        deposits: tokenBuilder.deposits.length
+      });
+      openTokenChannels.push(...tokenBuilder.openTokenChannels);
+      deposits.push(...tokenBuilder.deposits);
+      useNotes.push(...tokenBuilder.useNotes);
+      createNotes.push(...tokenBuilder.createNotes);
+      withdraws.push(...tokenBuilder.withdraws);
+      const surplusToAction = tokenBuilder.surplusAction ?? this.defaultSurplusAction;
+      if (surplusToAction) {
+        surpluses.push({ ...surplusToAction, token });
+      }
+    }
+    const actions = {
+      setViewingKey: this.setViewingKey,
+      openChannels: this.openChannels,
+      openTokenChannels,
+      deposits,
+      useNotes,
+      createNotes,
+      withdraws,
+      surpluses,
+      invoke: this.invokeExternal,
+      computeAndInvoke: this.computeAndInvokeAction
+    };
+    return { actions, mergedOptions };
+  }
+  async execute(options) {
+    debugLog("builder", "PrivateTransfersBuilderImpl.execute called");
+    const { actions, mergedOptions } = this.collectActionsAndOptions(options);
+    return this.transfers.execute(actions, mergedOptions);
+  }
+  async createProofInvocation(options) {
+    debugLog("builder", "PrivateTransfersBuilderImpl.createProofInvocation called");
+    const { actions, mergedOptions } = this.collectActionsAndOptions(options);
+    return this.transfers.createProofInvocation(actions, mergedOptions);
+  }
+  async simulate(options) {
+    debugLog("builder", "PrivateTransfersBuilderImpl.simulate called");
+    const { actions, mergedOptions } = this.collectActionsAndOptions();
+    return this.transfers.simulate(actions, { ...mergedOptions, ...options });
   }
 };
 
@@ -2591,15 +2680,15 @@ var SubAccountsBuilderImpl = class {
 var AbstractPrivateTransfers = class {
   viewingKeyProvider;
   discoveryProvider;
-  subAccountAnonymizerAddress;
+  shadowAccountAnonymizerAddress;
   user;
   /** No-op in base; override in subclass when using a provider that caches nonce. */
   invalidateProofNonceCache() {
   }
-  constructor(userAddress, viewingKeyProvider, discoveryProvider, subAccountAnonymizerAddress) {
+  constructor(userAddress, viewingKeyProvider, discoveryProvider, shadowAccountAnonymizerAddress) {
     this.viewingKeyProvider = viewingKeyProvider;
     this.discoveryProvider = discoveryProvider;
-    this.subAccountAnonymizerAddress = subAccountAnonymizerAddress;
+    this.shadowAccountAnonymizerAddress = shadowAccountAnonymizerAddress;
     this.user = toBigInt(userAddress);
   }
   /**
@@ -2630,17 +2719,8 @@ var AbstractPrivateTransfers = class {
    * Create a builder for batching multiple operations
    */
   build(options) {
-    return new PrivateTransfersBuilderImpl(this, this.user, options);
-  }
-  subaccounts(dappName) {
-    if (this.subAccountAnonymizerAddress === void 0) {
-      throw new Error("subaccounts(...) requires `subAccountAnonymizerAddress` in the createPrivateTransfers config.");
-    }
-    return new SubAccountsBuilderImpl({
-      transfers: this,
-      dappName,
-      subAccountAnonymizerAddress: this.subAccountAnonymizerAddress,
-      user: this.user,
+    return new PrivateTransfersBuilderImpl(this, this.user, options, {
+      anonymizerAddress: this.shadowAccountAnonymizerAddress,
       getViewingKey: () => this.getViewingKey()
     });
   }
@@ -4881,6 +4961,2476 @@ var ProofInvocationFactory = class {
     return decoder.decodeParameters("core::array::Span::<privacy::actions::ServerAction>", output);
   }
 };
+
+// dist/internal/mock-proving.js
+function unwrapMessage(entry) {
+  return "message" in entry ? entry.message : entry;
+}
+function collectMessages(invocation) {
+  if (invocation == null)
+    return [];
+  return [
+    ...(invocation.messages ?? []).map(unwrapMessage),
+    ...(invocation.calls ?? []).flatMap(collectMessages)
+  ];
+}
+var CallMockProofProvider = class {
+  node;
+  chainId;
+  options;
+  constructor(node, chainId, options) {
+    this.node = node;
+    this.chainId = chainId;
+    this.options = options;
+  }
+  async getDefaultDetails() {
+    return getDefaultProofDetails(this.chainId);
+  }
+  async prove(invocation, blockIdentifier) {
+    const { poolClassHash, serverActions } = await this.compileActions(invocation, blockIdentifier);
+    let baseBlockNumber;
+    if (blockIdentifier != null) {
+      const block = await this.node.getBlock(blockIdentifier);
+      baseBlockNumber = BigInt(block.block_number);
+    } else {
+      const latestBlock = await this.node.getBlock("latest");
+      const currentBlockNumber = BigInt(latestBlock.block_number);
+      const blocksBack = 10n;
+      baseBlockNumber = currentBlockNumber > blocksBack ? currentBlockNumber - blocksBack : 1n;
+    }
+    const baseBlock = await this.node.getBlock(Number(baseBlockNumber));
+    const proofFacts = buildProofFacts(invocation.sender_address, poolClassHash, serverActions, baseBlockNumber, baseBlock.block_hash ?? "0x0", this.chainId);
+    return {
+      output: buildMessagePayload(poolClassHash, serverActions),
+      data: void 0,
+      proofFacts
+    };
+  }
+  /**
+   * Runs the pool's compile step. A signed invocation is simulated as a real `__execute__` invoke, so
+   * the pool itself runs `assert_valid_signature` — every accepted signature form (custom validation,
+   * transaction hash, SNIP-12 `CallSet`) is honored exactly as on-chain, and an unauthorized one
+   * panics with `INVALID_SIGNATURE`. Fee simulation and unsigned mock invocations instead use the
+   * plain `compile_actions` view, which performs no signature check because a view has no `tx_info`.
+   */
+  async compileActions(invocation, blockIdentifier) {
+    const signature = invocation.signature ? import_starknet12.stark.formatSignature(invocation.signature) : [];
+    if (this.options?.validateSignature === false || signature.length === 0) {
+      const [serverActions, poolClassHash] = await Promise.all([
+        this.node.callContract({
+          contractAddress: invocation.sender_address,
+          entrypoint: "compile_actions",
+          calldata: extractExecuteViewCalldata(invocation.calldata)
+        }, blockIdentifier),
+        this.node.getClassHashAt(invocation.sender_address, blockIdentifier)
+      ]);
+      return { poolClassHash, serverActions };
+    }
+    return this.simulateExecute(invocation, signature, blockIdentifier);
+  }
+  /**
+   * Simulates the invocation as an `__execute__` invoke and reads the compile output back out of the
+   * L2-to-L1 message the pool emits (`send_message_to_server`), whose payload is
+   * `[class_hash, ...server_actions]` — so the class hash needs no separate query.
+   */
+  async simulateExecute(invocation, signature, blockIdentifier) {
+    const channel = this.node.channel;
+    if (channel?.simulateTransaction == null) {
+      throw new Error("CallMockProofProvider needs a node whose channel supports simulateTransaction to validate signatures; pass validateSignature: false to compile without validation");
+    }
+    const simulation = await channel.simulateTransaction(
+      [
+        {
+          type: import_starknet12.TransactionType.INVOKE,
+          contractAddress: invocation.sender_address,
+          calldata: invocation.calldata,
+          signature,
+          nonce: invocation.nonce,
+          version: invocation.version,
+          resourceBounds: invocation.resource_bounds,
+          tip: invocation.tip,
+          paymasterData: invocation.paymaster_data,
+          accountDeploymentData: invocation.account_deployment_data,
+          nonceDataAvailabilityMode: invocation.nonce_data_availability_mode,
+          feeDataAvailabilityMode: invocation.fee_data_availability_mode
+        }
+      ],
+      // skipValidate drops only __validate__'s zero-tip / zero-resource-price assertions; the
+      // signature check lives in __execute__ and still runs. skipFeeCharge is required, not
+      // cosmetic: __validate__ demands a zero max_price_per_unit, so the invocation carries zero
+      // resource bounds and the node's fee-bounds pre-check would otherwise reject the transaction
+      // before __execute__ runs ("resources don't cover the minimal transaction fee"). It is passed
+      // explicitly rather than relying on the client's default.
+      { blockIdentifier, skipValidate: true, skipFeeCharge: true }
+    );
+    const payload = collectMessages(simulation?.[0]?.transaction_trace?.execute_invocation).find((message) => BigInt(message.to_address) === 0n)?.payload;
+    if (payload == null || payload.length === 0) {
+      throw new Error("simulated __execute__ emitted no server message; the pool did not compile the actions");
+    }
+    return { poolClassHash: payload[0], serverActions: payload.slice(1) };
+  }
+};
+
+// dist/internal/screening-calldata.js
+var import_starknet13 = require("starknet");
+function screeningCalldataSuffix(additionalData) {
+  const signature = additionalData?.signature;
+  const attestationOption = signature === void 0 ? new import_starknet13.CairoOption(import_starknet13.CairoOptionVariant.None) : new import_starknet13.CairoOption(import_starknet13.CairoOptionVariant.Some, {
+    issued_at: signature.issued_at,
+    signature: import_starknet13.cairo.tuple(signature.sig_r, signature.sig_s)
+  });
+  return import_starknet13.CallData.compile([attestationOption]).map((felt) => toHex(BigInt(felt)));
+}
+
+// dist/internal/private-transfers.js
+var PrivateTransfers = class extends AbstractPrivateTransfers {
+  params;
+  constructor(params) {
+    super(params.account.address, params.viewingKeyProvider, params.discoveryProvider, params.shadowAccountAnonymizerAddress);
+    this.params = params;
+  }
+  async getCompiler() {
+    const viewingKey = await this.params.viewingKeyProvider.getViewingKey();
+    return new ActionCompiler(this.user, viewingKey, this.params.discoveryProvider, toBigInt(this.params.poolContractAddress));
+  }
+  async createProofInvocation(actions, options) {
+    const viewingKey = await this.params.viewingKeyProvider.getViewingKey();
+    const compiler = new ActionCompiler(this.user, viewingKey, this.params.discoveryProvider, toBigInt(this.params.poolContractAddress));
+    const { clientActions, registry, warnings } = await compiler.compile(actions, options);
+    const details = await this.params.provingProvider.getDefaultDetails();
+    const invocation = await this.params.proofInvocationFactory.create({ ...this.params.account, viewingKey }, this.params.poolContractAddress, clientActions, details);
+    return { invocation, registry, warnings };
+  }
+  invalidateProofNonceCache() {
+    this.params.provingProvider.invalidateNonceCache?.();
+  }
+  async executeWithInvocation({ invocation, registry, warnings }, provingBlockId) {
+    const proof = await this.params.provingProvider.prove(invocation, provingBlockId);
+    return this.buildExecuteResult(proof, registry, warnings);
+  }
+  /**
+   * Assemble the `apply_actions` call and `ExecuteResult` from a proof. Shared
+   * by `executeWithInvocation` (real proof) and `simulate` (mock proof) so both
+   * produce identical calldata — notably the trailing screening attestation.
+   */
+  buildExecuteResult(proof, registry, warnings) {
+    const serverActionsCalldata = proof.output.slice(1);
+    const parsedOutput = () => this.params.proofInvocationFactory.parseOutput(serverActionsCalldata);
+    debugLog("private-transfers", "execute", "parsed server actions", parsedOutput);
+    const screeningSuffix = screeningCalldataSuffix(proof.additionalData);
+    return {
+      callAndProof: {
+        call: {
+          contractAddress: toHex(this.params.poolContractAddress),
+          entrypoint: "apply_actions",
+          calldata: [...serverActionsCalldata, ...screeningSuffix]
+        },
+        proof
+      },
+      registry,
+      warnings
+    };
+  }
+  async simulate(actions, options) {
+    const { invocation, registry, warnings } = await this.createProofInvocation(actions, options);
+    const chainId = await options.node.getChainId();
+    const mockProvider = new CallMockProofProvider(options.node, chainId, {
+      validateSignature: options.validateSignature ?? false
+    });
+    const proof = await mockProvider.prove(invocation, options.provingBlockId);
+    return this.buildExecuteResult(proof, registry, warnings);
+  }
+};
+
+// dist/internal/proving-service-provider.js
+var import_starknet14 = require("starknet");
+
+// node_modules/ohttp-ts/dist/index.js
+var OHTTPErrorCode = {
+  /** Failed to parse key configuration */
+  InvalidKeyConfig: "INVALID_KEY_CONFIG",
+  /** Unknown key identifier */
+  UnknownKeyId: "UNKNOWN_KEY_ID",
+  /** Unsupported cipher suite */
+  UnsupportedCipherSuite: "UNSUPPORTED_CIPHER_SUITE",
+  /** Decryption failed - deliberately opaque */
+  DecryptionFailed: "DECRYPTION_FAILED",
+  /** Encryption failed */
+  EncryptionFailed: "ENCRYPTION_FAILED",
+  /** Invalid message format */
+  InvalidMessage: "INVALID_MESSAGE",
+  /** Chunk sequence error */
+  ChunkSequenceError: "CHUNK_SEQUENCE_ERROR",
+  /** Chunk limit exceeded */
+  ChunkLimitExceeded: "CHUNK_LIMIT_EXCEEDED"
+};
+var OHTTPError = class _OHTTPError extends Error {
+  code;
+  constructor(code) {
+    super(`OHTTP error: ${code}`);
+    this.name = "OHTTPError";
+    this.code = code;
+    Object.setPrototypeOf(this, _OHTTPError.prototype);
+  }
+};
+var VLI_MASK_HEADER = 63;
+var VLI_MASK_VALUE = 192;
+var VLI_MASK_LSB = 255;
+var VLI_LEN_1 = 0;
+var VLI_LEN_2 = 64;
+var VLI_LEN_4 = 128;
+var VLI_LEN_8 = 192;
+var BHttpError = class extends Error {
+};
+var InvalidMessageError = class extends BHttpError {
+};
+var NotSupportedError = class extends BHttpError {
+};
+var InformationalResponse = class {
+  constructor(status) {
+    Object.defineProperty(this, "status", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "headers", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this.status = status;
+    this.headers = new Headers();
+  }
+};
+var DecoderContext = class {
+  constructor(buf) {
+    Object.defineProperty(this, "buf", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "p", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: 0
+    });
+    Object.defineProperty(this, "framingIndicator", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: 0
+    });
+    Object.defineProperty(this, "headers", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "content", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "trailers", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this.buf = buf;
+    this.headers = new Headers();
+    this.content = new Uint8Array(0);
+    this.trailers = new Headers();
+  }
+};
+var RequestDecoderContext = class extends DecoderContext {
+  constructor(buf) {
+    super(buf);
+    Object.defineProperty(this, "method", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: ""
+    });
+    Object.defineProperty(this, "scheme", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: ""
+    });
+    Object.defineProperty(this, "authority", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: ""
+    });
+    Object.defineProperty(this, "path", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: ""
+    });
+  }
+  createRequest() {
+    const input = this.scheme + "://" + this.authority + this.path;
+    let req;
+    if (this.method === "GET" || this.method === "HEAD") {
+      req = new Request(input, {
+        method: this.method
+      });
+    } else {
+      req = new Request(input, {
+        method: this.method,
+        body: this.content
+      });
+    }
+    this.headers.forEach((value, key) => {
+      req.headers.set(key, value);
+    });
+    return req;
+  }
+};
+var ResponseDecoderContext = class extends DecoderContext {
+  constructor(buf) {
+    super(buf);
+    Object.defineProperty(this, "status", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: 0
+    });
+    Object.defineProperty(this, "informationalResponses", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this.informationalResponses = new Array(0);
+  }
+  createResponse() {
+    return new Response(this.content, {
+      status: this.status,
+      headers: this.headers
+    });
+  }
+};
+var BHttpDecoder = class {
+  constructor() {
+    Object.defineProperty(this, "_td", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this._td = new TextDecoder();
+  }
+  decodeRequest(src) {
+    if (src instanceof ArrayBuffer) {
+      src = new Uint8Array(src);
+    }
+    const ctx = new RequestDecoderContext(src);
+    ctx.framingIndicator = this.decodeVli(ctx);
+    switch (ctx.framingIndicator) {
+      case 0:
+        return this.decodeKnownLengthRequest(ctx);
+      case 2:
+        return this.decodeIndeterminateLengthRequest(ctx);
+      default:
+        throw new InvalidMessageError("Invalid framing indicator.");
+    }
+  }
+  decodeResponse(src) {
+    if (src instanceof ArrayBuffer) {
+      src = new Uint8Array(src);
+    }
+    const ctx = new ResponseDecoderContext(src);
+    ctx.framingIndicator = this.decodeVli(ctx);
+    switch (ctx.framingIndicator) {
+      case 1:
+        return this.decodeKnownLengthResponse(ctx);
+      case 3:
+        return this.decodeIndeterminateLengthResponse(ctx);
+      default:
+        throw new InvalidMessageError("Invalid framing indicator.");
+    }
+  }
+  decodeKnownLengthRequest(ctx) {
+    this.decodeRequestControlData(ctx);
+    this.decodeKnownLengthRequestHeaders(ctx);
+    this.decodeKnownLengthContent(ctx);
+    this.decodeKnownLengthTrailers(ctx);
+    this.checkPadding(ctx);
+    return ctx.createRequest();
+  }
+  decodeIndeterminateLengthRequest(ctx) {
+    this.decodeRequestControlData(ctx);
+    this.decodeIndeterminateLengthRequestHeaders(ctx);
+    this.decodeIndeterminateLengthContent(ctx);
+    this.decodeIndeterminateLengthTrailers(ctx);
+    this.checkPadding(ctx);
+    return ctx.createRequest();
+  }
+  decodeKnownLengthResponse(ctx) {
+    this.decodeKnownLengthInformationalResponsesAndHeaders(ctx);
+    this.decodeKnownLengthContent(ctx);
+    this.decodeKnownLengthTrailers(ctx);
+    this.checkPadding(ctx);
+    return ctx.createResponse();
+  }
+  decodeIndeterminateLengthResponse(ctx) {
+    this.decodeIndeterminateLengthInformationalResponsesAndHeaders(ctx);
+    this.decodeIndeterminateLengthContent(ctx);
+    this.decodeIndeterminateLengthTrailers(ctx);
+    this.checkPadding(ctx);
+    return ctx.createResponse();
+  }
+  decodeRequestControlData(ctx) {
+    ctx.method = this.decodeVliAndValue(ctx);
+    ctx.scheme = this.decodeVliAndValue(ctx);
+    ctx.authority = this.decodeVliAndValue(ctx);
+    ctx.path = this.decodeVliAndValue(ctx);
+    return;
+  }
+  decodeKnownLengthInformationalResponsesAndHeaders(ctx) {
+    let status = this.decodeVli(ctx);
+    while (status >= 100 && status < 200) {
+      this.decodeKnownLengthInformationalResponse(ctx, status);
+      status = this.decodeVli(ctx);
+    }
+    if (status < 100 && status >= 600) {
+      throw new InvalidMessageError("Invalid status code.");
+    }
+    ctx.status = status;
+    this.decodeKnownLengthResponseHeaders(ctx);
+    return;
+  }
+  decodeIndeterminateLengthInformationalResponsesAndHeaders(ctx) {
+    let status = this.decodeVli(ctx);
+    while (status >= 100 && status < 200) {
+      this.decodeIndeterminateLengthInformationalResponse(ctx, status);
+      status = this.decodeVli(ctx);
+    }
+    if (status < 100 && status >= 600) {
+      throw new InvalidMessageError("Invalid status code.");
+    }
+    ctx.status = status;
+    this.decodeIndeterminateLengthResponseHeaders(ctx);
+    return;
+  }
+  decodeKnownLengthInformationalResponse(ctx, status) {
+    const ir = new InformationalResponse(status);
+    const len = this.decodeVli(ctx);
+    let name = "";
+    let value = "";
+    const base = ctx.p;
+    while (ctx.p < base + len) {
+      name = this.decodeVliAndValue(ctx);
+      value = this.decodeVliAndValue(ctx);
+      ir.headers.set(name, value);
+    }
+    ctx.informationalResponses.push(ir);
+    return;
+  }
+  decodeIndeterminateLengthInformationalResponse(ctx, status) {
+    const ir = new InformationalResponse(status);
+    let name = "";
+    let value = "";
+    let terminator = this.decodeVli(ctx);
+    while (terminator !== 0) {
+      ctx.p--;
+      name = this.decodeVliAndValue(ctx);
+      value = this.decodeVliAndValue(ctx);
+      ir.headers.set(name, value);
+      terminator = this.decodeVli(ctx);
+    }
+    ctx.informationalResponses.push(ir);
+    return;
+  }
+  decodeKnownLengthRequestHeaders(ctx) {
+    let name = "";
+    let value = "";
+    const len = this.decodeVli(ctx);
+    const base = ctx.p;
+    while (ctx.p < base + len) {
+      name = this.decodeVliAndValue(ctx);
+      value = this.decodeVliAndValue(ctx);
+      if (name.localeCompare("host", void 0, { sensitivity: "accent" }) === 0 && ctx.authority === "") {
+        ctx.authority = value;
+      }
+      ctx.headers.set(name, value);
+    }
+    return;
+  }
+  decodeKnownLengthResponseHeaders(ctx) {
+    let name = "";
+    let value = "";
+    const base = ctx.p;
+    const len = this.decodeVli(ctx);
+    while (ctx.p < base + len) {
+      name = this.decodeVliAndValue(ctx);
+      value = this.decodeVliAndValue(ctx);
+      ctx.headers.set(name, value);
+    }
+    return;
+  }
+  decodeIndeterminateLengthRequestHeaders(ctx) {
+    let name = "";
+    let value = "";
+    let terminator = this.decodeVli(ctx);
+    while (terminator !== 0) {
+      ctx.p--;
+      name = this.decodeVliAndValue(ctx);
+      value = this.decodeVliAndValue(ctx);
+      if (name.localeCompare("host", void 0, { sensitivity: "accent" }) === 0 && ctx.authority === "") {
+        ctx.authority = value;
+      }
+      ctx.headers.set(name, value);
+      terminator = this.decodeVli(ctx);
+    }
+    return;
+  }
+  decodeIndeterminateLengthResponseHeaders(ctx) {
+    let name = "";
+    let value = "";
+    let terminator = this.decodeVli(ctx);
+    while (terminator !== 0) {
+      ctx.p--;
+      name = this.decodeVliAndValue(ctx);
+      value = this.decodeVliAndValue(ctx);
+      ctx.headers.set(name, value);
+      terminator = this.decodeVli(ctx);
+    }
+    return;
+  }
+  decodeKnownLengthContent(ctx) {
+    const len = this.decodeVli(ctx);
+    ctx.content = ctx.buf.slice(ctx.p, ctx.p + len);
+    ctx.p += len;
+    return;
+  }
+  decodeIndeterminateLengthContent(ctx) {
+    let len = 0;
+    const p = ctx.p;
+    let terminator = this.decodeVli(ctx);
+    while (terminator !== 0) {
+      len += terminator;
+      ctx.p += terminator;
+      terminator = this.decodeVli(ctx);
+    }
+    if (len === 0) {
+      return;
+    }
+    ctx.p = p;
+    ctx.content = new Uint8Array(len);
+    len = 0;
+    terminator = this.decodeVli(ctx);
+    while (terminator !== 0) {
+      ctx.content.set(ctx.buf.slice(ctx.p, ctx.p + terminator), len);
+      len += terminator;
+      ctx.p += terminator;
+      terminator = this.decodeVli(ctx);
+    }
+    return;
+  }
+  decodeKnownLengthTrailers(ctx) {
+    const len = this.decodeVli(ctx);
+    let name = "";
+    let value = "";
+    const base = ctx.p;
+    while (ctx.p < base + len) {
+      name = this.decodeVliAndValue(ctx);
+      value = this.decodeVliAndValue(ctx);
+      ctx.trailers.set(name, value);
+    }
+    return;
+  }
+  decodeIndeterminateLengthTrailers(ctx) {
+    let name = "";
+    let value = "";
+    let terminator = this.decodeVli(ctx);
+    while (terminator != 0) {
+      ctx.p--;
+      name = this.decodeVliAndValue(ctx);
+      value = this.decodeVliAndValue(ctx);
+      ctx.trailers.set(name, value);
+      terminator = this.decodeVli(ctx);
+    }
+    return;
+  }
+  checkPadding(ctx) {
+    while (ctx.p < ctx.buf.byteLength) {
+      if (ctx.buf[ctx.p++] !== 0) {
+        throw new InvalidMessageError("Invalid padding data.");
+      }
+    }
+    return;
+  }
+  decodeVliAndValue(ctx) {
+    const len = this.decodeVli(ctx);
+    const res = this._td.decode(ctx.buf.slice(ctx.p, ctx.p + len));
+    ctx.p += len;
+    return res;
+  }
+  decodeVli(ctx) {
+    let res = 0;
+    switch (ctx.buf[ctx.p] & VLI_MASK_VALUE) {
+      case VLI_LEN_1:
+        return ctx.buf[ctx.p++] & VLI_MASK_HEADER;
+      case VLI_LEN_2:
+        res = (ctx.buf[ctx.p++] & VLI_MASK_HEADER) << 8;
+        res += ctx.buf[ctx.p++];
+        return res;
+      case VLI_LEN_4:
+        res = (ctx.buf[ctx.p++] & VLI_MASK_HEADER) << 24;
+        res += ctx.buf[ctx.p++] << 16;
+        res += ctx.buf[ctx.p++] << 8;
+        res += ctx.buf[ctx.p++];
+        return res;
+      default:
+        res = 0;
+        if (ctx.buf[++ctx.p] > 15) {
+          throw new NotSupportedError("Over MAX_SAFE_INTEGER-length value is not supported.");
+        }
+        res += ctx.buf[ctx.p++] << 48;
+        res += ctx.buf[ctx.p++] << 40;
+        res += ctx.buf[ctx.p++] << 32;
+        res += ctx.buf[ctx.p++] << 24;
+        res += ctx.buf[ctx.p++] << 16;
+        res += ctx.buf[ctx.p++] << 8;
+        res += ctx.buf[ctx.p++];
+        return res;
+    }
+  }
+};
+var EncoderContext = class {
+  constructor() {
+    Object.defineProperty(this, "buf", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "p", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: 0
+    });
+    Object.defineProperty(this, "framingIndicator", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: 0
+    });
+    Object.defineProperty(this, "headerSize", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "body", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this.buf = new Uint8Array(0);
+    this.headerSize = 0;
+    this.body = new Uint8Array(0);
+  }
+  calculateVliSize(v) {
+    if (v < 64) {
+      return 1;
+    }
+    if (v < 16384) {
+      return 2;
+    }
+    if (v < 1073741824) {
+      return 4;
+    }
+    if (v <= Number.MAX_SAFE_INTEGER) {
+      return 8;
+    }
+    throw new NotSupportedError("Over MAX_SAFE_INTEGER length value is not supported.");
+  }
+};
+var RequestEncoderContext = class extends EncoderContext {
+  constructor(request) {
+    super();
+    Object.defineProperty(this, "request", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    Object.defineProperty(this, "url", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this.request = request;
+    this.url = new URL(request.url);
+  }
+  async setup() {
+    this.body = new Uint8Array(await this.request.arrayBuffer());
+    this.buf = new Uint8Array(this.calculateEncodedRequestSize());
+  }
+  calculateEncodedRequestSize() {
+    let len = 1;
+    len += 1;
+    len += this.request.method.length;
+    len += this.calculateVliSize(this.url.protocol.length - 1);
+    len += this.url.protocol.length - 1;
+    len += this.calculateVliSize(this.url.host.length);
+    len += this.url.host.length;
+    len += this.calculateVliSize(this.url.pathname.length + this.url.search.length);
+    len += this.url.pathname.length;
+    len += this.url.search.length;
+    this.headerSize = 0;
+    this.request.headers.forEach((value, key) => {
+      this.headerSize += this.calculateVliSize(key.length);
+      this.headerSize += key.length;
+      this.headerSize += this.calculateVliSize(value.length);
+      this.headerSize += value.length;
+    });
+    len += this.calculateVliSize(this.headerSize);
+    len += this.headerSize;
+    len += this.calculateVliSize(this.body.byteLength);
+    len += this.body.byteLength;
+    len += 1;
+    return len;
+  }
+};
+var ResponseEncoderContext = class extends EncoderContext {
+  constructor(response) {
+    super();
+    Object.defineProperty(this, "response", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this.response = response;
+  }
+  async setup() {
+    this.body = new Uint8Array(await this.response.arrayBuffer());
+    this.buf = new Uint8Array(this.calculateEncodedResponseSize());
+  }
+  calculateEncodedResponseSize() {
+    let len = 1;
+    len += 2;
+    this.headerSize = 0;
+    this.response.headers.forEach((value, key) => {
+      this.headerSize += this.calculateVliSize(key.length);
+      this.headerSize += key.length;
+      this.headerSize += this.calculateVliSize(value.length);
+      this.headerSize += value.length;
+    });
+    len += this.calculateVliSize(this.headerSize);
+    len += this.headerSize;
+    len += this.calculateVliSize(this.body.byteLength);
+    len += this.body.byteLength;
+    len += 1;
+    return len;
+  }
+};
+var BHttpEncoder = class {
+  constructor() {
+    Object.defineProperty(this, "_te", {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: void 0
+    });
+    this._te = new TextEncoder();
+  }
+  async encodeRequest(src) {
+    const ctx = new RequestEncoderContext(src);
+    await ctx.setup();
+    return this.encodeKnownLengthRequest(ctx);
+  }
+  async encodeResponse(src) {
+    const ctx = new ResponseEncoderContext(src);
+    await ctx.setup();
+    return this.encodeKnownLengthResponse(ctx);
+  }
+  encodeKnownLengthRequest(ctx) {
+    this.encodeVli(ctx, 0);
+    this.encodeVliAndValue(ctx, ctx.request.method);
+    this.encodeVliAndValue(ctx, ctx.url.protocol.slice(0, ctx.url.protocol.length - 1));
+    this.encodeVliAndValue(ctx, ctx.url.host);
+    this.encodeVliAndValue(ctx, ctx.url.pathname + ctx.url.search);
+    this.encodeVli(ctx, ctx.headerSize);
+    ctx.request.headers.forEach((value, key) => {
+      this.encodeVliAndValue(ctx, key);
+      this.encodeVliAndValue(ctx, value);
+    });
+    this.encodeVli(ctx, ctx.body.byteLength);
+    ctx.buf.set(ctx.body, ctx.p);
+    ctx.p += ctx.body.byteLength;
+    this.encodeVli(ctx, 0);
+    return ctx.buf;
+  }
+  encodeKnownLengthResponse(ctx) {
+    this.encodeVli(ctx, 1);
+    this.encodeVli(ctx, ctx.response.status);
+    this.encodeVli(ctx, ctx.headerSize);
+    ctx.response.headers.forEach((value, key) => {
+      this.encodeVliAndValue(ctx, key);
+      this.encodeVliAndValue(ctx, value);
+    });
+    this.encodeVli(ctx, ctx.body.byteLength);
+    ctx.buf.set(ctx.body, ctx.p);
+    ctx.p += ctx.body.byteLength;
+    this.encodeVli(ctx, 0);
+    return ctx.buf;
+  }
+  encodeVliAndValue(ctx, v) {
+    this.encodeVli(ctx, v.length);
+    ctx.buf.set(this._te.encode(v), ctx.p);
+    ctx.p += v.length;
+    return;
+  }
+  encodeVli(ctx, v) {
+    if (v < 64) {
+      ctx.buf[ctx.p++] = VLI_LEN_1 + v;
+      return;
+    }
+    if (v < 16384) {
+      ctx.buf[ctx.p++] = VLI_LEN_2 + (v >> 8);
+      ctx.buf[ctx.p++] = VLI_MASK_LSB & v;
+      return;
+    }
+    if (v < 1073741824) {
+      ctx.buf[ctx.p++] = VLI_LEN_4 + (v >> 24);
+      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 16;
+      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 8;
+      ctx.buf[ctx.p++] = VLI_MASK_LSB & v;
+      return;
+    }
+    if (v <= Number.MAX_SAFE_INTEGER) {
+      ctx.buf[ctx.p++] = VLI_LEN_8;
+      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 48;
+      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 40;
+      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 32;
+      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 24;
+      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 16;
+      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 8;
+      ctx.buf[ctx.p++] = VLI_MASK_LSB & v;
+      return;
+    }
+    throw new NotSupportedError("Over MAX_SAFE_INTEGER-length value is not supported.");
+  }
+};
+var textEncoder = new TextEncoder();
+var textDecoder = new TextDecoder();
+var MediaType = {
+  /** Key configuration: application/ohttp-keys (RFC 9458 Section 9.1) */
+  KEYS: "application/ohttp-keys",
+  /** Encapsulated request: message/ohttp-req (RFC 9458 Section 9.2) */
+  REQUEST: "message/ohttp-req",
+  /** Encapsulated response: message/ohttp-res (RFC 9458 Section 9.3) */
+  RESPONSE: "message/ohttp-res",
+  /** Chunked encapsulated request: message/ohttp-chunked-req (draft-08 Section 8.1) */
+  CHUNKED_REQUEST: "message/ohttp-chunked-req",
+  /** Chunked encapsulated response: message/ohttp-chunked-res (draft-08 Section 8.2) */
+  CHUNKED_RESPONSE: "message/ohttp-chunked-res"
+};
+var bhttp = {
+  encoder: new BHttpEncoder(),
+  decoder: new BHttpDecoder()
+};
+var KemId = {
+  // Standard KEMs (RFC 9180)
+  P256_HKDF_SHA256: 16,
+  P384_HKDF_SHA384: 17,
+  P521_HKDF_SHA512: 18,
+  X25519_HKDF_SHA256: 32,
+  X448_HKDF_SHA512: 33,
+  // Post-quantum KEMs (ML-KEM, FIPS 203)
+  ML_KEM_512: 64,
+  ML_KEM_768: 65,
+  ML_KEM_1024: 66,
+  // Hybrid KEMs
+  MLKEM768_P256: 80,
+  MLKEM1024_P384: 81,
+  MLKEM768_X25519: 25722
+};
+var KdfId = {
+  HKDF_SHA256: 1,
+  HKDF_SHA384: 2,
+  HKDF_SHA512: 3
+};
+var AeadId = {
+  AES_128_GCM: 1,
+  AES_256_GCM: 2,
+  /** Defined for parsing; not implemented for encryption (use AES-GCM) */
+  ChaCha20Poly1305: 3
+};
+function isValidKemId(id) {
+  return (
+    // Standard KEMs
+    id === KemId.P256_HKDF_SHA256 || id === KemId.P384_HKDF_SHA384 || id === KemId.P521_HKDF_SHA512 || id === KemId.X25519_HKDF_SHA256 || id === KemId.X448_HKDF_SHA512 || // Post-quantum KEMs
+    id === KemId.ML_KEM_512 || id === KemId.ML_KEM_768 || id === KemId.ML_KEM_1024 || // Hybrid KEMs
+    id === KemId.MLKEM768_P256 || id === KemId.MLKEM1024_P384 || id === KemId.MLKEM768_X25519
+  );
+}
+function isValidKdfId(id) {
+  return id === KdfId.HKDF_SHA256 || id === KdfId.HKDF_SHA384 || id === KdfId.HKDF_SHA512;
+}
+function isValidAeadId(id) {
+  return id === AeadId.AES_128_GCM || id === AeadId.AES_256_GCM || id === AeadId.ChaCha20Poly1305;
+}
+function getPublicKeyLength(kemId) {
+  switch (kemId) {
+    // Standard KEMs
+    case KemId.X25519_HKDF_SHA256:
+      return 32;
+    case KemId.X448_HKDF_SHA512:
+      return 56;
+    case KemId.P256_HKDF_SHA256:
+      return 65;
+    // Uncompressed point
+    case KemId.P384_HKDF_SHA384:
+      return 97;
+    case KemId.P521_HKDF_SHA512:
+      return 133;
+    // ML-KEM (FIPS 203)
+    case KemId.ML_KEM_512:
+      return 800;
+    case KemId.ML_KEM_768:
+      return 1184;
+    case KemId.ML_KEM_1024:
+      return 1568;
+    // Hybrid KEMs (ML-KEM + ECDH)
+    case KemId.MLKEM768_P256:
+      return 1184 + 65;
+    // ML-KEM-768 + P-256 uncompressed
+    case KemId.MLKEM1024_P384:
+      return 1568 + 97;
+    // ML-KEM-1024 + P-384 uncompressed
+    case KemId.MLKEM768_X25519:
+      return 1184 + 32;
+    // ML-KEM-768 + X25519
+    default:
+      throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
+  }
+}
+function serializeKeyConfig(config) {
+  const symAlgosLen = config.symmetricAlgorithms.length * 4;
+  const totalLen = 1 + 2 + config.publicKey.length + 2 + symAlgosLen;
+  const result = new Uint8Array(totalLen);
+  const view = new DataView(result.buffer);
+  let offset = 0;
+  view.setUint8(offset, config.keyId);
+  offset += 1;
+  view.setUint16(offset, config.kemId);
+  offset += 2;
+  result.set(config.publicKey, offset);
+  offset += config.publicKey.length;
+  view.setUint16(offset, symAlgosLen);
+  offset += 2;
+  for (const algo of config.symmetricAlgorithms) {
+    view.setUint16(offset, algo.kdfId);
+    view.setUint16(offset + 2, algo.aeadId);
+    offset += 4;
+  }
+  return result;
+}
+function parseKeyConfig(data) {
+  if (data.length < 7) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  let offset = 0;
+  const keyId = view.getUint8(offset);
+  offset += 1;
+  const kemIdRaw = view.getUint16(offset);
+  if (!isValidKemId(kemIdRaw)) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  const kemId = kemIdRaw;
+  offset += 2;
+  const publicKeyLength = getPublicKeyLength(kemId);
+  if (offset + publicKeyLength > data.length) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  const publicKey = data.slice(offset, offset + publicKeyLength);
+  offset += publicKeyLength;
+  if (offset + 2 > data.length) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  const symmetricAlgorithmsLength = view.getUint16(offset);
+  offset += 2;
+  if (symmetricAlgorithmsLength % 4 !== 0) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  if (offset + symmetricAlgorithmsLength > data.length) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  const symmetricAlgorithms = [];
+  const endOffset = offset + symmetricAlgorithmsLength;
+  while (offset < endOffset) {
+    const kdfIdRaw = view.getUint16(offset);
+    const aeadIdRaw = view.getUint16(offset + 2);
+    if (!isValidKdfId(kdfIdRaw) || !isValidAeadId(aeadIdRaw)) {
+      throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+    }
+    symmetricAlgorithms.push({ kdfId: kdfIdRaw, aeadId: aeadIdRaw });
+    offset += 4;
+  }
+  if (symmetricAlgorithms.length === 0) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  if (offset !== data.length) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  return {
+    keyId,
+    kemId,
+    publicKey,
+    symmetricAlgorithms
+  };
+}
+function serializeKeyConfigs(configs) {
+  const serialized = [];
+  let totalLen = 0;
+  for (const config of configs) {
+    const s = serializeKeyConfig(config);
+    serialized.push(s);
+    totalLen += 2 + s.length;
+  }
+  const result = new Uint8Array(totalLen);
+  const view = new DataView(result.buffer);
+  let offset = 0;
+  for (const s of serialized) {
+    view.setUint16(offset, s.length);
+    offset += 2;
+    result.set(s, offset);
+    offset += s.length;
+  }
+  return result;
+}
+function parseKeyConfigs(data) {
+  const configs = [];
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  let offset = 0;
+  while (offset < data.length) {
+    if (offset + 2 > data.length) {
+      throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+    }
+    const length2 = view.getUint16(offset);
+    offset += 2;
+    if (offset + length2 > data.length) {
+      throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+    }
+    const configBytes = data.slice(offset, offset + length2);
+    configs.push(parseKeyConfig(configBytes));
+    offset += length2;
+  }
+  return configs;
+}
+async function generateKeyConfig(suite, keyId, symmetricAlgorithms) {
+  if (keyId < 0 || keyId > 255) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  const kemId = suite.KEM.id;
+  if (!isValidKemId(kemId)) {
+    throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
+  }
+  const keyPair = await suite.GenerateKeyPair(true);
+  const publicKey = await suite.SerializePublicKey(keyPair.publicKey);
+  return {
+    keyId,
+    kemId,
+    publicKey,
+    symmetricAlgorithms,
+    keyPair,
+    suite
+  };
+}
+async function deriveKeyConfig(suite, seed, keyId, symmetricAlgorithms) {
+  if (keyId < 0 || keyId > 255) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  if (seed.length < suite.KEM.Nsk) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  const kemId = suite.KEM.id;
+  if (!isValidKemId(kemId)) {
+    throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
+  }
+  const keyPair = await suite.DeriveKeyPair(seed, true);
+  const publicKey = await suite.SerializePublicKey(keyPair.publicKey);
+  return {
+    keyId,
+    kemId,
+    publicKey,
+    symmetricAlgorithms,
+    keyPair,
+    suite
+  };
+}
+async function importKeyConfig(suite, keyId, publicKeyBytes, privateKeyBytes, symmetricAlgorithms) {
+  if (keyId < 0 || keyId > 255) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
+  }
+  const kemId = suite.KEM.id;
+  if (!isValidKemId(kemId)) {
+    throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
+  }
+  const publicKey = await suite.DeserializePublicKey(publicKeyBytes);
+  const privateKey = await suite.DeserializePrivateKey(privateKeyBytes, true);
+  const keyPair = { publicKey, privateKey };
+  return {
+    keyId,
+    kemId,
+    publicKey: publicKeyBytes,
+    symmetricAlgorithms,
+    keyPair,
+    suite
+  };
+}
+function concat(...arrays) {
+  const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const arr of arrays) {
+    result.set(arr, offset);
+    offset += arr.length;
+  }
+  return result;
+}
+function toArrayBuffer(data) {
+  const buffer = new ArrayBuffer(data.byteLength);
+  new Uint8Array(buffer).set(data);
+  return buffer;
+}
+var textEncoder2 = new TextEncoder();
+function encodeString(s) {
+  return textEncoder2.encode(s);
+}
+var DEFAULT_REQUEST_LABEL = "message/bhttp request";
+var DEFAULT_RESPONSE_LABEL = "message/bhttp response";
+var HEADER_SIZE = 7;
+function writeHeader(view, offset, keyId, kemId, kdfId, aeadId) {
+  view.setUint8(offset, keyId);
+  view.setUint16(offset + 1, kemId);
+  view.setUint16(offset + 3, kdfId);
+  view.setUint16(offset + 5, aeadId);
+  return HEADER_SIZE;
+}
+function buildRequestInfo(keyId, kemId, kdfId, aeadId, label = DEFAULT_REQUEST_LABEL) {
+  const labelBytes = encodeString(label);
+  const result = new Uint8Array(labelBytes.length + 1 + HEADER_SIZE);
+  const view = new DataView(result.buffer);
+  result.set(labelBytes, 0);
+  view.setUint8(labelBytes.length, 0);
+  writeHeader(view, labelBytes.length + 1, keyId, kemId, kdfId, aeadId);
+  return result;
+}
+function buildRequestHeader(keyId, kemId, kdfId, aeadId) {
+  const result = new Uint8Array(HEADER_SIZE);
+  const view = new DataView(result.buffer);
+  writeHeader(view, 0, keyId, kemId, kdfId, aeadId);
+  return result;
+}
+function getResponseNonceLength(suite) {
+  return Math.max(suite.AEAD.Nn, suite.AEAD.Nk);
+}
+async function encapsulateRequest(suite, publicKey, keyConfig, kdfId, aeadId, request, label = DEFAULT_REQUEST_LABEL) {
+  const info = buildRequestInfo(keyConfig.keyId, keyConfig.kemId, kdfId, aeadId, label);
+  const { encapsulatedSecret: enc, ctx: senderContext } = await suite.SetupSender(publicKey, {
+    info
+  });
+  const ciphertext = await senderContext.Seal(request);
+  const header = buildRequestHeader(keyConfig.keyId, keyConfig.kemId, kdfId, aeadId);
+  const encapsulatedRequest = concat(header, enc, ciphertext);
+  return {
+    encapsulatedRequest,
+    senderContext,
+    enc,
+    suite
+  };
+}
+async function decapsulateResponse(clientContext, encapsulatedResponse, label = DEFAULT_RESPONSE_LABEL) {
+  const { senderContext, enc, suite } = clientContext;
+  const nonceLength = getResponseNonceLength(suite);
+  if (encapsulatedResponse.length < nonceLength) {
+    throw new OHTTPError(OHTTPErrorCode.InvalidMessage);
+  }
+  const responseNonce = encapsulatedResponse.slice(0, nonceLength);
+  const ciphertext = encapsulatedResponse.slice(nonceLength);
+  const secret = await senderContext.Export(encodeString(label), nonceLength);
+  const salt = concat(enc, responseNonce);
+  const kdf = suite.KDF;
+  const prk = await extractPrk(kdf, salt, secret);
+  const aeadKey = await expandPrk(kdf, prk, encodeString("key"), suite.AEAD.Nk);
+  const aeadNonce = await expandPrk(kdf, prk, encodeString("nonce"), suite.AEAD.Nn);
+  const aead = suite.AEAD;
+  try {
+    return await openWithRawAead(aead, aeadKey, aeadNonce, new Uint8Array(0), ciphertext);
+  } catch {
+    throw new OHTTPError(OHTTPErrorCode.DecryptionFailed);
+  }
+}
+function asArrayBuffer(data) {
+  if (typeof SharedArrayBuffer !== "undefined" && data.buffer instanceof SharedArrayBuffer) {
+    const copy = new ArrayBuffer(data.byteLength);
+    new Uint8Array(copy).set(data);
+    return copy;
+  }
+  const sliced = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+  return sliced;
+}
+async function extractPrk(kdf, salt, ikm) {
+  const algorithm = kdf.name.includes("256") ? "SHA-256" : kdf.name.includes("384") ? "SHA-384" : "SHA-512";
+  const key = await crypto.subtle.importKey(
+    "raw",
+    asArrayBuffer(salt),
+    { name: "HMAC", hash: algorithm },
+    false,
+    ["sign"]
+  );
+  const prk = await crypto.subtle.sign("HMAC", key, asArrayBuffer(ikm));
+  return new Uint8Array(prk);
+}
+async function expandPrk(kdf, prk, info, length2) {
+  const algorithm = kdf.name.includes("256") ? "SHA-256" : kdf.name.includes("384") ? "SHA-384" : "SHA-512";
+  const hashLen = kdf.Nh;
+  const n = Math.ceil(length2 / hashLen);
+  const okm = new Uint8Array(n * hashLen);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    asArrayBuffer(prk),
+    { name: "HMAC", hash: algorithm },
+    false,
+    ["sign"]
+  );
+  let t = new Uint8Array(0);
+  for (let i = 1; i <= n; i++) {
+    const input = concat(t, info, new Uint8Array([i]));
+    const block = await crypto.subtle.sign("HMAC", key, asArrayBuffer(input));
+    t = new Uint8Array(block);
+    okm.set(t, (i - 1) * hashLen);
+  }
+  return okm.slice(0, length2);
+}
+async function openWithRawAead(aead, key, nonce, aad, ciphertext) {
+  const algorithm = aead.name.includes("AES") ? "AES-GCM" : "ChaCha20-Poly1305";
+  if (algorithm === "AES-GCM") {
+    const cryptoKey = await crypto.subtle.importKey(
+      "raw",
+      asArrayBuffer(key),
+      { name: "AES-GCM" },
+      false,
+      ["decrypt"]
+    );
+    const pt = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: asArrayBuffer(nonce), additionalData: asArrayBuffer(aad) },
+      cryptoKey,
+      asArrayBuffer(ciphertext)
+    );
+    return new Uint8Array(pt);
+  }
+  throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
+}
+var FINAL_CHUNK_AAD = encodeString("final");
+var MAX_CHUNKS = 2 ** 32;
+var OHTTPClient = class {
+  suite;
+  keyConfig;
+  kdfId;
+  aeadId;
+  requestLabel;
+  responseLabel;
+  /**
+   * Create an OHTTP client
+   *
+   * @param suite - The HPKE cipher suite to use
+   * @param keyConfig - The server's public key configuration
+   * @param options - Optional configuration
+   */
+  constructor(suite, keyConfig, options = {}) {
+    this.suite = suite;
+    this.keyConfig = keyConfig;
+    this.requestLabel = options.requestLabel ?? DEFAULT_REQUEST_LABEL;
+    this.responseLabel = options.responseLabel ?? DEFAULT_RESPONSE_LABEL;
+    const rawKdfId = suite.KDF.id;
+    const rawAeadId = suite.AEAD.id;
+    if (!isValidKdfId(rawKdfId) || !isValidAeadId(rawAeadId)) {
+      throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
+    }
+    const matchingAlgo = keyConfig.symmetricAlgorithms.find(
+      (a) => a.kdfId === rawKdfId && a.aeadId === rawAeadId
+    );
+    if (matchingAlgo === void 0) {
+      throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
+    }
+    this.kdfId = rawKdfId;
+    this.aeadId = rawAeadId;
+  }
+  /**
+   * Encapsulate a binary HTTP request (low-level API)
+   *
+   * @param request - The binary HTTP request bytes to encapsulate
+   * @returns The encapsulated request bytes and context for decrypting the response
+   */
+  async encapsulate(request) {
+    const publicKey = await this.suite.DeserializePublicKey(this.keyConfig.publicKey);
+    const ctx = await encapsulateRequest(
+      this.suite,
+      publicKey,
+      this.keyConfig,
+      this.kdfId,
+      this.aeadId,
+      request,
+      this.requestLabel
+    );
+    const responseLabel = this.responseLabel;
+    const context = {
+      async decryptResponse(encapsulatedResponse) {
+        return decapsulateResponse(ctx, encapsulatedResponse, responseLabel);
+      }
+    };
+    return {
+      encapsulatedRequest: ctx.encapsulatedRequest,
+      context
+    };
+  }
+  /**
+   * Encapsulate an HTTP Request (high-level API)
+   *
+   * Encodes the request using Binary HTTP (RFC 9292), then encapsulates with OHTTP.
+   * Returns a RequestInit ready to use with fetch() or new Request().
+   *
+   * @param request - The HTTP Request to encapsulate
+   * @returns A RequestInit for the relay and context for decapsulating the response
+   *
+   * @example
+   * ```typescript
+   * const { init, context } = await client.encapsulateRequest(request);
+   * const response = await fetch(relayUrl, init);
+   * const innerResponse = await context.decapsulateResponse(response);
+   * ```
+   */
+  async encapsulateRequest(request) {
+    let binaryRequest;
+    try {
+      binaryRequest = await bhttp.encoder.encodeRequest(request);
+    } catch {
+      throw new OHTTPError(OHTTPErrorCode.InvalidMessage);
+    }
+    const { encapsulatedRequest, context: bytesContext } = await this.encapsulate(binaryRequest);
+    const context = {
+      async decapsulateResponse(response) {
+        const contentType = response.headers.get("content-type");
+        if (contentType !== MediaType.RESPONSE) {
+          throw new OHTTPError(OHTTPErrorCode.InvalidMessage);
+        }
+        const encapsulatedResponse = new Uint8Array(await response.arrayBuffer());
+        let binaryResponse;
+        try {
+          binaryResponse = await bytesContext.decryptResponse(encapsulatedResponse);
+        } catch {
+          throw new OHTTPError(OHTTPErrorCode.DecryptionFailed);
+        }
+        try {
+          return bhttp.decoder.decodeResponse(binaryResponse);
+        } catch {
+          throw new OHTTPError(OHTTPErrorCode.DecryptionFailed);
+        }
+      }
+    };
+    const init = {
+      method: "POST",
+      headers: {
+        "Content-Type": MediaType.REQUEST
+      },
+      body: toArrayBuffer(encapsulatedRequest)
+    };
+    return { init, context };
+  }
+};
+var KeyConfig = {
+  /** Generate a new KeyConfig with random key pair */
+  generate: generateKeyConfig,
+  /** Derive a deterministic KeyConfig from a seed */
+  derive: deriveKeyConfig,
+  /** Import a KeyConfig from raw key bytes */
+  import: importKeyConfig,
+  /** Parse a single KeyConfig from bytes */
+  parse: parseKeyConfig,
+  /** Parse multiple KeyConfigs from application/ohttp-keys format */
+  parseMultiple: parseKeyConfigs,
+  /** Serialize a KeyConfig to bytes */
+  serialize: serializeKeyConfig,
+  /** Serialize multiple KeyConfigs to application/ohttp-keys format */
+  serializeMultiple: serializeKeyConfigs,
+  /** Get the public key length for a KEM */
+  getPublicKeyLength
+};
+
+// node_modules/hpke/index.js
+function ComputeNonce(base_nonce, seq, Nn) {
+  const seq_bytes = I2OSP(seq, Nn);
+  return xor(base_nonce, seq_bytes);
+}
+function IncrementSeq(seq) {
+  if (seq >= Number.MAX_SAFE_INTEGER) {
+    throw new MessageLimitReachedError("Sequence number overflow");
+  }
+  return ++seq;
+}
+async function ContextExport(suite, exporterSecret, exporterContext, L) {
+  checkUint8Array(exporterContext, "exporterContext");
+  const stages = KDFStages(suite.KDF);
+  if (!Number.isInteger(L) || L <= 0 || L > 65535) {
+    throw new TypeError('"L" must be a positive integer not exceeding 65535');
+  }
+  const Export = stages === 1 ? Export_OneStage : Export_TwoStage;
+  return await Export(suite.KDF, suite.id, exporterSecret, exporterContext, L);
+}
+var Mutex = class {
+  #locked = Promise.resolve();
+  async lock() {
+    let releaseLock;
+    const nextLock = new Promise((resolve) => {
+      releaseLock = resolve;
+    });
+    const previousLock = this.#locked;
+    this.#locked = nextLock;
+    await previousLock;
+    return releaseLock;
+  }
+};
+var SenderContext = class {
+  #suite;
+  #key;
+  #base_nonce;
+  #exporter_secret;
+  #mode;
+  #seq = 0;
+  #mutex;
+  constructor(suite, mode, key, base_nonce, exporter_secret) {
+    this.#suite = suite;
+    this.#mode = mode;
+    this.#key = key;
+    this.#base_nonce = base_nonce;
+    this.#exporter_secret = exporter_secret;
+  }
+  get mode() {
+    return this.#mode;
+  }
+  get seq() {
+    return this.#seq;
+  }
+  async Seal(plaintext, aad) {
+    checkUint8Array(plaintext, "plaintext");
+    aad ??= new Uint8Array();
+    checkUint8Array(aad, "aad");
+    if (this.#suite.AEAD.id === EXPORT_ONLY) {
+      throw new TypeError("Export-only AEAD cannot be used with Seal");
+    }
+    this.#mutex ??= new Mutex();
+    const release = await this.#mutex.lock();
+    let ct;
+    try {
+      ct = await this.#suite.AEAD.Seal(
+        this.#key,
+        ComputeNonce(this.#base_nonce, this.#seq, this.#suite.AEAD.Nn),
+        aad,
+        plaintext
+      );
+      this.#seq = IncrementSeq(this.#seq);
+      return ct;
+    } finally {
+      release();
+    }
+  }
+  async Export(exporterContext, length2) {
+    return await ContextExport(this.#suite, this.#exporter_secret, exporterContext, length2);
+  }
+  get Nt() {
+    return this.#suite.AEAD.Nt;
+  }
+};
+var RecipientContext = class {
+  #suite;
+  #key;
+  #base_nonce;
+  #exporter_secret;
+  #mode;
+  #seq = 0;
+  #mutex;
+  constructor(suite, mode, key, base_nonce, exporter_secret) {
+    this.#suite = suite;
+    this.#mode = mode;
+    this.#key = key;
+    this.#base_nonce = base_nonce;
+    this.#exporter_secret = exporter_secret;
+  }
+  get mode() {
+    return this.#mode;
+  }
+  get seq() {
+    return this.#seq;
+  }
+  async Open(ciphertext, aad) {
+    checkUint8Array(ciphertext, "ciphertext");
+    aad ??= new Uint8Array();
+    checkUint8Array(aad, "aad");
+    if (this.#suite.AEAD.id === EXPORT_ONLY) {
+      throw new TypeError("Export-only AEAD cannot be used with Open");
+    }
+    this.#mutex ??= new Mutex();
+    const release = await this.#mutex.lock();
+    try {
+      let pt;
+      try {
+        pt = await this.#suite.AEAD.Open(
+          this.#key,
+          ComputeNonce(this.#base_nonce, this.#seq, this.#suite.AEAD.Nn),
+          aad,
+          ciphertext
+        );
+      } catch (cause) {
+        if (cause instanceof MessageLimitReachedError || cause instanceof NotSupportedError2) {
+          throw cause;
+        }
+        throw new OpenError("AEAD decryption failed", { cause });
+      }
+      this.#seq = IncrementSeq(this.#seq);
+      return pt;
+    } finally {
+      release();
+    }
+  }
+  async Export(exporterContext, length2) {
+    return await ContextExport(this.#suite, this.#exporter_secret, exporterContext, length2);
+  }
+};
+var validate = (factory, type) => {
+  try {
+    const result = factory();
+    if (result.type !== type) {
+      throw new Error(`Invalid "${type}" return discriminator`);
+    }
+    return result;
+  } catch (cause) {
+    throw new TypeError(`Invalid "${type}"`, { cause });
+  }
+};
+var CipherSuite = class {
+  #suite;
+  constructor(KEM, KDF, AEAD) {
+    const kem = validate(KEM, "KEM");
+    const kdf = validate(KDF, "KDF");
+    const aead = validate(AEAD, "AEAD");
+    this.#suite = {
+      KEM: kem,
+      KDF: kdf,
+      AEAD: aead,
+      id: concat2(encode4("HPKE"), I2OSP(kem.id, 2), I2OSP(kdf.id, 2), I2OSP(aead.id, 2))
+    };
+  }
+  get KEM() {
+    return {
+      id: this.#suite.KEM.id,
+      name: this.#suite.KEM.name,
+      Nsecret: this.#suite.KEM.Nsecret,
+      Nenc: this.#suite.KEM.Nenc,
+      Npk: this.#suite.KEM.Npk,
+      Nsk: this.#suite.KEM.Nsk
+    };
+  }
+  get KDF() {
+    return {
+      id: this.#suite.KDF.id,
+      name: this.#suite.KDF.name,
+      stages: this.#suite.KDF.stages,
+      Nh: this.#suite.KDF.Nh
+    };
+  }
+  get AEAD() {
+    return {
+      id: this.#suite.AEAD.id,
+      name: this.#suite.AEAD.name,
+      Nk: this.#suite.AEAD.Nk,
+      Nn: this.#suite.AEAD.Nn,
+      Nt: this.#suite.AEAD.Nt
+    };
+  }
+  async GenerateKeyPair(extractable) {
+    extractable ??= false;
+    checkExtractable(extractable);
+    return await this.#suite.KEM.GenerateKeyPair(extractable);
+  }
+  async DeriveKeyPair(ikm, extractable) {
+    extractable ??= false;
+    checkExtractable(extractable);
+    checkUint8Array(ikm, "ikm");
+    if (ikm.byteLength < this.#suite.KEM.Nsk) {
+      throw new DeriveKeyPairError('Insufficient "ikm" length');
+    }
+    try {
+      return await this.#suite.KEM.DeriveKeyPair(ikm, extractable);
+    } catch (cause) {
+      if (cause instanceof NotSupportedError2) {
+        throw cause;
+      }
+      throw new DeriveKeyPairError("Key derivation failed", { cause });
+    }
+  }
+  async SerializePrivateKey(privateKey) {
+    isKey(privateKey, "private", true);
+    return await this.#suite.KEM.SerializePrivateKey(privateKey);
+  }
+  async SerializePublicKey(publicKey) {
+    isKey(publicKey, "public", true);
+    return await this.#suite.KEM.SerializePublicKey(publicKey);
+  }
+  async DeserializePrivateKey(privateKey, extractable) {
+    extractable ??= false;
+    checkExtractable(extractable);
+    checkUint8Array(privateKey, "privateKey");
+    try {
+      if (privateKey.byteLength !== this.#suite.KEM.Nsk) {
+        throw new Error('Invalid "privateKey" length');
+      }
+      return await this.#suite.KEM.DeserializePrivateKey(privateKey, extractable);
+    } catch (cause) {
+      if (cause instanceof NotSupportedError2) {
+        throw cause;
+      }
+      throw new DeserializeError("Private key deserialization failed", { cause });
+    }
+  }
+  async DeserializePublicKey(publicKey) {
+    checkUint8Array(publicKey, "publicKey");
+    try {
+      if (publicKey.byteLength !== this.#suite.KEM.Npk) {
+        throw new Error('Invalid "publicKey" length');
+      }
+      return await this.#suite.KEM.DeserializePublicKey(publicKey);
+    } catch (cause) {
+      if (cause instanceof NotSupportedError2) {
+        throw cause;
+      }
+      throw new DeserializeError("Public key deserialization failed", { cause });
+    }
+  }
+  async Seal(publicKey, plaintext, options) {
+    if (this.#suite.AEAD.id === EXPORT_ONLY) {
+      throw new TypeError("Export-only AEAD cannot be used with Seal");
+    }
+    const { encapsulatedSecret, ctx } = await this.SetupSender(publicKey, options);
+    const ciphertext = await ctx.Seal(plaintext, options?.aad);
+    return { encapsulatedSecret, ciphertext };
+  }
+  async Open(privateKey, encapsulatedSecret, ciphertext, options) {
+    if (this.#suite.AEAD.id === EXPORT_ONLY) {
+      throw new TypeError("Export-only AEAD cannot be used with Open");
+    }
+    const ctx = await this.SetupRecipient(privateKey, encapsulatedSecret, options);
+    return await ctx.Open(ciphertext, options?.aad);
+  }
+  async SendExport(publicKey, exporterContext, length2, options) {
+    const { encapsulatedSecret, ctx } = await this.SetupSender(publicKey, options);
+    const exportedSecret = await ctx.Export(exporterContext, length2);
+    return { encapsulatedSecret, exportedSecret };
+  }
+  async ReceiveExport(privateKey, encapsulatedSecret, exporterContext, length2, options) {
+    const ctx = await this.SetupRecipient(privateKey, encapsulatedSecret, options);
+    return await ctx.Export(exporterContext, length2);
+  }
+  async SetupSender(publicKey, options) {
+    isKey(publicKey, "public");
+    let shared_secret;
+    let enc;
+    try {
+      const result = await this.#suite.KEM.Encap(publicKey);
+      shared_secret = result.shared_secret;
+      enc = result.enc;
+    } catch (cause) {
+      if (cause instanceof ValidationError || cause instanceof NotSupportedError2) {
+        throw cause;
+      }
+      throw new EncapError("Encapsulation failed", { cause });
+    }
+    const mode = options?.psk?.byteLength ? MODE_PSK : MODE_BASE;
+    const { key, base_nonce, exporter_secret } = await KeySchedule(
+      this.#suite,
+      mode,
+      shared_secret,
+      options?.info,
+      options?.psk,
+      options?.pskId
+    );
+    const ctx = new SenderContext(this.#suite, mode, key, base_nonce, exporter_secret);
+    return { encapsulatedSecret: enc, ctx };
+  }
+  async SetupRecipient(privateKey, encapsulatedSecret, options) {
+    const { skR, pkR } = this.#extractRecipientKeys(privateKey);
+    checkUint8Array(encapsulatedSecret, "encapsulatedSecret");
+    if (encapsulatedSecret.byteLength !== this.#suite.KEM.Nenc) {
+      throw new DecapError("Invalid encapsulated secret length");
+    }
+    let shared_secret;
+    try {
+      shared_secret = await this.#suite.KEM.Decap(encapsulatedSecret, skR, pkR);
+    } catch (cause) {
+      if (cause instanceof ValidationError || cause instanceof NotSupportedError2) {
+        throw cause;
+      }
+      throw new DecapError("Decapsulation failed", { cause });
+    }
+    const mode = options?.psk?.byteLength ? MODE_PSK : MODE_BASE;
+    const { key, base_nonce, exporter_secret } = await KeySchedule(
+      this.#suite,
+      mode,
+      shared_secret,
+      options?.info,
+      options?.psk,
+      options?.pskId
+    );
+    return new RecipientContext(this.#suite, mode, key, base_nonce, exporter_secret);
+  }
+  #extractRecipientKeys(skR) {
+    if (isKeyPair(skR)) {
+      return { skR: skR.privateKey, pkR: skR.publicKey };
+    }
+    isKey(skR, "private");
+    return { skR, pkR: void 0 };
+  }
+};
+var ValidationError = class _ValidationError extends Error {
+  constructor(message, options) {
+    super(message, options);
+    this.name = "ValidationError";
+    Error.captureStackTrace?.(this, _ValidationError);
+  }
+};
+var DeserializeError = class _DeserializeError extends Error {
+  constructor(message, options) {
+    super(message, options);
+    this.name = "DeserializeError";
+    Error.captureStackTrace?.(this, _DeserializeError);
+  }
+};
+var EncapError = class _EncapError extends Error {
+  constructor(message, options) {
+    super(message, options);
+    this.name = "EncapError";
+    Error.captureStackTrace?.(this, _EncapError);
+  }
+};
+var DecapError = class _DecapError extends Error {
+  constructor(message, options) {
+    super(message, options);
+    this.name = "DecapError";
+    Error.captureStackTrace?.(this, _DecapError);
+  }
+};
+var OpenError = class _OpenError extends Error {
+  constructor(message, options) {
+    super(message, options);
+    this.name = "OpenError";
+    Error.captureStackTrace?.(this, _OpenError);
+  }
+};
+var MessageLimitReachedError = class _MessageLimitReachedError extends Error {
+  constructor(message, options) {
+    super(message, options);
+    this.name = "MessageLimitReachedError";
+    Error.captureStackTrace?.(this, _MessageLimitReachedError);
+  }
+};
+var DeriveKeyPairError = class _DeriveKeyPairError extends Error {
+  constructor(message, options) {
+    super(message, options);
+    this.name = "DeriveKeyPairError";
+    Error.captureStackTrace?.(this, _DeriveKeyPairError);
+  }
+};
+var NotSupportedError2 = class _NotSupportedError extends Error {
+  constructor(message, options) {
+    super(message, options);
+    this.name = "NotSupportedError";
+    Error.captureStackTrace?.(this, _NotSupportedError);
+  }
+};
+var MODE_BASE = 0;
+var MODE_PSK = 1;
+function concat2(...buffers) {
+  const size = buffers.reduce((acc, { length: length2 }) => acc + length2, 0);
+  const buf = new Uint8Array(size);
+  let i = 0;
+  for (const buffer of buffers) {
+    buf.set(buffer, i);
+    i += buffer.length;
+  }
+  return buf;
+}
+function slice(buffer, start, end) {
+  return Uint8Array.prototype.slice.call(buffer, start, end);
+}
+function encode4(string) {
+  const bytes = new Uint8Array(string.length);
+  for (let i = 0; i < string.length; i++) {
+    const code = string.charCodeAt(i);
+    if (code > 127) {
+      throw new TypeError("Input string must contain only ASCII characters");
+    }
+    bytes[i] = code;
+  }
+  return bytes;
+}
+function xor(a, b) {
+  if (a.byteLength !== b.byteLength) {
+    throw new Error("XOR operands must have equal length");
+  }
+  const buf = new Uint8Array(a.byteLength);
+  for (let i = 0; i < a.byteLength; i++) {
+    buf[i] = a[i] ^ b[i];
+  }
+  return buf;
+}
+function lengthPrefixed(x) {
+  return concat2(I2OSP(x.byteLength, 2), x);
+}
+async function LabeledDerive(KDF, suite_id, ikm, label, context, L) {
+  const labeled_ikm = concat2(
+    ikm,
+    encode4("HPKE-v1"),
+    suite_id,
+    lengthPrefixed(label),
+    I2OSP(L, 2),
+    context
+  );
+  return await KDF.Derive(labeled_ikm, L);
+}
+async function Export_OneStage(KDF, suite_id, exporter_secret, exporter_context, L) {
+  checkLength(exporter_context, "Exporter context", MAX_LENGTH_ONE_STAGE);
+  return await LabeledDerive(KDF, suite_id, exporter_secret, encode4("sec"), exporter_context, L);
+}
+async function CombineSecrets_OneStage(suite, mode, shared_secret, info, psk, psk_id) {
+  checkLength(psk, "PSK", MAX_LENGTH_ONE_STAGE);
+  checkLength(psk_id, "PSK ID", MAX_LENGTH_ONE_STAGE);
+  checkLength(info, "Info", MAX_LENGTH_ONE_STAGE);
+  const secrets = concat2(lengthPrefixed(psk), lengthPrefixed(shared_secret));
+  const context = concat2(I2OSP(mode, 1), lengthPrefixed(psk_id), lengthPrefixed(info));
+  const secret = await LabeledDerive(
+    suite.KDF,
+    suite.id,
+    secrets,
+    encode4("secret"),
+    context,
+    suite.AEAD.Nk + suite.AEAD.Nn + suite.KDF.Nh
+  );
+  const key = slice(secret, 0, suite.AEAD.Nk);
+  const base_nonce = slice(secret, suite.AEAD.Nk, suite.AEAD.Nk + suite.AEAD.Nn);
+  const exporter_secret = slice(secret, suite.AEAD.Nk + suite.AEAD.Nn);
+  return { key, base_nonce, exporter_secret };
+}
+var MAX_LENGTH_TWO_STAGE = 65535;
+var MAX_LENGTH_ONE_STAGE = 65535;
+function checkLength(data, name, maxLength) {
+  if (data.byteLength > maxLength) {
+    throw new TypeError(`${name} length must not exceed ${maxLength} bytes`);
+  }
+}
+function checkUint8Array(input, name) {
+  if (!(input instanceof Uint8Array)) {
+    throw new TypeError(`"${name}" must be Uint8Array`);
+  }
+}
+function checkExtractable(extractable) {
+  if (typeof extractable !== "boolean") {
+    throw new TypeError('"extractable" must be boolean');
+  }
+}
+async function CombineSecrets_TwoStage(suite, mode, shared_secret, info, psk, psk_id) {
+  checkLength(psk, "PSK", MAX_LENGTH_TWO_STAGE);
+  checkLength(psk_id, "PSK ID", MAX_LENGTH_TWO_STAGE);
+  checkLength(info, "Info", MAX_LENGTH_TWO_STAGE);
+  const [psk_id_hash, info_hash] = await Promise.all([
+    LabeledExtract(suite.KDF, suite.id, new Uint8Array(), encode4("psk_id_hash"), psk_id),
+    LabeledExtract(suite.KDF, suite.id, new Uint8Array(), encode4("info_hash"), info)
+  ]);
+  const key_schedule_context = concat2(I2OSP(mode, 1), psk_id_hash, info_hash);
+  const secret = await LabeledExtract(suite.KDF, suite.id, shared_secret, encode4("secret"), psk);
+  if (suite.AEAD.id === EXPORT_ONLY) {
+    const exporter_secret2 = await LabeledExpand(
+      suite.KDF,
+      suite.id,
+      secret,
+      encode4("exp"),
+      key_schedule_context,
+      suite.KDF.Nh
+    );
+    return { key: new Uint8Array(), base_nonce: new Uint8Array(), exporter_secret: exporter_secret2 };
+  }
+  const [key, base_nonce, exporter_secret] = await Promise.all([
+    LabeledExpand(suite.KDF, suite.id, secret, encode4("key"), key_schedule_context, suite.AEAD.Nk),
+    LabeledExpand(
+      suite.KDF,
+      suite.id,
+      secret,
+      encode4("base_nonce"),
+      key_schedule_context,
+      suite.AEAD.Nn
+    ),
+    LabeledExpand(suite.KDF, suite.id, secret, encode4("exp"), key_schedule_context, suite.KDF.Nh)
+  ]);
+  return { key, base_nonce, exporter_secret };
+}
+async function Export_TwoStage(KDF, suite_id, exporter_secret, exporter_context, L) {
+  checkLength(exporter_context, "Exporter context", MAX_LENGTH_TWO_STAGE);
+  return await LabeledExpand(KDF, suite_id, exporter_secret, encode4("sec"), exporter_context, L);
+}
+async function LabeledExtract(KDF, suite_id, salt, label, ikm) {
+  const labeled_ikm = concat2(encode4("HPKE-v1"), suite_id, label, ikm);
+  return await KDF.Extract(salt, labeled_ikm);
+}
+async function LabeledExpand(KDF, suite_id, prk, label, info, L) {
+  const labeled_info = concat2(I2OSP(L, 2), encode4("HPKE-v1"), suite_id, label, info);
+  return await KDF.Expand(prk, labeled_info, L);
+}
+function isKeyPair(skR) {
+  if (!skR || typeof skR !== "object") return false;
+  if ("publicKey" in skR && "privateKey" in skR) {
+    const pkR = skR.publicKey;
+    skR = skR.privateKey;
+    try {
+      isKey(pkR, "public");
+      isKey(skR, "private");
+      if (pkR.algorithm.name !== skR.algorithm.name) {
+        throw new TypeError("key pair algorithms do not match");
+      }
+    } catch (cause) {
+      throw new TypeError('Invalid "privateKey"', { cause });
+    }
+    return true;
+  }
+  return false;
+}
+function isKey(key, type, extractable) {
+  const k = key;
+  if (typeof k.algorithm !== "object" || typeof k.algorithm.name !== "string" || typeof k.extractable !== "boolean" || typeof k.type !== "string" || k.type !== type) {
+    throw new TypeError(`Invalid "${type}Key"`);
+  }
+  if (extractable && k.extractable !== true) {
+    throw new TypeError(`"${type}Key" must be extractable`);
+  }
+}
+function I2OSP(n, w) {
+  if (!Number.isSafeInteger(w) || w <= 0) {
+    throw new Error("w must be a positive safe integer");
+  }
+  if (!Number.isSafeInteger(n) || n < 0) {
+    throw new Error("n must be a non-negative safe integer");
+  }
+  const max = Math.pow(256, w);
+  if (n >= max) {
+    throw new Error("n too large to fit in w-length byte string");
+  }
+  const ret = new Uint8Array(w);
+  let num2 = n;
+  for (let i = 0; i < w && num2; i++) {
+    ret[w - (i + 1)] = num2 % 256;
+    num2 = Math.floor(num2 / 256);
+  }
+  return ret;
+}
+function KDFStages(KDF) {
+  if (KDF.stages === 1 || KDF.stages === 2) {
+    return KDF.stages;
+  }
+  throw new Error("unreachable");
+}
+async function KeySchedule(suite, mode, shared_secret, info, psk, pskId) {
+  info ??= new Uint8Array();
+  checkUint8Array(info, "info");
+  psk ??= new Uint8Array();
+  checkUint8Array(psk, "psk");
+  pskId ??= new Uint8Array();
+  checkUint8Array(pskId, "pskId");
+  const stages = KDFStages(suite.KDF);
+  const CombineSecrets = stages === 1 ? CombineSecrets_OneStage : CombineSecrets_TwoStage;
+  VerifyPSKInputs(psk, pskId);
+  return await CombineSecrets(suite, mode, shared_secret, info, psk, pskId);
+}
+function VerifyPSKInputs(psk, psk_id) {
+  if (psk.byteLength && psk_id.byteLength) {
+    if (psk.byteLength < 32) {
+      throw new TypeError("Insufficient PSK length");
+    }
+    return;
+  }
+  if (!psk.byteLength && !psk_id.byteLength) {
+    return;
+  }
+  throw new TypeError("Inconsistent PSK inputs");
+}
+var NotApplicable = () => {
+  throw new Error("unreachable");
+};
+var EXPORT_ONLY = 65535;
+async function subtle(promise, name) {
+  try {
+    return await promise(crypto.subtle);
+  } catch (cause) {
+    if (cause instanceof TypeError || cause instanceof DOMException && cause.name === "NotSupportedError") {
+      throw new NotSupportedError2(`${name} is unsupported in this runtime`, { cause });
+    }
+    throw cause;
+  }
+}
+function sab(input) {
+  return typeof SharedArrayBuffer !== "undefined" && input instanceof SharedArrayBuffer;
+}
+function ab(input) {
+  if (sab(input.buffer)) {
+    throw new TypeError("input must not be a SharedArrayBuffer");
+  }
+  if (input.byteLength === input.buffer.byteLength) {
+    return input.buffer;
+  }
+  return input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength);
+}
+function HKDF_SHARED() {
+  return {
+    stages: 2,
+    Derive: NotApplicable,
+    async Extract(_salt, _ikm) {
+      let salt;
+      if (_salt.byteLength === 0) {
+        salt = new ArrayBuffer(this.Nh);
+      } else {
+        salt = ab(_salt);
+      }
+      const ikm = ab(_ikm);
+      return new Uint8Array(
+        await subtle(
+          async (c) => c.sign(
+            "HMAC",
+            await c.importKey("raw", salt, { name: "HMAC", hash: this.hash }, false, ["sign"]),
+            ikm
+          ),
+          this.name
+        )
+      );
+    },
+    async Expand(_prk, info, L) {
+      if (_prk.byteLength < this.Nh) {
+        throw new Error("prk.byteLength < this.Nh");
+      }
+      if (L > 255 * this.Nh) {
+        throw new Error("L must be <= 255*Nh");
+      }
+      const N = Math.ceil(L / this.Nh);
+      const prk = ab(_prk);
+      const key = await subtle(
+        (c) => c.importKey("raw", prk, { name: "HMAC", hash: this.hash }, false, ["sign"]),
+        this.name
+      );
+      const T = new Uint8Array(N * this.Nh);
+      let T_prev = new Uint8Array();
+      for (let i = 0; i < N; i++) {
+        const input = new Uint8Array(T_prev.byteLength + info.byteLength + 1);
+        input.set(T_prev);
+        input.set(info, T_prev.byteLength);
+        input[T_prev.byteLength + info.byteLength] = i + 1;
+        const T_i = new Uint8Array(await subtle((c) => c.sign("HMAC", key, input), this.name));
+        T.set(T_i, i * this.Nh);
+        T_prev = T_i;
+      }
+      return slice(T, 0, L);
+    }
+  };
+}
+var KDF_HKDF_SHA256 = function() {
+  return { id: 1, type: "KDF", name: "HKDF-SHA256", Nh: 32, hash: "SHA-256", ...HKDF_SHARED() };
+};
+async function getPublicKeyByExport(name, key, usages) {
+  if (!key.extractable) {
+    throw new TypeError(
+      '"privateKey" must be extractable or a Key Pair must be used in this runtime'
+    );
+  }
+  return await subtle(async (c) => {
+    const jwk = await c.exportKey("jwk", key);
+    return c.importKey(
+      "jwk",
+      { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y },
+      key.algorithm,
+      true,
+      usages
+    );
+  }, name);
+}
+async function getPublicKey(name, key, usages) {
+  return await subtle((c) => c.getPublicKey?.(key, usages), name) || await getPublicKeyByExport(name, key, usages);
+}
+function checkNotAllZeros(buffer) {
+  let or = 0;
+  for (let i = 0; i < buffer.length; i++) {
+    or |= buffer[i];
+  }
+  if (or === 0) {
+    throw new ValidationError("DH shared secret is an all-zero value");
+  }
+}
+function fromBase64(input) {
+  input = input.replace(/-/g, "+").replace(/_/g, "/");
+  const binary = atob(input);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+function b64u(input) {
+  return Uint8Array.fromBase64?.(input, { alphabet: "base64url" }) || fromBase64(input);
+}
+function assertKeyAlgorithm(key, expectedAlgorithm) {
+  if (key.algorithm.name !== expectedAlgorithm.name) {
+    throw new TypeError(`key algorithm must be ${expectedAlgorithm.name}`);
+  }
+  if (key.algorithm.namedCurve !== expectedAlgorithm.namedCurve) {
+    throw new TypeError(
+      `key namedCurve must be ${expectedAlgorithm.namedCurve}`
+    );
+  }
+}
+function assertCryptoKey(key) {
+  if (key[Symbol.toStringTag] !== "CryptoKey") {
+    if (key instanceof CryptoKey) return;
+    throw new TypeError("unexpected key constructor");
+  }
+}
+async function ExtractAndExpand_TwoStage(DHKEM, dh, kem_context) {
+  const eae_prk = await LabeledExtract(
+    DHKEM.kdf,
+    DHKEM.suite_id,
+    new Uint8Array(),
+    encode4("eae_prk"),
+    dh
+  );
+  return await LabeledExpand(
+    DHKEM.kdf,
+    DHKEM.suite_id,
+    eae_prk,
+    encode4("shared_secret"),
+    kem_context,
+    DHKEM.Nsecret
+  );
+}
+function DHKEM_SHARED() {
+  return {
+    async GenerateKeyPair(extractable) {
+      return await subtle(
+        (c) => c.generateKey(this.algorithm, extractable, ["deriveBits"]),
+        this.name
+      );
+    },
+    async SerializePublicKey(key) {
+      assertKeyAlgorithm(key, this.algorithm);
+      assertCryptoKey(key);
+      return new Uint8Array(await subtle((c) => c.exportKey("raw", key), this.name));
+    },
+    async DeserializePublicKey(_key) {
+      const key = ab(_key);
+      return await subtle((c) => c.importKey("raw", key, this.algorithm, true, []), this.name);
+    },
+    async SerializePrivateKey(key) {
+      assertKeyAlgorithm(key, this.algorithm);
+      assertCryptoKey(key);
+      const { d } = await subtle((c) => c.exportKey("jwk", key), this.name);
+      return b64u(d);
+    },
+    async Encap(pkR) {
+      assertKeyAlgorithm(pkR, this.algorithm);
+      assertCryptoKey(pkR);
+      const ekp = await this.GenerateKeyPair(false);
+      const skE = ekp.privateKey;
+      const pkE = ekp.publicKey;
+      const dh = new Uint8Array(
+        await subtle(
+          (c) => c.deriveBits({ name: skE.algorithm.name, public: pkR }, skE, this.Ndh << 3),
+          this.name
+        )
+      );
+      checkNotAllZeros(dh);
+      const enc = await this.SerializePublicKey(pkE);
+      const pkRm = await this.SerializePublicKey(pkR);
+      const kem_context = concat2(enc, pkRm);
+      const shared_secret = await ExtractAndExpand_TwoStage(this, dh, kem_context);
+      return { shared_secret, enc };
+    },
+    async Decap(enc, skR, pkR) {
+      assertKeyAlgorithm(skR, this.algorithm);
+      assertCryptoKey(skR);
+      if (pkR) {
+        assertKeyAlgorithm(pkR, this.algorithm);
+        assertCryptoKey(pkR);
+      } else {
+        pkR = await getPublicKey(this.name, skR, []);
+      }
+      const pkE = await this.DeserializePublicKey(enc);
+      const dh = new Uint8Array(
+        await subtle(
+          (c) => c.deriveBits({ name: skR.algorithm.name, public: pkE }, skR, this.Ndh << 3),
+          this.name
+        )
+      );
+      checkNotAllZeros(dh);
+      const pkRm = await this.SerializePublicKey(pkR);
+      const kem_context = concat2(enc, pkRm);
+      const shared_secret = await ExtractAndExpand_TwoStage(this, dh, kem_context);
+      return shared_secret;
+    }
+  };
+}
+async function createKeyPairFromPrivateKey(DHKEM, key, extractable) {
+  let privateKey;
+  let publicKey;
+  if (!extractable && typeof crypto.subtle.getPublicKey !== "function") {
+    privateKey = await DHKEM.DeserializePrivateKey(key, true);
+    publicKey = await getPublicKey(DHKEM.name, privateKey, []);
+    privateKey = await DHKEM.DeserializePrivateKey(key, false);
+  } else {
+    privateKey = await DHKEM.DeserializePrivateKey(key, extractable);
+    publicKey = await getPublicKey(DHKEM.name, privateKey, []);
+  }
+  return { privateKey, publicKey };
+}
+async function CurveKeyFromD(name, Nsk, template, algorithm, key, extractable) {
+  const tmpl = slice(template);
+  const pkcs8 = new Uint8Array(Nsk + tmpl.byteLength);
+  pkcs8.set(tmpl);
+  pkcs8.set(key, tmpl.byteLength);
+  return await subtle(
+    (c) => c.importKey("pkcs8", pkcs8, algorithm, extractable, ["deriveBits"]),
+    name
+  );
+}
+async function DeriveKeyPairX(ikm, extractable) {
+  const dkp_prk = await LabeledExtract(
+    this.kdf,
+    this.suite_id,
+    new Uint8Array(),
+    encode4("dkp_prk"),
+    ikm
+  );
+  const sk = await LabeledExpand(
+    this.kdf,
+    this.suite_id,
+    dkp_prk,
+    encode4("sk"),
+    new Uint8Array(),
+    this.Nsk
+  );
+  return await createKeyPairFromPrivateKey(this, sk, extractable);
+}
+var KEM_DHKEM_X25519_HKDF_SHA256 = function() {
+  const id = 32;
+  const name = "DHKEM(X25519, HKDF-SHA256)";
+  const kdf = KDF_HKDF_SHA256();
+  kdf.name = name;
+  return {
+    id,
+    suite_id: concat2(encode4("KEM"), I2OSP(id, 2)),
+    type: "KEM",
+    name,
+    kdf,
+    Nsecret: 32,
+    Nenc: 32,
+    Npk: 32,
+    Nsk: 32,
+    Ndh: 32,
+    algorithm: { name: "X25519" },
+    pkcs8: Uint8Array.of(48, 46, 2, 1, 0, 48, 5, 6, 3, 43, 101, 110, 4, 34, 4, 32),
+    DeriveKeyPair: DeriveKeyPairX,
+    async DeserializePrivateKey(key, extractable) {
+      return await CurveKeyFromD(name, this.Nsk, this.pkcs8, this.algorithm, key, extractable);
+    },
+    ...DHKEM_SHARED()
+  };
+};
+function AEAD_SHARED() {
+  return {
+    async Seal(_key, _nonce, _aad, _pt) {
+      const nonce = ab(_nonce);
+      const aad = ab(_aad);
+      const key = ab(_key);
+      const pt = ab(_pt);
+      return new Uint8Array(
+        await subtle(
+          async (c) => c.encrypt(
+            { name: this.algorithm, iv: nonce, additionalData: aad },
+            await c.importKey(this.keyFormat, key, this.algorithm, false, ["encrypt"]),
+            pt
+          ),
+          this.name
+        )
+      );
+    },
+    async Open(_key, _nonce, _aad, _ct) {
+      const nonce = ab(_nonce);
+      const aad = ab(_aad);
+      const key = ab(_key);
+      const ct = ab(_ct);
+      return new Uint8Array(
+        await subtle(
+          async (c) => c.decrypt(
+            { name: this.algorithm, iv: nonce, additionalData: aad },
+            await c.importKey(this.keyFormat, key, this.algorithm, false, ["decrypt"]),
+            ct
+          ),
+          this.name
+        )
+      );
+    }
+  };
+}
+var AEAD_AES_128_GCM = function() {
+  return {
+    id: 1,
+    type: "AEAD",
+    name: "AES-128-GCM",
+    Nk: 16,
+    Nn: 12,
+    Nt: 16,
+    algorithm: "AES-GCM",
+    keyFormat: "raw",
+    ...AEAD_SHARED()
+  };
+};
+
+// dist/internal/ohttp-client.js
+var REORG_STATUS = 409;
+var INNER_REQUEST_ORIGIN = "https://ohttp-target.invalid";
+var OhttpClient = class {
+  gatewayUrl;
+  ohttpClient = null;
+  pinnedKeyConfig;
+  /**
+   * @param gatewayUrl - URL where the OHTTP gateway accepts encapsulated requests
+   *   and serves `/ohttp-keys`. May include a reverse-proxy path prefix (e.g.
+   *   `https://api.example.com/discovery`); the prefix is preserved on outer
+   *   requests but stripped from the inner OHTTP request path (which always
+   *   uses just the supplied per-call `path`).
+   *   Must be HTTPS in production — without it (or a pinned `publicKeyConfig`),
+   *   an active network attacker can replace the OHTTP key config.
+   * @param options.relayUrl - Optional OHTTP relay URL. When set, encapsulated
+   *   requests are sent here instead of the gateway. `/ohttp-keys` is still
+   *   fetched from `gatewayUrl`.
+   * @param options.publicKeyConfig - Optional pinned key config bytes
+   *   (`application/ohttp-keys` format). When set, `/ohttp-keys` is never fetched.
+   */
+  constructor(gatewayUrl, options) {
+    this.gatewayUrl = gatewayUrl;
+    this.pinnedKeyConfig = options?.publicKeyConfig;
+    if (options?.relayUrl) {
+      this.relayUrl = options.relayUrl;
+    }
+  }
+  relayUrl;
+  /**
+   * Send an OHTTP-encapsulated GET request and return the decrypted JSON response.
+   */
+  async get(path) {
+    return this.send(path, new Request(`${INNER_REQUEST_ORIGIN}${path}`, { method: "GET" }));
+  }
+  /**
+   * Send an OHTTP-encapsulated POST request and return the decrypted JSON response.
+   */
+  async post(path, body) {
+    return this.send(path, new Request(`${INNER_REQUEST_ORIGIN}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }));
+  }
+  async send(path, request) {
+    await this.ensureClient();
+    const { init, context } = await this.ohttpClient.encapsulateRequest(request);
+    const targetUrl = this.relayUrl ?? this.gatewayUrl;
+    const response = await fetch(targetUrl, init);
+    if (response.status === 422) {
+      this.invalidate();
+      const text = await response.text().catch(() => "");
+      throw new Error(`OHTTP decapsulation failed on server: ${text}`);
+    }
+    if (!response.ok && response.headers.get("content-type") !== "message/ohttp-res") {
+      const text = await response.text().catch(() => "");
+      if (response.status === REORG_STATUS) {
+        throw new ReorgError(`Block reorged during ${path}: ${text}`);
+      }
+      throw new Error(`OHTTP request ${path} failed (${response.status}): ${text}`);
+    }
+    const innerResponse = await context.decapsulateResponse(response);
+    const innerBody = await readResponseText(innerResponse);
+    if (innerResponse.status === REORG_STATUS) {
+      throw new ReorgError(`Block reorged during ${path}: ${innerBody}`);
+    }
+    if (innerResponse.status !== 200) {
+      throw new Error(`OHTTP inner response ${path} failed (${innerResponse.status}): ${innerBody}`);
+    }
+    return JSON.parse(innerBody);
+  }
+  /** Fetch (or use pinned) key config and create the OHTTPClient. */
+  async ensureClient() {
+    if (this.ohttpClient) {
+      return;
+    }
+    let raw;
+    if (this.pinnedKeyConfig) {
+      raw = this.pinnedKeyConfig;
+    } else {
+      const response = await fetch(`${this.gatewayUrl}/ohttp-keys`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch OHTTP key config: ${response.status} ${response.statusText}`);
+      }
+      raw = new Uint8Array(await response.arrayBuffer());
+    }
+    const publicKeyConfigs = KeyConfig.parseMultiple(raw);
+    if (publicKeyConfigs.length === 0) {
+      throw new Error("OHTTP key config response contained no key configurations");
+    }
+    const publicKeyConfig = publicKeyConfigs[0];
+    const suite = new CipherSuite(KEM_DHKEM_X25519_HKDF_SHA256, KDF_HKDF_SHA256, AEAD_AES_128_GCM);
+    this.ohttpClient = new OHTTPClient(suite, publicKeyConfig);
+  }
+  invalidate() {
+    this.ohttpClient = null;
+  }
+};
+var ENCODING_TO_FORMAT = {
+  gzip: "gzip",
+  "x-gzip": "gzip",
+  deflate: "deflate"
+};
+async function readResponseText(response) {
+  const encoding = response.headers.get("content-encoding")?.toLowerCase();
+  if (!encoding || !response.body || encoding === "identity") {
+    return response.text();
+  }
+  const format = ENCODING_TO_FORMAT[encoding];
+  if (!format) {
+    throw new Error(`Unsupported Content-Encoding in OHTTP response: ${encoding}`);
+  }
+  const decompressed = response.body.pipeThrough(new DecompressionStream(format));
+  return new Response(decompressed).text();
+}
 
 // node_modules/zod/v3/external.js
 var external_exports = {};
@@ -9073,2445 +11623,6 @@ function isTransientError(error) {
   return false;
 }
 
-// dist/internal/mock-proving.js
-var VALIDATED = import_starknet12.encode.utf8ToBigInt("VALID");
-var CallMockProofProvider = class {
-  provider;
-  chainId;
-  options;
-  constructor(provider, chainId, options) {
-    this.provider = provider;
-    this.chainId = chainId;
-    this.options = options;
-  }
-  async getDefaultDetails() {
-    return getDefaultProofDetails(this.chainId);
-  }
-  async prove(invocation, blockIdentifier) {
-    if (this.options?.validateSignature !== false) {
-      await this.validateSignature(invocation);
-    }
-    const executeViewCalldata = extractExecuteViewCalldata(invocation.calldata);
-    const result = await this.provider.callContract({
-      contractAddress: invocation.sender_address,
-      entrypoint: "compile_actions",
-      calldata: executeViewCalldata
-    }, blockIdentifier);
-    const poolClassHash = await this.provider.getClassHashAt(invocation.sender_address, blockIdentifier);
-    let baseBlockNumber;
-    if (blockIdentifier != null) {
-      const block = await this.provider.getBlock(blockIdentifier);
-      baseBlockNumber = BigInt(block.block_number);
-    } else {
-      const latestBlock = await this.provider.getBlock("latest");
-      const currentBlockNumber = BigInt(latestBlock.block_number);
-      const blocksBack = 10n;
-      baseBlockNumber = currentBlockNumber > blocksBack ? currentBlockNumber - blocksBack : 1n;
-    }
-    const baseBlock = await this.provider.getBlock(Number(baseBlockNumber));
-    const proofFacts = buildProofFacts(invocation.sender_address, poolClassHash, result, baseBlockNumber, baseBlock.block_hash ?? "0x0", this.chainId);
-    const messagePayload = buildMessagePayload(poolClassHash, result);
-    return { output: messagePayload, data: void 0, proofFacts };
-  }
-  /**
-   * Validates the signature by calling is_valid_signature on the user's account.
-   * This mirrors what the contract's __execute__ does after compile_actions.
-   */
-  async validateSignature(invocation) {
-    const signatureArray = invocation.signature ? import_starknet12.stark.formatSignature(invocation.signature) : [];
-    if (signatureArray.length === 0) {
-      return;
-    }
-    const calldata = invocation.calldata;
-    const innerCalldata = extractExecuteViewCalldata(calldata);
-    const userAddress = import_starknet12.num.toHex(innerCalldata[0]);
-    const details = await this.getDefaultDetails();
-    const txHash = import_starknet12.hash.calculateInvokeTransactionHash({
-      senderAddress: import_starknet12.num.toHex(invocation.sender_address),
-      version: details.version,
-      compiledCalldata: calldata,
-      chainId: this.chainId,
-      nonce: details.nonce,
-      accountDeploymentData: details.accountDeploymentData,
-      nonceDataAvailabilityMode: import_starknet12.EDAMode[details.nonceDataAvailabilityMode],
-      feeDataAvailabilityMode: import_starknet12.EDAMode[details.feeDataAvailabilityMode],
-      resourceBounds: details.resourceBounds,
-      tip: details.tip,
-      paymasterData: details.paymasterData
-    });
-    const isValidCalldata = [txHash, import_starknet12.num.toHex(signatureArray.length), ...signatureArray];
-    const result = await this.provider.callContract({
-      contractAddress: userAddress,
-      entrypoint: "is_valid_signature",
-      calldata: isValidCalldata
-    });
-    if (toBigInt(result[0]) !== VALIDATED) {
-      throw new ProvingServiceError(55, "Account validation failed", `Signature validation failed: expected ${VALIDATED}, got ${result[0]}`);
-    }
-  }
-};
-
-// dist/internal/screening-calldata.js
-var import_starknet13 = require("starknet");
-function screeningCalldataSuffix(additionalData) {
-  const signature = additionalData?.signature;
-  const attestationOption = signature === void 0 ? new import_starknet13.CairoOption(import_starknet13.CairoOptionVariant.None) : new import_starknet13.CairoOption(import_starknet13.CairoOptionVariant.Some, {
-    issued_at: signature.issued_at,
-    signature: import_starknet13.cairo.tuple(signature.sig_r, signature.sig_s)
-  });
-  return import_starknet13.CallData.compile([attestationOption]).map((felt) => toHex(BigInt(felt)));
-}
-
-// dist/internal/private-transfers.js
-var PrivateTransfers = class extends AbstractPrivateTransfers {
-  params;
-  constructor(params) {
-    super(params.account.address, params.viewingKeyProvider, params.discoveryProvider, params.subAccountAnonymizerAddress);
-    this.params = params;
-  }
-  async getCompiler() {
-    const viewingKey = await this.params.viewingKeyProvider.getViewingKey();
-    return new ActionCompiler(this.user, viewingKey, this.params.discoveryProvider, toBigInt(this.params.poolContractAddress));
-  }
-  async createProofInvocation(actions, options) {
-    const viewingKey = await this.params.viewingKeyProvider.getViewingKey();
-    const compiler = new ActionCompiler(this.user, viewingKey, this.params.discoveryProvider, toBigInt(this.params.poolContractAddress));
-    const { clientActions, registry, warnings } = await compiler.compile(actions, options);
-    const details = await this.params.provingProvider.getDefaultDetails();
-    const invocation = await this.params.proofInvocationFactory.create({ ...this.params.account, viewingKey }, this.params.poolContractAddress, clientActions, details);
-    return { invocation, registry, warnings };
-  }
-  invalidateProofNonceCache() {
-    this.params.provingProvider.invalidateNonceCache?.();
-  }
-  async executeWithInvocation({ invocation, registry, warnings }, provingBlockId) {
-    const proof = await this.params.provingProvider.prove(invocation, provingBlockId);
-    return this.buildExecuteResult(proof, registry, warnings);
-  }
-  /**
-   * Assemble the `apply_actions` call and `ExecuteResult` from a proof. Shared
-   * by `executeWithInvocation` (real proof) and `simulate` (mock proof) so both
-   * produce identical calldata — notably the trailing screening attestation.
-   */
-  buildExecuteResult(proof, registry, warnings) {
-    const serverActionsCalldata = proof.output.slice(1);
-    const parsedOutput = () => this.params.proofInvocationFactory.parseOutput(serverActionsCalldata);
-    debugLog("private-transfers", "execute", "parsed server actions", parsedOutput);
-    const screeningSuffix = screeningCalldataSuffix(proof.additionalData);
-    return {
-      callAndProof: {
-        call: {
-          contractAddress: toHex(this.params.poolContractAddress),
-          entrypoint: "apply_actions",
-          calldata: [...serverActionsCalldata, ...screeningSuffix]
-        },
-        proof
-      },
-      registry,
-      warnings
-    };
-  }
-  async simulate(actions, options) {
-    const { invocation, registry, warnings } = await this.createProofInvocation(actions, options);
-    const chainId = await options.provider.getChainId();
-    const mockProvider = new CallMockProofProvider(options.provider, chainId, {
-      validateSignature: options.validateSignature ?? false
-    });
-    const proof = await mockProvider.prove(invocation, options.provingBlockId);
-    return this.buildExecuteResult(proof, registry, warnings);
-  }
-};
-
-// dist/internal/proving-service-provider.js
-var import_starknet14 = require("starknet");
-
-// node_modules/ohttp-ts/dist/index.js
-var OHTTPErrorCode = {
-  /** Failed to parse key configuration */
-  InvalidKeyConfig: "INVALID_KEY_CONFIG",
-  /** Unknown key identifier */
-  UnknownKeyId: "UNKNOWN_KEY_ID",
-  /** Unsupported cipher suite */
-  UnsupportedCipherSuite: "UNSUPPORTED_CIPHER_SUITE",
-  /** Decryption failed - deliberately opaque */
-  DecryptionFailed: "DECRYPTION_FAILED",
-  /** Encryption failed */
-  EncryptionFailed: "ENCRYPTION_FAILED",
-  /** Invalid message format */
-  InvalidMessage: "INVALID_MESSAGE",
-  /** Chunk sequence error */
-  ChunkSequenceError: "CHUNK_SEQUENCE_ERROR",
-  /** Chunk limit exceeded */
-  ChunkLimitExceeded: "CHUNK_LIMIT_EXCEEDED"
-};
-var OHTTPError = class _OHTTPError extends Error {
-  code;
-  constructor(code) {
-    super(`OHTTP error: ${code}`);
-    this.name = "OHTTPError";
-    this.code = code;
-    Object.setPrototypeOf(this, _OHTTPError.prototype);
-  }
-};
-var VLI_MASK_HEADER = 63;
-var VLI_MASK_VALUE = 192;
-var VLI_MASK_LSB = 255;
-var VLI_LEN_1 = 0;
-var VLI_LEN_2 = 64;
-var VLI_LEN_4 = 128;
-var VLI_LEN_8 = 192;
-var BHttpError = class extends Error {
-};
-var InvalidMessageError = class extends BHttpError {
-};
-var NotSupportedError = class extends BHttpError {
-};
-var InformationalResponse = class {
-  constructor(status) {
-    Object.defineProperty(this, "status", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    Object.defineProperty(this, "headers", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    this.status = status;
-    this.headers = new Headers();
-  }
-};
-var DecoderContext = class {
-  constructor(buf) {
-    Object.defineProperty(this, "buf", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    Object.defineProperty(this, "p", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: 0
-    });
-    Object.defineProperty(this, "framingIndicator", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: 0
-    });
-    Object.defineProperty(this, "headers", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    Object.defineProperty(this, "content", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    Object.defineProperty(this, "trailers", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    this.buf = buf;
-    this.headers = new Headers();
-    this.content = new Uint8Array(0);
-    this.trailers = new Headers();
-  }
-};
-var RequestDecoderContext = class extends DecoderContext {
-  constructor(buf) {
-    super(buf);
-    Object.defineProperty(this, "method", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: ""
-    });
-    Object.defineProperty(this, "scheme", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: ""
-    });
-    Object.defineProperty(this, "authority", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: ""
-    });
-    Object.defineProperty(this, "path", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: ""
-    });
-  }
-  createRequest() {
-    const input = this.scheme + "://" + this.authority + this.path;
-    let req;
-    if (this.method === "GET" || this.method === "HEAD") {
-      req = new Request(input, {
-        method: this.method
-      });
-    } else {
-      req = new Request(input, {
-        method: this.method,
-        body: this.content
-      });
-    }
-    this.headers.forEach((value, key) => {
-      req.headers.set(key, value);
-    });
-    return req;
-  }
-};
-var ResponseDecoderContext = class extends DecoderContext {
-  constructor(buf) {
-    super(buf);
-    Object.defineProperty(this, "status", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: 0
-    });
-    Object.defineProperty(this, "informationalResponses", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    this.informationalResponses = new Array(0);
-  }
-  createResponse() {
-    return new Response(this.content, {
-      status: this.status,
-      headers: this.headers
-    });
-  }
-};
-var BHttpDecoder = class {
-  constructor() {
-    Object.defineProperty(this, "_td", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    this._td = new TextDecoder();
-  }
-  decodeRequest(src) {
-    if (src instanceof ArrayBuffer) {
-      src = new Uint8Array(src);
-    }
-    const ctx = new RequestDecoderContext(src);
-    ctx.framingIndicator = this.decodeVli(ctx);
-    switch (ctx.framingIndicator) {
-      case 0:
-        return this.decodeKnownLengthRequest(ctx);
-      case 2:
-        return this.decodeIndeterminateLengthRequest(ctx);
-      default:
-        throw new InvalidMessageError("Invalid framing indicator.");
-    }
-  }
-  decodeResponse(src) {
-    if (src instanceof ArrayBuffer) {
-      src = new Uint8Array(src);
-    }
-    const ctx = new ResponseDecoderContext(src);
-    ctx.framingIndicator = this.decodeVli(ctx);
-    switch (ctx.framingIndicator) {
-      case 1:
-        return this.decodeKnownLengthResponse(ctx);
-      case 3:
-        return this.decodeIndeterminateLengthResponse(ctx);
-      default:
-        throw new InvalidMessageError("Invalid framing indicator.");
-    }
-  }
-  decodeKnownLengthRequest(ctx) {
-    this.decodeRequestControlData(ctx);
-    this.decodeKnownLengthRequestHeaders(ctx);
-    this.decodeKnownLengthContent(ctx);
-    this.decodeKnownLengthTrailers(ctx);
-    this.checkPadding(ctx);
-    return ctx.createRequest();
-  }
-  decodeIndeterminateLengthRequest(ctx) {
-    this.decodeRequestControlData(ctx);
-    this.decodeIndeterminateLengthRequestHeaders(ctx);
-    this.decodeIndeterminateLengthContent(ctx);
-    this.decodeIndeterminateLengthTrailers(ctx);
-    this.checkPadding(ctx);
-    return ctx.createRequest();
-  }
-  decodeKnownLengthResponse(ctx) {
-    this.decodeKnownLengthInformationalResponsesAndHeaders(ctx);
-    this.decodeKnownLengthContent(ctx);
-    this.decodeKnownLengthTrailers(ctx);
-    this.checkPadding(ctx);
-    return ctx.createResponse();
-  }
-  decodeIndeterminateLengthResponse(ctx) {
-    this.decodeIndeterminateLengthInformationalResponsesAndHeaders(ctx);
-    this.decodeIndeterminateLengthContent(ctx);
-    this.decodeIndeterminateLengthTrailers(ctx);
-    this.checkPadding(ctx);
-    return ctx.createResponse();
-  }
-  decodeRequestControlData(ctx) {
-    ctx.method = this.decodeVliAndValue(ctx);
-    ctx.scheme = this.decodeVliAndValue(ctx);
-    ctx.authority = this.decodeVliAndValue(ctx);
-    ctx.path = this.decodeVliAndValue(ctx);
-    return;
-  }
-  decodeKnownLengthInformationalResponsesAndHeaders(ctx) {
-    let status = this.decodeVli(ctx);
-    while (status >= 100 && status < 200) {
-      this.decodeKnownLengthInformationalResponse(ctx, status);
-      status = this.decodeVli(ctx);
-    }
-    if (status < 100 && status >= 600) {
-      throw new InvalidMessageError("Invalid status code.");
-    }
-    ctx.status = status;
-    this.decodeKnownLengthResponseHeaders(ctx);
-    return;
-  }
-  decodeIndeterminateLengthInformationalResponsesAndHeaders(ctx) {
-    let status = this.decodeVli(ctx);
-    while (status >= 100 && status < 200) {
-      this.decodeIndeterminateLengthInformationalResponse(ctx, status);
-      status = this.decodeVli(ctx);
-    }
-    if (status < 100 && status >= 600) {
-      throw new InvalidMessageError("Invalid status code.");
-    }
-    ctx.status = status;
-    this.decodeIndeterminateLengthResponseHeaders(ctx);
-    return;
-  }
-  decodeKnownLengthInformationalResponse(ctx, status) {
-    const ir = new InformationalResponse(status);
-    const len = this.decodeVli(ctx);
-    let name = "";
-    let value = "";
-    const base = ctx.p;
-    while (ctx.p < base + len) {
-      name = this.decodeVliAndValue(ctx);
-      value = this.decodeVliAndValue(ctx);
-      ir.headers.set(name, value);
-    }
-    ctx.informationalResponses.push(ir);
-    return;
-  }
-  decodeIndeterminateLengthInformationalResponse(ctx, status) {
-    const ir = new InformationalResponse(status);
-    let name = "";
-    let value = "";
-    let terminator = this.decodeVli(ctx);
-    while (terminator !== 0) {
-      ctx.p--;
-      name = this.decodeVliAndValue(ctx);
-      value = this.decodeVliAndValue(ctx);
-      ir.headers.set(name, value);
-      terminator = this.decodeVli(ctx);
-    }
-    ctx.informationalResponses.push(ir);
-    return;
-  }
-  decodeKnownLengthRequestHeaders(ctx) {
-    let name = "";
-    let value = "";
-    const len = this.decodeVli(ctx);
-    const base = ctx.p;
-    while (ctx.p < base + len) {
-      name = this.decodeVliAndValue(ctx);
-      value = this.decodeVliAndValue(ctx);
-      if (name.localeCompare("host", void 0, { sensitivity: "accent" }) === 0 && ctx.authority === "") {
-        ctx.authority = value;
-      }
-      ctx.headers.set(name, value);
-    }
-    return;
-  }
-  decodeKnownLengthResponseHeaders(ctx) {
-    let name = "";
-    let value = "";
-    const base = ctx.p;
-    const len = this.decodeVli(ctx);
-    while (ctx.p < base + len) {
-      name = this.decodeVliAndValue(ctx);
-      value = this.decodeVliAndValue(ctx);
-      ctx.headers.set(name, value);
-    }
-    return;
-  }
-  decodeIndeterminateLengthRequestHeaders(ctx) {
-    let name = "";
-    let value = "";
-    let terminator = this.decodeVli(ctx);
-    while (terminator !== 0) {
-      ctx.p--;
-      name = this.decodeVliAndValue(ctx);
-      value = this.decodeVliAndValue(ctx);
-      if (name.localeCompare("host", void 0, { sensitivity: "accent" }) === 0 && ctx.authority === "") {
-        ctx.authority = value;
-      }
-      ctx.headers.set(name, value);
-      terminator = this.decodeVli(ctx);
-    }
-    return;
-  }
-  decodeIndeterminateLengthResponseHeaders(ctx) {
-    let name = "";
-    let value = "";
-    let terminator = this.decodeVli(ctx);
-    while (terminator !== 0) {
-      ctx.p--;
-      name = this.decodeVliAndValue(ctx);
-      value = this.decodeVliAndValue(ctx);
-      ctx.headers.set(name, value);
-      terminator = this.decodeVli(ctx);
-    }
-    return;
-  }
-  decodeKnownLengthContent(ctx) {
-    const len = this.decodeVli(ctx);
-    ctx.content = ctx.buf.slice(ctx.p, ctx.p + len);
-    ctx.p += len;
-    return;
-  }
-  decodeIndeterminateLengthContent(ctx) {
-    let len = 0;
-    const p = ctx.p;
-    let terminator = this.decodeVli(ctx);
-    while (terminator !== 0) {
-      len += terminator;
-      ctx.p += terminator;
-      terminator = this.decodeVli(ctx);
-    }
-    if (len === 0) {
-      return;
-    }
-    ctx.p = p;
-    ctx.content = new Uint8Array(len);
-    len = 0;
-    terminator = this.decodeVli(ctx);
-    while (terminator !== 0) {
-      ctx.content.set(ctx.buf.slice(ctx.p, ctx.p + terminator), len);
-      len += terminator;
-      ctx.p += terminator;
-      terminator = this.decodeVli(ctx);
-    }
-    return;
-  }
-  decodeKnownLengthTrailers(ctx) {
-    const len = this.decodeVli(ctx);
-    let name = "";
-    let value = "";
-    const base = ctx.p;
-    while (ctx.p < base + len) {
-      name = this.decodeVliAndValue(ctx);
-      value = this.decodeVliAndValue(ctx);
-      ctx.trailers.set(name, value);
-    }
-    return;
-  }
-  decodeIndeterminateLengthTrailers(ctx) {
-    let name = "";
-    let value = "";
-    let terminator = this.decodeVli(ctx);
-    while (terminator != 0) {
-      ctx.p--;
-      name = this.decodeVliAndValue(ctx);
-      value = this.decodeVliAndValue(ctx);
-      ctx.trailers.set(name, value);
-      terminator = this.decodeVli(ctx);
-    }
-    return;
-  }
-  checkPadding(ctx) {
-    while (ctx.p < ctx.buf.byteLength) {
-      if (ctx.buf[ctx.p++] !== 0) {
-        throw new InvalidMessageError("Invalid padding data.");
-      }
-    }
-    return;
-  }
-  decodeVliAndValue(ctx) {
-    const len = this.decodeVli(ctx);
-    const res = this._td.decode(ctx.buf.slice(ctx.p, ctx.p + len));
-    ctx.p += len;
-    return res;
-  }
-  decodeVli(ctx) {
-    let res = 0;
-    switch (ctx.buf[ctx.p] & VLI_MASK_VALUE) {
-      case VLI_LEN_1:
-        return ctx.buf[ctx.p++] & VLI_MASK_HEADER;
-      case VLI_LEN_2:
-        res = (ctx.buf[ctx.p++] & VLI_MASK_HEADER) << 8;
-        res += ctx.buf[ctx.p++];
-        return res;
-      case VLI_LEN_4:
-        res = (ctx.buf[ctx.p++] & VLI_MASK_HEADER) << 24;
-        res += ctx.buf[ctx.p++] << 16;
-        res += ctx.buf[ctx.p++] << 8;
-        res += ctx.buf[ctx.p++];
-        return res;
-      default:
-        res = 0;
-        if (ctx.buf[++ctx.p] > 15) {
-          throw new NotSupportedError("Over MAX_SAFE_INTEGER-length value is not supported.");
-        }
-        res += ctx.buf[ctx.p++] << 48;
-        res += ctx.buf[ctx.p++] << 40;
-        res += ctx.buf[ctx.p++] << 32;
-        res += ctx.buf[ctx.p++] << 24;
-        res += ctx.buf[ctx.p++] << 16;
-        res += ctx.buf[ctx.p++] << 8;
-        res += ctx.buf[ctx.p++];
-        return res;
-    }
-  }
-};
-var EncoderContext = class {
-  constructor() {
-    Object.defineProperty(this, "buf", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    Object.defineProperty(this, "p", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: 0
-    });
-    Object.defineProperty(this, "framingIndicator", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: 0
-    });
-    Object.defineProperty(this, "headerSize", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    Object.defineProperty(this, "body", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    this.buf = new Uint8Array(0);
-    this.headerSize = 0;
-    this.body = new Uint8Array(0);
-  }
-  calculateVliSize(v) {
-    if (v < 64) {
-      return 1;
-    }
-    if (v < 16384) {
-      return 2;
-    }
-    if (v < 1073741824) {
-      return 4;
-    }
-    if (v <= Number.MAX_SAFE_INTEGER) {
-      return 8;
-    }
-    throw new NotSupportedError("Over MAX_SAFE_INTEGER length value is not supported.");
-  }
-};
-var RequestEncoderContext = class extends EncoderContext {
-  constructor(request) {
-    super();
-    Object.defineProperty(this, "request", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    Object.defineProperty(this, "url", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    this.request = request;
-    this.url = new URL(request.url);
-  }
-  async setup() {
-    this.body = new Uint8Array(await this.request.arrayBuffer());
-    this.buf = new Uint8Array(this.calculateEncodedRequestSize());
-  }
-  calculateEncodedRequestSize() {
-    let len = 1;
-    len += 1;
-    len += this.request.method.length;
-    len += this.calculateVliSize(this.url.protocol.length - 1);
-    len += this.url.protocol.length - 1;
-    len += this.calculateVliSize(this.url.host.length);
-    len += this.url.host.length;
-    len += this.calculateVliSize(this.url.pathname.length + this.url.search.length);
-    len += this.url.pathname.length;
-    len += this.url.search.length;
-    this.headerSize = 0;
-    this.request.headers.forEach((value, key) => {
-      this.headerSize += this.calculateVliSize(key.length);
-      this.headerSize += key.length;
-      this.headerSize += this.calculateVliSize(value.length);
-      this.headerSize += value.length;
-    });
-    len += this.calculateVliSize(this.headerSize);
-    len += this.headerSize;
-    len += this.calculateVliSize(this.body.byteLength);
-    len += this.body.byteLength;
-    len += 1;
-    return len;
-  }
-};
-var ResponseEncoderContext = class extends EncoderContext {
-  constructor(response) {
-    super();
-    Object.defineProperty(this, "response", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    this.response = response;
-  }
-  async setup() {
-    this.body = new Uint8Array(await this.response.arrayBuffer());
-    this.buf = new Uint8Array(this.calculateEncodedResponseSize());
-  }
-  calculateEncodedResponseSize() {
-    let len = 1;
-    len += 2;
-    this.headerSize = 0;
-    this.response.headers.forEach((value, key) => {
-      this.headerSize += this.calculateVliSize(key.length);
-      this.headerSize += key.length;
-      this.headerSize += this.calculateVliSize(value.length);
-      this.headerSize += value.length;
-    });
-    len += this.calculateVliSize(this.headerSize);
-    len += this.headerSize;
-    len += this.calculateVliSize(this.body.byteLength);
-    len += this.body.byteLength;
-    len += 1;
-    return len;
-  }
-};
-var BHttpEncoder = class {
-  constructor() {
-    Object.defineProperty(this, "_te", {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: void 0
-    });
-    this._te = new TextEncoder();
-  }
-  async encodeRequest(src) {
-    const ctx = new RequestEncoderContext(src);
-    await ctx.setup();
-    return this.encodeKnownLengthRequest(ctx);
-  }
-  async encodeResponse(src) {
-    const ctx = new ResponseEncoderContext(src);
-    await ctx.setup();
-    return this.encodeKnownLengthResponse(ctx);
-  }
-  encodeKnownLengthRequest(ctx) {
-    this.encodeVli(ctx, 0);
-    this.encodeVliAndValue(ctx, ctx.request.method);
-    this.encodeVliAndValue(ctx, ctx.url.protocol.slice(0, ctx.url.protocol.length - 1));
-    this.encodeVliAndValue(ctx, ctx.url.host);
-    this.encodeVliAndValue(ctx, ctx.url.pathname + ctx.url.search);
-    this.encodeVli(ctx, ctx.headerSize);
-    ctx.request.headers.forEach((value, key) => {
-      this.encodeVliAndValue(ctx, key);
-      this.encodeVliAndValue(ctx, value);
-    });
-    this.encodeVli(ctx, ctx.body.byteLength);
-    ctx.buf.set(ctx.body, ctx.p);
-    ctx.p += ctx.body.byteLength;
-    this.encodeVli(ctx, 0);
-    return ctx.buf;
-  }
-  encodeKnownLengthResponse(ctx) {
-    this.encodeVli(ctx, 1);
-    this.encodeVli(ctx, ctx.response.status);
-    this.encodeVli(ctx, ctx.headerSize);
-    ctx.response.headers.forEach((value, key) => {
-      this.encodeVliAndValue(ctx, key);
-      this.encodeVliAndValue(ctx, value);
-    });
-    this.encodeVli(ctx, ctx.body.byteLength);
-    ctx.buf.set(ctx.body, ctx.p);
-    ctx.p += ctx.body.byteLength;
-    this.encodeVli(ctx, 0);
-    return ctx.buf;
-  }
-  encodeVliAndValue(ctx, v) {
-    this.encodeVli(ctx, v.length);
-    ctx.buf.set(this._te.encode(v), ctx.p);
-    ctx.p += v.length;
-    return;
-  }
-  encodeVli(ctx, v) {
-    if (v < 64) {
-      ctx.buf[ctx.p++] = VLI_LEN_1 + v;
-      return;
-    }
-    if (v < 16384) {
-      ctx.buf[ctx.p++] = VLI_LEN_2 + (v >> 8);
-      ctx.buf[ctx.p++] = VLI_MASK_LSB & v;
-      return;
-    }
-    if (v < 1073741824) {
-      ctx.buf[ctx.p++] = VLI_LEN_4 + (v >> 24);
-      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 16;
-      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 8;
-      ctx.buf[ctx.p++] = VLI_MASK_LSB & v;
-      return;
-    }
-    if (v <= Number.MAX_SAFE_INTEGER) {
-      ctx.buf[ctx.p++] = VLI_LEN_8;
-      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 48;
-      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 40;
-      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 32;
-      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 24;
-      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 16;
-      ctx.buf[ctx.p++] = VLI_MASK_LSB & v >> 8;
-      ctx.buf[ctx.p++] = VLI_MASK_LSB & v;
-      return;
-    }
-    throw new NotSupportedError("Over MAX_SAFE_INTEGER-length value is not supported.");
-  }
-};
-var textEncoder = new TextEncoder();
-var textDecoder = new TextDecoder();
-var MediaType = {
-  /** Key configuration: application/ohttp-keys (RFC 9458 Section 9.1) */
-  KEYS: "application/ohttp-keys",
-  /** Encapsulated request: message/ohttp-req (RFC 9458 Section 9.2) */
-  REQUEST: "message/ohttp-req",
-  /** Encapsulated response: message/ohttp-res (RFC 9458 Section 9.3) */
-  RESPONSE: "message/ohttp-res",
-  /** Chunked encapsulated request: message/ohttp-chunked-req (draft-08 Section 8.1) */
-  CHUNKED_REQUEST: "message/ohttp-chunked-req",
-  /** Chunked encapsulated response: message/ohttp-chunked-res (draft-08 Section 8.2) */
-  CHUNKED_RESPONSE: "message/ohttp-chunked-res"
-};
-var bhttp = {
-  encoder: new BHttpEncoder(),
-  decoder: new BHttpDecoder()
-};
-var KemId = {
-  // Standard KEMs (RFC 9180)
-  P256_HKDF_SHA256: 16,
-  P384_HKDF_SHA384: 17,
-  P521_HKDF_SHA512: 18,
-  X25519_HKDF_SHA256: 32,
-  X448_HKDF_SHA512: 33,
-  // Post-quantum KEMs (ML-KEM, FIPS 203)
-  ML_KEM_512: 64,
-  ML_KEM_768: 65,
-  ML_KEM_1024: 66,
-  // Hybrid KEMs
-  MLKEM768_P256: 80,
-  MLKEM1024_P384: 81,
-  MLKEM768_X25519: 25722
-};
-var KdfId = {
-  HKDF_SHA256: 1,
-  HKDF_SHA384: 2,
-  HKDF_SHA512: 3
-};
-var AeadId = {
-  AES_128_GCM: 1,
-  AES_256_GCM: 2,
-  /** Defined for parsing; not implemented for encryption (use AES-GCM) */
-  ChaCha20Poly1305: 3
-};
-function isValidKemId(id) {
-  return (
-    // Standard KEMs
-    id === KemId.P256_HKDF_SHA256 || id === KemId.P384_HKDF_SHA384 || id === KemId.P521_HKDF_SHA512 || id === KemId.X25519_HKDF_SHA256 || id === KemId.X448_HKDF_SHA512 || // Post-quantum KEMs
-    id === KemId.ML_KEM_512 || id === KemId.ML_KEM_768 || id === KemId.ML_KEM_1024 || // Hybrid KEMs
-    id === KemId.MLKEM768_P256 || id === KemId.MLKEM1024_P384 || id === KemId.MLKEM768_X25519
-  );
-}
-function isValidKdfId(id) {
-  return id === KdfId.HKDF_SHA256 || id === KdfId.HKDF_SHA384 || id === KdfId.HKDF_SHA512;
-}
-function isValidAeadId(id) {
-  return id === AeadId.AES_128_GCM || id === AeadId.AES_256_GCM || id === AeadId.ChaCha20Poly1305;
-}
-function getPublicKeyLength(kemId) {
-  switch (kemId) {
-    // Standard KEMs
-    case KemId.X25519_HKDF_SHA256:
-      return 32;
-    case KemId.X448_HKDF_SHA512:
-      return 56;
-    case KemId.P256_HKDF_SHA256:
-      return 65;
-    // Uncompressed point
-    case KemId.P384_HKDF_SHA384:
-      return 97;
-    case KemId.P521_HKDF_SHA512:
-      return 133;
-    // ML-KEM (FIPS 203)
-    case KemId.ML_KEM_512:
-      return 800;
-    case KemId.ML_KEM_768:
-      return 1184;
-    case KemId.ML_KEM_1024:
-      return 1568;
-    // Hybrid KEMs (ML-KEM + ECDH)
-    case KemId.MLKEM768_P256:
-      return 1184 + 65;
-    // ML-KEM-768 + P-256 uncompressed
-    case KemId.MLKEM1024_P384:
-      return 1568 + 97;
-    // ML-KEM-1024 + P-384 uncompressed
-    case KemId.MLKEM768_X25519:
-      return 1184 + 32;
-    // ML-KEM-768 + X25519
-    default:
-      throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
-  }
-}
-function serializeKeyConfig(config) {
-  const symAlgosLen = config.symmetricAlgorithms.length * 4;
-  const totalLen = 1 + 2 + config.publicKey.length + 2 + symAlgosLen;
-  const result = new Uint8Array(totalLen);
-  const view = new DataView(result.buffer);
-  let offset = 0;
-  view.setUint8(offset, config.keyId);
-  offset += 1;
-  view.setUint16(offset, config.kemId);
-  offset += 2;
-  result.set(config.publicKey, offset);
-  offset += config.publicKey.length;
-  view.setUint16(offset, symAlgosLen);
-  offset += 2;
-  for (const algo of config.symmetricAlgorithms) {
-    view.setUint16(offset, algo.kdfId);
-    view.setUint16(offset + 2, algo.aeadId);
-    offset += 4;
-  }
-  return result;
-}
-function parseKeyConfig(data) {
-  if (data.length < 7) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-  let offset = 0;
-  const keyId = view.getUint8(offset);
-  offset += 1;
-  const kemIdRaw = view.getUint16(offset);
-  if (!isValidKemId(kemIdRaw)) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  const kemId = kemIdRaw;
-  offset += 2;
-  const publicKeyLength = getPublicKeyLength(kemId);
-  if (offset + publicKeyLength > data.length) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  const publicKey = data.slice(offset, offset + publicKeyLength);
-  offset += publicKeyLength;
-  if (offset + 2 > data.length) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  const symmetricAlgorithmsLength = view.getUint16(offset);
-  offset += 2;
-  if (symmetricAlgorithmsLength % 4 !== 0) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  if (offset + symmetricAlgorithmsLength > data.length) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  const symmetricAlgorithms = [];
-  const endOffset = offset + symmetricAlgorithmsLength;
-  while (offset < endOffset) {
-    const kdfIdRaw = view.getUint16(offset);
-    const aeadIdRaw = view.getUint16(offset + 2);
-    if (!isValidKdfId(kdfIdRaw) || !isValidAeadId(aeadIdRaw)) {
-      throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-    }
-    symmetricAlgorithms.push({ kdfId: kdfIdRaw, aeadId: aeadIdRaw });
-    offset += 4;
-  }
-  if (symmetricAlgorithms.length === 0) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  if (offset !== data.length) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  return {
-    keyId,
-    kemId,
-    publicKey,
-    symmetricAlgorithms
-  };
-}
-function serializeKeyConfigs(configs) {
-  const serialized = [];
-  let totalLen = 0;
-  for (const config of configs) {
-    const s = serializeKeyConfig(config);
-    serialized.push(s);
-    totalLen += 2 + s.length;
-  }
-  const result = new Uint8Array(totalLen);
-  const view = new DataView(result.buffer);
-  let offset = 0;
-  for (const s of serialized) {
-    view.setUint16(offset, s.length);
-    offset += 2;
-    result.set(s, offset);
-    offset += s.length;
-  }
-  return result;
-}
-function parseKeyConfigs(data) {
-  const configs = [];
-  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
-  let offset = 0;
-  while (offset < data.length) {
-    if (offset + 2 > data.length) {
-      throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-    }
-    const length2 = view.getUint16(offset);
-    offset += 2;
-    if (offset + length2 > data.length) {
-      throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-    }
-    const configBytes = data.slice(offset, offset + length2);
-    configs.push(parseKeyConfig(configBytes));
-    offset += length2;
-  }
-  return configs;
-}
-async function generateKeyConfig(suite, keyId, symmetricAlgorithms) {
-  if (keyId < 0 || keyId > 255) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  const kemId = suite.KEM.id;
-  if (!isValidKemId(kemId)) {
-    throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
-  }
-  const keyPair = await suite.GenerateKeyPair(true);
-  const publicKey = await suite.SerializePublicKey(keyPair.publicKey);
-  return {
-    keyId,
-    kemId,
-    publicKey,
-    symmetricAlgorithms,
-    keyPair,
-    suite
-  };
-}
-async function deriveKeyConfig(suite, seed, keyId, symmetricAlgorithms) {
-  if (keyId < 0 || keyId > 255) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  if (seed.length < suite.KEM.Nsk) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  const kemId = suite.KEM.id;
-  if (!isValidKemId(kemId)) {
-    throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
-  }
-  const keyPair = await suite.DeriveKeyPair(seed, true);
-  const publicKey = await suite.SerializePublicKey(keyPair.publicKey);
-  return {
-    keyId,
-    kemId,
-    publicKey,
-    symmetricAlgorithms,
-    keyPair,
-    suite
-  };
-}
-async function importKeyConfig(suite, keyId, publicKeyBytes, privateKeyBytes, symmetricAlgorithms) {
-  if (keyId < 0 || keyId > 255) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidKeyConfig);
-  }
-  const kemId = suite.KEM.id;
-  if (!isValidKemId(kemId)) {
-    throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
-  }
-  const publicKey = await suite.DeserializePublicKey(publicKeyBytes);
-  const privateKey = await suite.DeserializePrivateKey(privateKeyBytes, true);
-  const keyPair = { publicKey, privateKey };
-  return {
-    keyId,
-    kemId,
-    publicKey: publicKeyBytes,
-    symmetricAlgorithms,
-    keyPair,
-    suite
-  };
-}
-function concat(...arrays) {
-  const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0);
-  const result = new Uint8Array(totalLength);
-  let offset = 0;
-  for (const arr of arrays) {
-    result.set(arr, offset);
-    offset += arr.length;
-  }
-  return result;
-}
-function toArrayBuffer(data) {
-  const buffer = new ArrayBuffer(data.byteLength);
-  new Uint8Array(buffer).set(data);
-  return buffer;
-}
-var textEncoder2 = new TextEncoder();
-function encodeString(s) {
-  return textEncoder2.encode(s);
-}
-var DEFAULT_REQUEST_LABEL = "message/bhttp request";
-var DEFAULT_RESPONSE_LABEL = "message/bhttp response";
-var HEADER_SIZE = 7;
-function writeHeader(view, offset, keyId, kemId, kdfId, aeadId) {
-  view.setUint8(offset, keyId);
-  view.setUint16(offset + 1, kemId);
-  view.setUint16(offset + 3, kdfId);
-  view.setUint16(offset + 5, aeadId);
-  return HEADER_SIZE;
-}
-function buildRequestInfo(keyId, kemId, kdfId, aeadId, label = DEFAULT_REQUEST_LABEL) {
-  const labelBytes = encodeString(label);
-  const result = new Uint8Array(labelBytes.length + 1 + HEADER_SIZE);
-  const view = new DataView(result.buffer);
-  result.set(labelBytes, 0);
-  view.setUint8(labelBytes.length, 0);
-  writeHeader(view, labelBytes.length + 1, keyId, kemId, kdfId, aeadId);
-  return result;
-}
-function buildRequestHeader(keyId, kemId, kdfId, aeadId) {
-  const result = new Uint8Array(HEADER_SIZE);
-  const view = new DataView(result.buffer);
-  writeHeader(view, 0, keyId, kemId, kdfId, aeadId);
-  return result;
-}
-function getResponseNonceLength(suite) {
-  return Math.max(suite.AEAD.Nn, suite.AEAD.Nk);
-}
-async function encapsulateRequest(suite, publicKey, keyConfig, kdfId, aeadId, request, label = DEFAULT_REQUEST_LABEL) {
-  const info = buildRequestInfo(keyConfig.keyId, keyConfig.kemId, kdfId, aeadId, label);
-  const { encapsulatedSecret: enc, ctx: senderContext } = await suite.SetupSender(publicKey, {
-    info
-  });
-  const ciphertext = await senderContext.Seal(request);
-  const header = buildRequestHeader(keyConfig.keyId, keyConfig.kemId, kdfId, aeadId);
-  const encapsulatedRequest = concat(header, enc, ciphertext);
-  return {
-    encapsulatedRequest,
-    senderContext,
-    enc,
-    suite
-  };
-}
-async function decapsulateResponse(clientContext, encapsulatedResponse, label = DEFAULT_RESPONSE_LABEL) {
-  const { senderContext, enc, suite } = clientContext;
-  const nonceLength = getResponseNonceLength(suite);
-  if (encapsulatedResponse.length < nonceLength) {
-    throw new OHTTPError(OHTTPErrorCode.InvalidMessage);
-  }
-  const responseNonce = encapsulatedResponse.slice(0, nonceLength);
-  const ciphertext = encapsulatedResponse.slice(nonceLength);
-  const secret = await senderContext.Export(encodeString(label), nonceLength);
-  const salt = concat(enc, responseNonce);
-  const kdf = suite.KDF;
-  const prk = await extractPrk(kdf, salt, secret);
-  const aeadKey = await expandPrk(kdf, prk, encodeString("key"), suite.AEAD.Nk);
-  const aeadNonce = await expandPrk(kdf, prk, encodeString("nonce"), suite.AEAD.Nn);
-  const aead = suite.AEAD;
-  try {
-    return await openWithRawAead(aead, aeadKey, aeadNonce, new Uint8Array(0), ciphertext);
-  } catch {
-    throw new OHTTPError(OHTTPErrorCode.DecryptionFailed);
-  }
-}
-function asArrayBuffer(data) {
-  if (typeof SharedArrayBuffer !== "undefined" && data.buffer instanceof SharedArrayBuffer) {
-    const copy = new ArrayBuffer(data.byteLength);
-    new Uint8Array(copy).set(data);
-    return copy;
-  }
-  const sliced = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
-  return sliced;
-}
-async function extractPrk(kdf, salt, ikm) {
-  const algorithm = kdf.name.includes("256") ? "SHA-256" : kdf.name.includes("384") ? "SHA-384" : "SHA-512";
-  const key = await crypto.subtle.importKey(
-    "raw",
-    asArrayBuffer(salt),
-    { name: "HMAC", hash: algorithm },
-    false,
-    ["sign"]
-  );
-  const prk = await crypto.subtle.sign("HMAC", key, asArrayBuffer(ikm));
-  return new Uint8Array(prk);
-}
-async function expandPrk(kdf, prk, info, length2) {
-  const algorithm = kdf.name.includes("256") ? "SHA-256" : kdf.name.includes("384") ? "SHA-384" : "SHA-512";
-  const hashLen = kdf.Nh;
-  const n = Math.ceil(length2 / hashLen);
-  const okm = new Uint8Array(n * hashLen);
-  const key = await crypto.subtle.importKey(
-    "raw",
-    asArrayBuffer(prk),
-    { name: "HMAC", hash: algorithm },
-    false,
-    ["sign"]
-  );
-  let t = new Uint8Array(0);
-  for (let i = 1; i <= n; i++) {
-    const input = concat(t, info, new Uint8Array([i]));
-    const block = await crypto.subtle.sign("HMAC", key, asArrayBuffer(input));
-    t = new Uint8Array(block);
-    okm.set(t, (i - 1) * hashLen);
-  }
-  return okm.slice(0, length2);
-}
-async function openWithRawAead(aead, key, nonce, aad, ciphertext) {
-  const algorithm = aead.name.includes("AES") ? "AES-GCM" : "ChaCha20-Poly1305";
-  if (algorithm === "AES-GCM") {
-    const cryptoKey = await crypto.subtle.importKey(
-      "raw",
-      asArrayBuffer(key),
-      { name: "AES-GCM" },
-      false,
-      ["decrypt"]
-    );
-    const pt = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: asArrayBuffer(nonce), additionalData: asArrayBuffer(aad) },
-      cryptoKey,
-      asArrayBuffer(ciphertext)
-    );
-    return new Uint8Array(pt);
-  }
-  throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
-}
-var FINAL_CHUNK_AAD = encodeString("final");
-var MAX_CHUNKS = 2 ** 32;
-var OHTTPClient = class {
-  suite;
-  keyConfig;
-  kdfId;
-  aeadId;
-  requestLabel;
-  responseLabel;
-  /**
-   * Create an OHTTP client
-   *
-   * @param suite - The HPKE cipher suite to use
-   * @param keyConfig - The server's public key configuration
-   * @param options - Optional configuration
-   */
-  constructor(suite, keyConfig, options = {}) {
-    this.suite = suite;
-    this.keyConfig = keyConfig;
-    this.requestLabel = options.requestLabel ?? DEFAULT_REQUEST_LABEL;
-    this.responseLabel = options.responseLabel ?? DEFAULT_RESPONSE_LABEL;
-    const rawKdfId = suite.KDF.id;
-    const rawAeadId = suite.AEAD.id;
-    if (!isValidKdfId(rawKdfId) || !isValidAeadId(rawAeadId)) {
-      throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
-    }
-    const matchingAlgo = keyConfig.symmetricAlgorithms.find(
-      (a) => a.kdfId === rawKdfId && a.aeadId === rawAeadId
-    );
-    if (matchingAlgo === void 0) {
-      throw new OHTTPError(OHTTPErrorCode.UnsupportedCipherSuite);
-    }
-    this.kdfId = rawKdfId;
-    this.aeadId = rawAeadId;
-  }
-  /**
-   * Encapsulate a binary HTTP request (low-level API)
-   *
-   * @param request - The binary HTTP request bytes to encapsulate
-   * @returns The encapsulated request bytes and context for decrypting the response
-   */
-  async encapsulate(request) {
-    const publicKey = await this.suite.DeserializePublicKey(this.keyConfig.publicKey);
-    const ctx = await encapsulateRequest(
-      this.suite,
-      publicKey,
-      this.keyConfig,
-      this.kdfId,
-      this.aeadId,
-      request,
-      this.requestLabel
-    );
-    const responseLabel = this.responseLabel;
-    const context = {
-      async decryptResponse(encapsulatedResponse) {
-        return decapsulateResponse(ctx, encapsulatedResponse, responseLabel);
-      }
-    };
-    return {
-      encapsulatedRequest: ctx.encapsulatedRequest,
-      context
-    };
-  }
-  /**
-   * Encapsulate an HTTP Request (high-level API)
-   *
-   * Encodes the request using Binary HTTP (RFC 9292), then encapsulates with OHTTP.
-   * Returns a RequestInit ready to use with fetch() or new Request().
-   *
-   * @param request - The HTTP Request to encapsulate
-   * @returns A RequestInit for the relay and context for decapsulating the response
-   *
-   * @example
-   * ```typescript
-   * const { init, context } = await client.encapsulateRequest(request);
-   * const response = await fetch(relayUrl, init);
-   * const innerResponse = await context.decapsulateResponse(response);
-   * ```
-   */
-  async encapsulateRequest(request) {
-    let binaryRequest;
-    try {
-      binaryRequest = await bhttp.encoder.encodeRequest(request);
-    } catch {
-      throw new OHTTPError(OHTTPErrorCode.InvalidMessage);
-    }
-    const { encapsulatedRequest, context: bytesContext } = await this.encapsulate(binaryRequest);
-    const context = {
-      async decapsulateResponse(response) {
-        const contentType = response.headers.get("content-type");
-        if (contentType !== MediaType.RESPONSE) {
-          throw new OHTTPError(OHTTPErrorCode.InvalidMessage);
-        }
-        const encapsulatedResponse = new Uint8Array(await response.arrayBuffer());
-        let binaryResponse;
-        try {
-          binaryResponse = await bytesContext.decryptResponse(encapsulatedResponse);
-        } catch {
-          throw new OHTTPError(OHTTPErrorCode.DecryptionFailed);
-        }
-        try {
-          return bhttp.decoder.decodeResponse(binaryResponse);
-        } catch {
-          throw new OHTTPError(OHTTPErrorCode.DecryptionFailed);
-        }
-      }
-    };
-    const init = {
-      method: "POST",
-      headers: {
-        "Content-Type": MediaType.REQUEST
-      },
-      body: toArrayBuffer(encapsulatedRequest)
-    };
-    return { init, context };
-  }
-};
-var KeyConfig = {
-  /** Generate a new KeyConfig with random key pair */
-  generate: generateKeyConfig,
-  /** Derive a deterministic KeyConfig from a seed */
-  derive: deriveKeyConfig,
-  /** Import a KeyConfig from raw key bytes */
-  import: importKeyConfig,
-  /** Parse a single KeyConfig from bytes */
-  parse: parseKeyConfig,
-  /** Parse multiple KeyConfigs from application/ohttp-keys format */
-  parseMultiple: parseKeyConfigs,
-  /** Serialize a KeyConfig to bytes */
-  serialize: serializeKeyConfig,
-  /** Serialize multiple KeyConfigs to application/ohttp-keys format */
-  serializeMultiple: serializeKeyConfigs,
-  /** Get the public key length for a KEM */
-  getPublicKeyLength
-};
-
-// node_modules/hpke/index.js
-function ComputeNonce(base_nonce, seq, Nn) {
-  const seq_bytes = I2OSP(seq, Nn);
-  return xor(base_nonce, seq_bytes);
-}
-function IncrementSeq(seq) {
-  if (seq >= Number.MAX_SAFE_INTEGER) {
-    throw new MessageLimitReachedError("Sequence number overflow");
-  }
-  return ++seq;
-}
-async function ContextExport(suite, exporterSecret, exporterContext, L) {
-  checkUint8Array(exporterContext, "exporterContext");
-  const stages = KDFStages(suite.KDF);
-  if (!Number.isInteger(L) || L <= 0 || L > 65535) {
-    throw new TypeError('"L" must be a positive integer not exceeding 65535');
-  }
-  const Export = stages === 1 ? Export_OneStage : Export_TwoStage;
-  return await Export(suite.KDF, suite.id, exporterSecret, exporterContext, L);
-}
-var Mutex = class {
-  #locked = Promise.resolve();
-  async lock() {
-    let releaseLock;
-    const nextLock = new Promise((resolve) => {
-      releaseLock = resolve;
-    });
-    const previousLock = this.#locked;
-    this.#locked = nextLock;
-    await previousLock;
-    return releaseLock;
-  }
-};
-var SenderContext = class {
-  #suite;
-  #key;
-  #base_nonce;
-  #exporter_secret;
-  #mode;
-  #seq = 0;
-  #mutex;
-  constructor(suite, mode, key, base_nonce, exporter_secret) {
-    this.#suite = suite;
-    this.#mode = mode;
-    this.#key = key;
-    this.#base_nonce = base_nonce;
-    this.#exporter_secret = exporter_secret;
-  }
-  get mode() {
-    return this.#mode;
-  }
-  get seq() {
-    return this.#seq;
-  }
-  async Seal(plaintext, aad) {
-    checkUint8Array(plaintext, "plaintext");
-    aad ??= new Uint8Array();
-    checkUint8Array(aad, "aad");
-    if (this.#suite.AEAD.id === EXPORT_ONLY) {
-      throw new TypeError("Export-only AEAD cannot be used with Seal");
-    }
-    this.#mutex ??= new Mutex();
-    const release = await this.#mutex.lock();
-    let ct;
-    try {
-      ct = await this.#suite.AEAD.Seal(
-        this.#key,
-        ComputeNonce(this.#base_nonce, this.#seq, this.#suite.AEAD.Nn),
-        aad,
-        plaintext
-      );
-      this.#seq = IncrementSeq(this.#seq);
-      return ct;
-    } finally {
-      release();
-    }
-  }
-  async Export(exporterContext, length2) {
-    return await ContextExport(this.#suite, this.#exporter_secret, exporterContext, length2);
-  }
-  get Nt() {
-    return this.#suite.AEAD.Nt;
-  }
-};
-var RecipientContext = class {
-  #suite;
-  #key;
-  #base_nonce;
-  #exporter_secret;
-  #mode;
-  #seq = 0;
-  #mutex;
-  constructor(suite, mode, key, base_nonce, exporter_secret) {
-    this.#suite = suite;
-    this.#mode = mode;
-    this.#key = key;
-    this.#base_nonce = base_nonce;
-    this.#exporter_secret = exporter_secret;
-  }
-  get mode() {
-    return this.#mode;
-  }
-  get seq() {
-    return this.#seq;
-  }
-  async Open(ciphertext, aad) {
-    checkUint8Array(ciphertext, "ciphertext");
-    aad ??= new Uint8Array();
-    checkUint8Array(aad, "aad");
-    if (this.#suite.AEAD.id === EXPORT_ONLY) {
-      throw new TypeError("Export-only AEAD cannot be used with Open");
-    }
-    this.#mutex ??= new Mutex();
-    const release = await this.#mutex.lock();
-    try {
-      let pt;
-      try {
-        pt = await this.#suite.AEAD.Open(
-          this.#key,
-          ComputeNonce(this.#base_nonce, this.#seq, this.#suite.AEAD.Nn),
-          aad,
-          ciphertext
-        );
-      } catch (cause) {
-        if (cause instanceof MessageLimitReachedError || cause instanceof NotSupportedError2) {
-          throw cause;
-        }
-        throw new OpenError("AEAD decryption failed", { cause });
-      }
-      this.#seq = IncrementSeq(this.#seq);
-      return pt;
-    } finally {
-      release();
-    }
-  }
-  async Export(exporterContext, length2) {
-    return await ContextExport(this.#suite, this.#exporter_secret, exporterContext, length2);
-  }
-};
-var validate = (factory, type) => {
-  try {
-    const result = factory();
-    if (result.type !== type) {
-      throw new Error(`Invalid "${type}" return discriminator`);
-    }
-    return result;
-  } catch (cause) {
-    throw new TypeError(`Invalid "${type}"`, { cause });
-  }
-};
-var CipherSuite = class {
-  #suite;
-  constructor(KEM, KDF, AEAD) {
-    const kem = validate(KEM, "KEM");
-    const kdf = validate(KDF, "KDF");
-    const aead = validate(AEAD, "AEAD");
-    this.#suite = {
-      KEM: kem,
-      KDF: kdf,
-      AEAD: aead,
-      id: concat2(encode5("HPKE"), I2OSP(kem.id, 2), I2OSP(kdf.id, 2), I2OSP(aead.id, 2))
-    };
-  }
-  get KEM() {
-    return {
-      id: this.#suite.KEM.id,
-      name: this.#suite.KEM.name,
-      Nsecret: this.#suite.KEM.Nsecret,
-      Nenc: this.#suite.KEM.Nenc,
-      Npk: this.#suite.KEM.Npk,
-      Nsk: this.#suite.KEM.Nsk
-    };
-  }
-  get KDF() {
-    return {
-      id: this.#suite.KDF.id,
-      name: this.#suite.KDF.name,
-      stages: this.#suite.KDF.stages,
-      Nh: this.#suite.KDF.Nh
-    };
-  }
-  get AEAD() {
-    return {
-      id: this.#suite.AEAD.id,
-      name: this.#suite.AEAD.name,
-      Nk: this.#suite.AEAD.Nk,
-      Nn: this.#suite.AEAD.Nn,
-      Nt: this.#suite.AEAD.Nt
-    };
-  }
-  async GenerateKeyPair(extractable) {
-    extractable ??= false;
-    checkExtractable(extractable);
-    return await this.#suite.KEM.GenerateKeyPair(extractable);
-  }
-  async DeriveKeyPair(ikm, extractable) {
-    extractable ??= false;
-    checkExtractable(extractable);
-    checkUint8Array(ikm, "ikm");
-    if (ikm.byteLength < this.#suite.KEM.Nsk) {
-      throw new DeriveKeyPairError('Insufficient "ikm" length');
-    }
-    try {
-      return await this.#suite.KEM.DeriveKeyPair(ikm, extractable);
-    } catch (cause) {
-      if (cause instanceof NotSupportedError2) {
-        throw cause;
-      }
-      throw new DeriveKeyPairError("Key derivation failed", { cause });
-    }
-  }
-  async SerializePrivateKey(privateKey) {
-    isKey(privateKey, "private", true);
-    return await this.#suite.KEM.SerializePrivateKey(privateKey);
-  }
-  async SerializePublicKey(publicKey) {
-    isKey(publicKey, "public", true);
-    return await this.#suite.KEM.SerializePublicKey(publicKey);
-  }
-  async DeserializePrivateKey(privateKey, extractable) {
-    extractable ??= false;
-    checkExtractable(extractable);
-    checkUint8Array(privateKey, "privateKey");
-    try {
-      if (privateKey.byteLength !== this.#suite.KEM.Nsk) {
-        throw new Error('Invalid "privateKey" length');
-      }
-      return await this.#suite.KEM.DeserializePrivateKey(privateKey, extractable);
-    } catch (cause) {
-      if (cause instanceof NotSupportedError2) {
-        throw cause;
-      }
-      throw new DeserializeError("Private key deserialization failed", { cause });
-    }
-  }
-  async DeserializePublicKey(publicKey) {
-    checkUint8Array(publicKey, "publicKey");
-    try {
-      if (publicKey.byteLength !== this.#suite.KEM.Npk) {
-        throw new Error('Invalid "publicKey" length');
-      }
-      return await this.#suite.KEM.DeserializePublicKey(publicKey);
-    } catch (cause) {
-      if (cause instanceof NotSupportedError2) {
-        throw cause;
-      }
-      throw new DeserializeError("Public key deserialization failed", { cause });
-    }
-  }
-  async Seal(publicKey, plaintext, options) {
-    if (this.#suite.AEAD.id === EXPORT_ONLY) {
-      throw new TypeError("Export-only AEAD cannot be used with Seal");
-    }
-    const { encapsulatedSecret, ctx } = await this.SetupSender(publicKey, options);
-    const ciphertext = await ctx.Seal(plaintext, options?.aad);
-    return { encapsulatedSecret, ciphertext };
-  }
-  async Open(privateKey, encapsulatedSecret, ciphertext, options) {
-    if (this.#suite.AEAD.id === EXPORT_ONLY) {
-      throw new TypeError("Export-only AEAD cannot be used with Open");
-    }
-    const ctx = await this.SetupRecipient(privateKey, encapsulatedSecret, options);
-    return await ctx.Open(ciphertext, options?.aad);
-  }
-  async SendExport(publicKey, exporterContext, length2, options) {
-    const { encapsulatedSecret, ctx } = await this.SetupSender(publicKey, options);
-    const exportedSecret = await ctx.Export(exporterContext, length2);
-    return { encapsulatedSecret, exportedSecret };
-  }
-  async ReceiveExport(privateKey, encapsulatedSecret, exporterContext, length2, options) {
-    const ctx = await this.SetupRecipient(privateKey, encapsulatedSecret, options);
-    return await ctx.Export(exporterContext, length2);
-  }
-  async SetupSender(publicKey, options) {
-    isKey(publicKey, "public");
-    let shared_secret;
-    let enc;
-    try {
-      const result = await this.#suite.KEM.Encap(publicKey);
-      shared_secret = result.shared_secret;
-      enc = result.enc;
-    } catch (cause) {
-      if (cause instanceof ValidationError || cause instanceof NotSupportedError2) {
-        throw cause;
-      }
-      throw new EncapError("Encapsulation failed", { cause });
-    }
-    const mode = options?.psk?.byteLength ? MODE_PSK : MODE_BASE;
-    const { key, base_nonce, exporter_secret } = await KeySchedule(
-      this.#suite,
-      mode,
-      shared_secret,
-      options?.info,
-      options?.psk,
-      options?.pskId
-    );
-    const ctx = new SenderContext(this.#suite, mode, key, base_nonce, exporter_secret);
-    return { encapsulatedSecret: enc, ctx };
-  }
-  async SetupRecipient(privateKey, encapsulatedSecret, options) {
-    const { skR, pkR } = this.#extractRecipientKeys(privateKey);
-    checkUint8Array(encapsulatedSecret, "encapsulatedSecret");
-    if (encapsulatedSecret.byteLength !== this.#suite.KEM.Nenc) {
-      throw new DecapError("Invalid encapsulated secret length");
-    }
-    let shared_secret;
-    try {
-      shared_secret = await this.#suite.KEM.Decap(encapsulatedSecret, skR, pkR);
-    } catch (cause) {
-      if (cause instanceof ValidationError || cause instanceof NotSupportedError2) {
-        throw cause;
-      }
-      throw new DecapError("Decapsulation failed", { cause });
-    }
-    const mode = options?.psk?.byteLength ? MODE_PSK : MODE_BASE;
-    const { key, base_nonce, exporter_secret } = await KeySchedule(
-      this.#suite,
-      mode,
-      shared_secret,
-      options?.info,
-      options?.psk,
-      options?.pskId
-    );
-    return new RecipientContext(this.#suite, mode, key, base_nonce, exporter_secret);
-  }
-  #extractRecipientKeys(skR) {
-    if (isKeyPair(skR)) {
-      return { skR: skR.privateKey, pkR: skR.publicKey };
-    }
-    isKey(skR, "private");
-    return { skR, pkR: void 0 };
-  }
-};
-var ValidationError = class _ValidationError extends Error {
-  constructor(message, options) {
-    super(message, options);
-    this.name = "ValidationError";
-    Error.captureStackTrace?.(this, _ValidationError);
-  }
-};
-var DeserializeError = class _DeserializeError extends Error {
-  constructor(message, options) {
-    super(message, options);
-    this.name = "DeserializeError";
-    Error.captureStackTrace?.(this, _DeserializeError);
-  }
-};
-var EncapError = class _EncapError extends Error {
-  constructor(message, options) {
-    super(message, options);
-    this.name = "EncapError";
-    Error.captureStackTrace?.(this, _EncapError);
-  }
-};
-var DecapError = class _DecapError extends Error {
-  constructor(message, options) {
-    super(message, options);
-    this.name = "DecapError";
-    Error.captureStackTrace?.(this, _DecapError);
-  }
-};
-var OpenError = class _OpenError extends Error {
-  constructor(message, options) {
-    super(message, options);
-    this.name = "OpenError";
-    Error.captureStackTrace?.(this, _OpenError);
-  }
-};
-var MessageLimitReachedError = class _MessageLimitReachedError extends Error {
-  constructor(message, options) {
-    super(message, options);
-    this.name = "MessageLimitReachedError";
-    Error.captureStackTrace?.(this, _MessageLimitReachedError);
-  }
-};
-var DeriveKeyPairError = class _DeriveKeyPairError extends Error {
-  constructor(message, options) {
-    super(message, options);
-    this.name = "DeriveKeyPairError";
-    Error.captureStackTrace?.(this, _DeriveKeyPairError);
-  }
-};
-var NotSupportedError2 = class _NotSupportedError extends Error {
-  constructor(message, options) {
-    super(message, options);
-    this.name = "NotSupportedError";
-    Error.captureStackTrace?.(this, _NotSupportedError);
-  }
-};
-var MODE_BASE = 0;
-var MODE_PSK = 1;
-function concat2(...buffers) {
-  const size = buffers.reduce((acc, { length: length2 }) => acc + length2, 0);
-  const buf = new Uint8Array(size);
-  let i = 0;
-  for (const buffer of buffers) {
-    buf.set(buffer, i);
-    i += buffer.length;
-  }
-  return buf;
-}
-function slice(buffer, start, end) {
-  return Uint8Array.prototype.slice.call(buffer, start, end);
-}
-function encode5(string) {
-  const bytes = new Uint8Array(string.length);
-  for (let i = 0; i < string.length; i++) {
-    const code = string.charCodeAt(i);
-    if (code > 127) {
-      throw new TypeError("Input string must contain only ASCII characters");
-    }
-    bytes[i] = code;
-  }
-  return bytes;
-}
-function xor(a, b) {
-  if (a.byteLength !== b.byteLength) {
-    throw new Error("XOR operands must have equal length");
-  }
-  const buf = new Uint8Array(a.byteLength);
-  for (let i = 0; i < a.byteLength; i++) {
-    buf[i] = a[i] ^ b[i];
-  }
-  return buf;
-}
-function lengthPrefixed(x) {
-  return concat2(I2OSP(x.byteLength, 2), x);
-}
-async function LabeledDerive(KDF, suite_id, ikm, label, context, L) {
-  const labeled_ikm = concat2(
-    ikm,
-    encode5("HPKE-v1"),
-    suite_id,
-    lengthPrefixed(label),
-    I2OSP(L, 2),
-    context
-  );
-  return await KDF.Derive(labeled_ikm, L);
-}
-async function Export_OneStage(KDF, suite_id, exporter_secret, exporter_context, L) {
-  checkLength(exporter_context, "Exporter context", MAX_LENGTH_ONE_STAGE);
-  return await LabeledDerive(KDF, suite_id, exporter_secret, encode5("sec"), exporter_context, L);
-}
-async function CombineSecrets_OneStage(suite, mode, shared_secret, info, psk, psk_id) {
-  checkLength(psk, "PSK", MAX_LENGTH_ONE_STAGE);
-  checkLength(psk_id, "PSK ID", MAX_LENGTH_ONE_STAGE);
-  checkLength(info, "Info", MAX_LENGTH_ONE_STAGE);
-  const secrets = concat2(lengthPrefixed(psk), lengthPrefixed(shared_secret));
-  const context = concat2(I2OSP(mode, 1), lengthPrefixed(psk_id), lengthPrefixed(info));
-  const secret = await LabeledDerive(
-    suite.KDF,
-    suite.id,
-    secrets,
-    encode5("secret"),
-    context,
-    suite.AEAD.Nk + suite.AEAD.Nn + suite.KDF.Nh
-  );
-  const key = slice(secret, 0, suite.AEAD.Nk);
-  const base_nonce = slice(secret, suite.AEAD.Nk, suite.AEAD.Nk + suite.AEAD.Nn);
-  const exporter_secret = slice(secret, suite.AEAD.Nk + suite.AEAD.Nn);
-  return { key, base_nonce, exporter_secret };
-}
-var MAX_LENGTH_TWO_STAGE = 65535;
-var MAX_LENGTH_ONE_STAGE = 65535;
-function checkLength(data, name, maxLength) {
-  if (data.byteLength > maxLength) {
-    throw new TypeError(`${name} length must not exceed ${maxLength} bytes`);
-  }
-}
-function checkUint8Array(input, name) {
-  if (!(input instanceof Uint8Array)) {
-    throw new TypeError(`"${name}" must be Uint8Array`);
-  }
-}
-function checkExtractable(extractable) {
-  if (typeof extractable !== "boolean") {
-    throw new TypeError('"extractable" must be boolean');
-  }
-}
-async function CombineSecrets_TwoStage(suite, mode, shared_secret, info, psk, psk_id) {
-  checkLength(psk, "PSK", MAX_LENGTH_TWO_STAGE);
-  checkLength(psk_id, "PSK ID", MAX_LENGTH_TWO_STAGE);
-  checkLength(info, "Info", MAX_LENGTH_TWO_STAGE);
-  const [psk_id_hash, info_hash] = await Promise.all([
-    LabeledExtract(suite.KDF, suite.id, new Uint8Array(), encode5("psk_id_hash"), psk_id),
-    LabeledExtract(suite.KDF, suite.id, new Uint8Array(), encode5("info_hash"), info)
-  ]);
-  const key_schedule_context = concat2(I2OSP(mode, 1), psk_id_hash, info_hash);
-  const secret = await LabeledExtract(suite.KDF, suite.id, shared_secret, encode5("secret"), psk);
-  if (suite.AEAD.id === EXPORT_ONLY) {
-    const exporter_secret2 = await LabeledExpand(
-      suite.KDF,
-      suite.id,
-      secret,
-      encode5("exp"),
-      key_schedule_context,
-      suite.KDF.Nh
-    );
-    return { key: new Uint8Array(), base_nonce: new Uint8Array(), exporter_secret: exporter_secret2 };
-  }
-  const [key, base_nonce, exporter_secret] = await Promise.all([
-    LabeledExpand(suite.KDF, suite.id, secret, encode5("key"), key_schedule_context, suite.AEAD.Nk),
-    LabeledExpand(
-      suite.KDF,
-      suite.id,
-      secret,
-      encode5("base_nonce"),
-      key_schedule_context,
-      suite.AEAD.Nn
-    ),
-    LabeledExpand(suite.KDF, suite.id, secret, encode5("exp"), key_schedule_context, suite.KDF.Nh)
-  ]);
-  return { key, base_nonce, exporter_secret };
-}
-async function Export_TwoStage(KDF, suite_id, exporter_secret, exporter_context, L) {
-  checkLength(exporter_context, "Exporter context", MAX_LENGTH_TWO_STAGE);
-  return await LabeledExpand(KDF, suite_id, exporter_secret, encode5("sec"), exporter_context, L);
-}
-async function LabeledExtract(KDF, suite_id, salt, label, ikm) {
-  const labeled_ikm = concat2(encode5("HPKE-v1"), suite_id, label, ikm);
-  return await KDF.Extract(salt, labeled_ikm);
-}
-async function LabeledExpand(KDF, suite_id, prk, label, info, L) {
-  const labeled_info = concat2(I2OSP(L, 2), encode5("HPKE-v1"), suite_id, label, info);
-  return await KDF.Expand(prk, labeled_info, L);
-}
-function isKeyPair(skR) {
-  if (!skR || typeof skR !== "object") return false;
-  if ("publicKey" in skR && "privateKey" in skR) {
-    const pkR = skR.publicKey;
-    skR = skR.privateKey;
-    try {
-      isKey(pkR, "public");
-      isKey(skR, "private");
-      if (pkR.algorithm.name !== skR.algorithm.name) {
-        throw new TypeError("key pair algorithms do not match");
-      }
-    } catch (cause) {
-      throw new TypeError('Invalid "privateKey"', { cause });
-    }
-    return true;
-  }
-  return false;
-}
-function isKey(key, type, extractable) {
-  const k = key;
-  if (typeof k.algorithm !== "object" || typeof k.algorithm.name !== "string" || typeof k.extractable !== "boolean" || typeof k.type !== "string" || k.type !== type) {
-    throw new TypeError(`Invalid "${type}Key"`);
-  }
-  if (extractable && k.extractable !== true) {
-    throw new TypeError(`"${type}Key" must be extractable`);
-  }
-}
-function I2OSP(n, w) {
-  if (!Number.isSafeInteger(w) || w <= 0) {
-    throw new Error("w must be a positive safe integer");
-  }
-  if (!Number.isSafeInteger(n) || n < 0) {
-    throw new Error("n must be a non-negative safe integer");
-  }
-  const max = Math.pow(256, w);
-  if (n >= max) {
-    throw new Error("n too large to fit in w-length byte string");
-  }
-  const ret = new Uint8Array(w);
-  let num3 = n;
-  for (let i = 0; i < w && num3; i++) {
-    ret[w - (i + 1)] = num3 % 256;
-    num3 = Math.floor(num3 / 256);
-  }
-  return ret;
-}
-function KDFStages(KDF) {
-  if (KDF.stages === 1 || KDF.stages === 2) {
-    return KDF.stages;
-  }
-  throw new Error("unreachable");
-}
-async function KeySchedule(suite, mode, shared_secret, info, psk, pskId) {
-  info ??= new Uint8Array();
-  checkUint8Array(info, "info");
-  psk ??= new Uint8Array();
-  checkUint8Array(psk, "psk");
-  pskId ??= new Uint8Array();
-  checkUint8Array(pskId, "pskId");
-  const stages = KDFStages(suite.KDF);
-  const CombineSecrets = stages === 1 ? CombineSecrets_OneStage : CombineSecrets_TwoStage;
-  VerifyPSKInputs(psk, pskId);
-  return await CombineSecrets(suite, mode, shared_secret, info, psk, pskId);
-}
-function VerifyPSKInputs(psk, psk_id) {
-  if (psk.byteLength && psk_id.byteLength) {
-    if (psk.byteLength < 32) {
-      throw new TypeError("Insufficient PSK length");
-    }
-    return;
-  }
-  if (!psk.byteLength && !psk_id.byteLength) {
-    return;
-  }
-  throw new TypeError("Inconsistent PSK inputs");
-}
-var NotApplicable = () => {
-  throw new Error("unreachable");
-};
-var EXPORT_ONLY = 65535;
-async function subtle(promise, name) {
-  try {
-    return await promise(crypto.subtle);
-  } catch (cause) {
-    if (cause instanceof TypeError || cause instanceof DOMException && cause.name === "NotSupportedError") {
-      throw new NotSupportedError2(`${name} is unsupported in this runtime`, { cause });
-    }
-    throw cause;
-  }
-}
-function sab(input) {
-  return typeof SharedArrayBuffer !== "undefined" && input instanceof SharedArrayBuffer;
-}
-function ab(input) {
-  if (sab(input.buffer)) {
-    throw new TypeError("input must not be a SharedArrayBuffer");
-  }
-  if (input.byteLength === input.buffer.byteLength) {
-    return input.buffer;
-  }
-  return input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength);
-}
-function HKDF_SHARED() {
-  return {
-    stages: 2,
-    Derive: NotApplicable,
-    async Extract(_salt, _ikm) {
-      let salt;
-      if (_salt.byteLength === 0) {
-        salt = new ArrayBuffer(this.Nh);
-      } else {
-        salt = ab(_salt);
-      }
-      const ikm = ab(_ikm);
-      return new Uint8Array(
-        await subtle(
-          async (c) => c.sign(
-            "HMAC",
-            await c.importKey("raw", salt, { name: "HMAC", hash: this.hash }, false, ["sign"]),
-            ikm
-          ),
-          this.name
-        )
-      );
-    },
-    async Expand(_prk, info, L) {
-      if (_prk.byteLength < this.Nh) {
-        throw new Error("prk.byteLength < this.Nh");
-      }
-      if (L > 255 * this.Nh) {
-        throw new Error("L must be <= 255*Nh");
-      }
-      const N = Math.ceil(L / this.Nh);
-      const prk = ab(_prk);
-      const key = await subtle(
-        (c) => c.importKey("raw", prk, { name: "HMAC", hash: this.hash }, false, ["sign"]),
-        this.name
-      );
-      const T = new Uint8Array(N * this.Nh);
-      let T_prev = new Uint8Array();
-      for (let i = 0; i < N; i++) {
-        const input = new Uint8Array(T_prev.byteLength + info.byteLength + 1);
-        input.set(T_prev);
-        input.set(info, T_prev.byteLength);
-        input[T_prev.byteLength + info.byteLength] = i + 1;
-        const T_i = new Uint8Array(await subtle((c) => c.sign("HMAC", key, input), this.name));
-        T.set(T_i, i * this.Nh);
-        T_prev = T_i;
-      }
-      return slice(T, 0, L);
-    }
-  };
-}
-var KDF_HKDF_SHA256 = function() {
-  return { id: 1, type: "KDF", name: "HKDF-SHA256", Nh: 32, hash: "SHA-256", ...HKDF_SHARED() };
-};
-async function getPublicKeyByExport(name, key, usages) {
-  if (!key.extractable) {
-    throw new TypeError(
-      '"privateKey" must be extractable or a Key Pair must be used in this runtime'
-    );
-  }
-  return await subtle(async (c) => {
-    const jwk = await c.exportKey("jwk", key);
-    return c.importKey(
-      "jwk",
-      { kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y },
-      key.algorithm,
-      true,
-      usages
-    );
-  }, name);
-}
-async function getPublicKey(name, key, usages) {
-  return await subtle((c) => c.getPublicKey?.(key, usages), name) || await getPublicKeyByExport(name, key, usages);
-}
-function checkNotAllZeros(buffer) {
-  let or = 0;
-  for (let i = 0; i < buffer.length; i++) {
-    or |= buffer[i];
-  }
-  if (or === 0) {
-    throw new ValidationError("DH shared secret is an all-zero value");
-  }
-}
-function fromBase64(input) {
-  input = input.replace(/-/g, "+").replace(/_/g, "/");
-  const binary = atob(input);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
-}
-function b64u(input) {
-  return Uint8Array.fromBase64?.(input, { alphabet: "base64url" }) || fromBase64(input);
-}
-function assertKeyAlgorithm(key, expectedAlgorithm) {
-  if (key.algorithm.name !== expectedAlgorithm.name) {
-    throw new TypeError(`key algorithm must be ${expectedAlgorithm.name}`);
-  }
-  if (key.algorithm.namedCurve !== expectedAlgorithm.namedCurve) {
-    throw new TypeError(
-      `key namedCurve must be ${expectedAlgorithm.namedCurve}`
-    );
-  }
-}
-function assertCryptoKey(key) {
-  if (key[Symbol.toStringTag] !== "CryptoKey") {
-    if (key instanceof CryptoKey) return;
-    throw new TypeError("unexpected key constructor");
-  }
-}
-async function ExtractAndExpand_TwoStage(DHKEM, dh, kem_context) {
-  const eae_prk = await LabeledExtract(
-    DHKEM.kdf,
-    DHKEM.suite_id,
-    new Uint8Array(),
-    encode5("eae_prk"),
-    dh
-  );
-  return await LabeledExpand(
-    DHKEM.kdf,
-    DHKEM.suite_id,
-    eae_prk,
-    encode5("shared_secret"),
-    kem_context,
-    DHKEM.Nsecret
-  );
-}
-function DHKEM_SHARED() {
-  return {
-    async GenerateKeyPair(extractable) {
-      return await subtle(
-        (c) => c.generateKey(this.algorithm, extractable, ["deriveBits"]),
-        this.name
-      );
-    },
-    async SerializePublicKey(key) {
-      assertKeyAlgorithm(key, this.algorithm);
-      assertCryptoKey(key);
-      return new Uint8Array(await subtle((c) => c.exportKey("raw", key), this.name));
-    },
-    async DeserializePublicKey(_key) {
-      const key = ab(_key);
-      return await subtle((c) => c.importKey("raw", key, this.algorithm, true, []), this.name);
-    },
-    async SerializePrivateKey(key) {
-      assertKeyAlgorithm(key, this.algorithm);
-      assertCryptoKey(key);
-      const { d } = await subtle((c) => c.exportKey("jwk", key), this.name);
-      return b64u(d);
-    },
-    async Encap(pkR) {
-      assertKeyAlgorithm(pkR, this.algorithm);
-      assertCryptoKey(pkR);
-      const ekp = await this.GenerateKeyPair(false);
-      const skE = ekp.privateKey;
-      const pkE = ekp.publicKey;
-      const dh = new Uint8Array(
-        await subtle(
-          (c) => c.deriveBits({ name: skE.algorithm.name, public: pkR }, skE, this.Ndh << 3),
-          this.name
-        )
-      );
-      checkNotAllZeros(dh);
-      const enc = await this.SerializePublicKey(pkE);
-      const pkRm = await this.SerializePublicKey(pkR);
-      const kem_context = concat2(enc, pkRm);
-      const shared_secret = await ExtractAndExpand_TwoStage(this, dh, kem_context);
-      return { shared_secret, enc };
-    },
-    async Decap(enc, skR, pkR) {
-      assertKeyAlgorithm(skR, this.algorithm);
-      assertCryptoKey(skR);
-      if (pkR) {
-        assertKeyAlgorithm(pkR, this.algorithm);
-        assertCryptoKey(pkR);
-      } else {
-        pkR = await getPublicKey(this.name, skR, []);
-      }
-      const pkE = await this.DeserializePublicKey(enc);
-      const dh = new Uint8Array(
-        await subtle(
-          (c) => c.deriveBits({ name: skR.algorithm.name, public: pkE }, skR, this.Ndh << 3),
-          this.name
-        )
-      );
-      checkNotAllZeros(dh);
-      const pkRm = await this.SerializePublicKey(pkR);
-      const kem_context = concat2(enc, pkRm);
-      const shared_secret = await ExtractAndExpand_TwoStage(this, dh, kem_context);
-      return shared_secret;
-    }
-  };
-}
-async function createKeyPairFromPrivateKey(DHKEM, key, extractable) {
-  let privateKey;
-  let publicKey;
-  if (!extractable && typeof crypto.subtle.getPublicKey !== "function") {
-    privateKey = await DHKEM.DeserializePrivateKey(key, true);
-    publicKey = await getPublicKey(DHKEM.name, privateKey, []);
-    privateKey = await DHKEM.DeserializePrivateKey(key, false);
-  } else {
-    privateKey = await DHKEM.DeserializePrivateKey(key, extractable);
-    publicKey = await getPublicKey(DHKEM.name, privateKey, []);
-  }
-  return { privateKey, publicKey };
-}
-async function CurveKeyFromD(name, Nsk, template, algorithm, key, extractable) {
-  const tmpl = slice(template);
-  const pkcs8 = new Uint8Array(Nsk + tmpl.byteLength);
-  pkcs8.set(tmpl);
-  pkcs8.set(key, tmpl.byteLength);
-  return await subtle(
-    (c) => c.importKey("pkcs8", pkcs8, algorithm, extractable, ["deriveBits"]),
-    name
-  );
-}
-async function DeriveKeyPairX(ikm, extractable) {
-  const dkp_prk = await LabeledExtract(
-    this.kdf,
-    this.suite_id,
-    new Uint8Array(),
-    encode5("dkp_prk"),
-    ikm
-  );
-  const sk = await LabeledExpand(
-    this.kdf,
-    this.suite_id,
-    dkp_prk,
-    encode5("sk"),
-    new Uint8Array(),
-    this.Nsk
-  );
-  return await createKeyPairFromPrivateKey(this, sk, extractable);
-}
-var KEM_DHKEM_X25519_HKDF_SHA256 = function() {
-  const id = 32;
-  const name = "DHKEM(X25519, HKDF-SHA256)";
-  const kdf = KDF_HKDF_SHA256();
-  kdf.name = name;
-  return {
-    id,
-    suite_id: concat2(encode5("KEM"), I2OSP(id, 2)),
-    type: "KEM",
-    name,
-    kdf,
-    Nsecret: 32,
-    Nenc: 32,
-    Npk: 32,
-    Nsk: 32,
-    Ndh: 32,
-    algorithm: { name: "X25519" },
-    pkcs8: Uint8Array.of(48, 46, 2, 1, 0, 48, 5, 6, 3, 43, 101, 110, 4, 34, 4, 32),
-    DeriveKeyPair: DeriveKeyPairX,
-    async DeserializePrivateKey(key, extractable) {
-      return await CurveKeyFromD(name, this.Nsk, this.pkcs8, this.algorithm, key, extractable);
-    },
-    ...DHKEM_SHARED()
-  };
-};
-function AEAD_SHARED() {
-  return {
-    async Seal(_key, _nonce, _aad, _pt) {
-      const nonce = ab(_nonce);
-      const aad = ab(_aad);
-      const key = ab(_key);
-      const pt = ab(_pt);
-      return new Uint8Array(
-        await subtle(
-          async (c) => c.encrypt(
-            { name: this.algorithm, iv: nonce, additionalData: aad },
-            await c.importKey(this.keyFormat, key, this.algorithm, false, ["encrypt"]),
-            pt
-          ),
-          this.name
-        )
-      );
-    },
-    async Open(_key, _nonce, _aad, _ct) {
-      const nonce = ab(_nonce);
-      const aad = ab(_aad);
-      const key = ab(_key);
-      const ct = ab(_ct);
-      return new Uint8Array(
-        await subtle(
-          async (c) => c.decrypt(
-            { name: this.algorithm, iv: nonce, additionalData: aad },
-            await c.importKey(this.keyFormat, key, this.algorithm, false, ["decrypt"]),
-            ct
-          ),
-          this.name
-        )
-      );
-    }
-  };
-}
-var AEAD_AES_128_GCM = function() {
-  return {
-    id: 1,
-    type: "AEAD",
-    name: "AES-128-GCM",
-    Nk: 16,
-    Nn: 12,
-    Nt: 16,
-    algorithm: "AES-GCM",
-    keyFormat: "raw",
-    ...AEAD_SHARED()
-  };
-};
-
-// dist/internal/ohttp-client.js
-var REORG_STATUS = 409;
-var INNER_REQUEST_ORIGIN = "https://ohttp-target.invalid";
-var OhttpClient = class {
-  gatewayUrl;
-  ohttpClient = null;
-  pinnedKeyConfig;
-  /**
-   * @param gatewayUrl - URL where the OHTTP gateway accepts encapsulated requests
-   *   and serves `/ohttp-keys`. May include a reverse-proxy path prefix (e.g.
-   *   `https://api.example.com/discovery`); the prefix is preserved on outer
-   *   requests but stripped from the inner OHTTP request path (which always
-   *   uses just the supplied per-call `path`).
-   *   Must be HTTPS in production — without it (or a pinned `publicKeyConfig`),
-   *   an active network attacker can replace the OHTTP key config.
-   * @param options.relayUrl - Optional OHTTP relay URL. When set, encapsulated
-   *   requests are sent here instead of the gateway. `/ohttp-keys` is still
-   *   fetched from `gatewayUrl`.
-   * @param options.publicKeyConfig - Optional pinned key config bytes
-   *   (`application/ohttp-keys` format). When set, `/ohttp-keys` is never fetched.
-   */
-  constructor(gatewayUrl, options) {
-    this.gatewayUrl = gatewayUrl;
-    this.pinnedKeyConfig = options?.publicKeyConfig;
-    if (options?.relayUrl) {
-      this.relayUrl = options.relayUrl;
-    }
-  }
-  relayUrl;
-  /**
-   * Send an OHTTP-encapsulated GET request and return the decrypted JSON response.
-   */
-  async get(path) {
-    return this.send(path, new Request(`${INNER_REQUEST_ORIGIN}${path}`, { method: "GET" }));
-  }
-  /**
-   * Send an OHTTP-encapsulated POST request and return the decrypted JSON response.
-   */
-  async post(path, body) {
-    return this.send(path, new Request(`${INNER_REQUEST_ORIGIN}${path}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    }));
-  }
-  async send(path, request) {
-    await this.ensureClient();
-    const { init, context } = await this.ohttpClient.encapsulateRequest(request);
-    const targetUrl = this.relayUrl ?? this.gatewayUrl;
-    const response = await fetch(targetUrl, init);
-    if (response.status === 422) {
-      this.invalidate();
-      const text = await response.text().catch(() => "");
-      throw new Error(`OHTTP decapsulation failed on server: ${text}`);
-    }
-    if (!response.ok && response.headers.get("content-type") !== "message/ohttp-res") {
-      const text = await response.text().catch(() => "");
-      if (response.status === REORG_STATUS) {
-        throw new ReorgError(`Block reorged during ${path}: ${text}`);
-      }
-      throw new Error(`OHTTP request ${path} failed (${response.status}): ${text}`);
-    }
-    const innerResponse = await context.decapsulateResponse(response);
-    const innerBody = await readResponseText(innerResponse);
-    if (innerResponse.status === REORG_STATUS) {
-      throw new ReorgError(`Block reorged during ${path}: ${innerBody}`);
-    }
-    if (innerResponse.status !== 200) {
-      throw new Error(`OHTTP inner response ${path} failed (${innerResponse.status}): ${innerBody}`);
-    }
-    return JSON.parse(innerBody);
-  }
-  /** Fetch (or use pinned) key config and create the OHTTPClient. */
-  async ensureClient() {
-    if (this.ohttpClient) {
-      return;
-    }
-    let raw;
-    if (this.pinnedKeyConfig) {
-      raw = this.pinnedKeyConfig;
-    } else {
-      const response = await fetch(`${this.gatewayUrl}/ohttp-keys`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch OHTTP key config: ${response.status} ${response.statusText}`);
-      }
-      raw = new Uint8Array(await response.arrayBuffer());
-    }
-    const publicKeyConfigs = KeyConfig.parseMultiple(raw);
-    if (publicKeyConfigs.length === 0) {
-      throw new Error("OHTTP key config response contained no key configurations");
-    }
-    const publicKeyConfig = publicKeyConfigs[0];
-    const suite = new CipherSuite(KEM_DHKEM_X25519_HKDF_SHA256, KDF_HKDF_SHA256, AEAD_AES_128_GCM);
-    this.ohttpClient = new OHTTPClient(suite, publicKeyConfig);
-  }
-  invalidate() {
-    this.ohttpClient = null;
-  }
-};
-var ENCODING_TO_FORMAT = {
-  gzip: "gzip",
-  "x-gzip": "gzip",
-  deflate: "deflate"
-};
-async function readResponseText(response) {
-  const encoding = response.headers.get("content-encoding")?.toLowerCase();
-  if (!encoding || !response.body || encoding === "identity") {
-    return response.text();
-  }
-  const format = ENCODING_TO_FORMAT[encoding];
-  if (!format) {
-    throw new Error(`Unsupported Content-Encoding in OHTTP response: ${encoding}`);
-  }
-  const decompressed = response.body.pipeThrough(new DecompressionStream(format));
-  return new Response(decompressed).text();
-}
-
 // dist/internal/proving-service-provider.js
 var ProvingServiceProofProvider = class {
   chainId;
@@ -12110,7 +12221,7 @@ function createPrivateTransfers(params) {
     discoveryProvider,
     proofInvocationFactory: params.proofInvocationFactory ?? new ProofInvocationFactory(),
     poolContractAddress: params.poolContractAddress,
-    subAccountAnonymizerAddress: params.subAccountAnonymizerAddress
+    shadowAccountAnonymizerAddress: params.shadowAccountAnonymizerAddress
   });
 }
 
@@ -12132,11 +12243,10 @@ var SimplePrivateTransfersImpl = class {
   }
   withdraw(token, recipient, amount) {
     const builder = this.build(token);
-    const surplustWithdraw = isAll(amount) ? true : false;
-    if (!isAll(amount)) {
-      builder.withdraw({ recipient, amount });
+    if (isAll(amount)) {
+      return builder.surplusTo(recipient, true).execute();
     }
-    return builder.surplusTo(recipient, surplustWithdraw).execute();
+    return builder.withdraw({ recipient, amount }).surplusTo(this.inner.user, false).execute();
   }
   transfer(token, recipient, amount) {
     const builder = this.build(token);
@@ -12640,6 +12750,7 @@ var ContractDiscoveryProvider = class extends AbstractDiscoveryProvider {
   ScreeningRejected,
   ScreeningUnavailable,
   SetupRequirement,
+  ShadowAccountAnonymizerABI,
   SimplePrivateTransfersImpl,
   WarningCode,
   Witness,

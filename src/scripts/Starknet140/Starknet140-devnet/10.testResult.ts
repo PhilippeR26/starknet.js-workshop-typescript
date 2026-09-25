@@ -1,8 +1,8 @@
 // Test Cairo Result with snjs v8
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/10.testResult.ts
-// Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
+// Coded with Starknet.js v11.0.0 & starknet-devnet.js v0.10.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoTypeResult, CairoResult, CairoResultVariant, CairoCustomEnum } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, cairoTypeStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoTypeResult, CairoResult, CairoResultVariant, CairoCustomEnum } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -70,101 +70,101 @@ async function main() {
     const myResult0 = new CairoResult<BigNumberish, BigNumberish>(CairoResultVariant.Ok, myU8);
 
     // Result from num
-    const myResult1 = new CairoTypeResult(myU8, "core::result::Result::<core::integer::u8, core::integer::u16>", hdParsingStrategy, CairoResultVariant.Ok);
+    const myResult1 = new CairoTypeResult(myU8, "core::result::Result::<core::integer::u8, core::integer::u16>", cairoTypeStrategy, CairoResultVariant.Ok);
     console.log(LogC.bg.yellow, "myResult1 =", LogC.reset, myResult1);
     console.log("  encode =", myResult1.toApiRequest());
-    console.log("  decode =", myResult1.decompose(hdParsingStrategy));
-    const myResult1Err = new CairoTypeResult(myU8, "core::result::Result::<core::integer::u8, core::integer::u16>", hdParsingStrategy, CairoResultVariant.Err);
+    console.log("  decode =", myResult1.decompose(cairoTypeStrategy));
+    const myResult1Err = new CairoTypeResult(myU8, "core::result::Result::<core::integer::u8, core::integer::u16>", cairoTypeStrategy, CairoResultVariant.Err);
     console.log(LogC.bg.yellow, "myResult1Err =", LogC.reset, myResult1Err);
     console.log("  encode =", myResult1Err.toApiRequest());
-    console.log("  decode =", myResult1Err.decompose(hdParsingStrategy));
+    console.log("  decode =", myResult1Err.decompose(cairoTypeStrategy));
 
     // Result from iterator
     const iter2 = ["0", "100"][Symbol.iterator]();
-    const myResult2 = new CairoTypeResult(iter2, "core::result::Result::<core::integer::u8, core::integer::u16>", hdParsingStrategy);
+    const myResult2 = new CairoTypeResult(iter2, "core::result::Result::<core::integer::u8, core::integer::u16>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "myResult2 =", LogC.reset, myResult2);
     console.log("  encode =", myResult2.toApiRequest());
-    console.log("  decode =", myResult2.decompose(hdParsingStrategy));
+    console.log("  decode =", myResult2.decompose(cairoTypeStrategy));
     const iter3 = ["1", "100"][Symbol.iterator]();
-    const myResult2Err = new CairoTypeResult(iter3, "core::result::Result::<core::integer::u8, core::integer::u16>", hdParsingStrategy);
+    const myResult2Err = new CairoTypeResult(iter3, "core::result::Result::<core::integer::u8, core::integer::u16>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "myResult2Err =", LogC.reset, myResult2Err);
     console.log("  encode =", myResult2Err.toApiRequest());
-    console.log("  decode =", myResult2Err.decompose(hdParsingStrategy));
+    console.log("  decode =", myResult2Err.decompose(cairoTypeStrategy));
 
     // Result from CairoResult
-    const myResult3 = new CairoTypeResult(myResult0, "core::result::Result::<core::integer::u8, core::integer::u16>", hdParsingStrategy);
+    const myResult3 = new CairoTypeResult(myResult0, "core::result::Result::<core::integer::u8, core::integer::u16>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "myResult3 =", LogC.reset, myResult3);
     console.log("  encode =", myResult3.toApiRequest());
-    console.log("  decode =", myResult3.decompose(hdParsingStrategy));
-    const myResult3Err = new CairoTypeResult(myResult1Err, "core::result::Result::<core::integer::u8, core::integer::u16>", hdParsingStrategy);
+    console.log("  decode =", myResult3.decompose(cairoTypeStrategy));
+    const myResult3Err = new CairoTypeResult(myResult1Err, "core::result::Result::<core::integer::u8, core::integer::u16>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "myResult3Err =", LogC.reset, myResult3Err);
     console.log("  encode =", myResult3Err.toApiRequest());
-    console.log("  decode =", myResult3Err.decompose(hdParsingStrategy));
+    console.log("  decode =", myResult3Err.decompose(cairoTypeStrategy));
 
     // Result of Result 
     const myResult4 = new CairoResult(CairoResultVariant.Err, myResult0);
-    const myResult4b = new CairoTypeResult(myU8, "core::result::Result::<core::integer::u16, core::integer::u32>", hdParsingStrategy, CairoResultVariant.Ok, true);
+    const myResult4b = new CairoTypeResult(myU8, "core::result::Result::<core::integer::u16, core::integer::u32>", cairoTypeStrategy, CairoResultVariant.Ok, true);
     console.log(LogC.bg.yellow, "myResult4b =", LogC.reset, myResult4b);
-    const myResult4c = new CairoTypeResult(myResult0, "core::result::Result::<core::integer::u8, core::result::Result::<core::integer::u16, core::integer::u32>>", hdParsingStrategy, CairoResultVariant.Err, true);
+    const myResult4c = new CairoTypeResult(myResult0, "core::result::Result::<core::integer::u8, core::result::Result::<core::integer::u16, core::integer::u32>>", cairoTypeStrategy, CairoResultVariant.Err, true);
     console.log(LogC.bg.yellow, "myResult4c =", LogC.reset, myResult4c);
-    const myResult5 = new CairoTypeResult(myResult4, "core::result::Result::<core::integer::u8, core::result::Result::<core::integer::u16, core::integer::u32>>", hdParsingStrategy);
+    const myResult5 = new CairoTypeResult(myResult4, "core::result::Result::<core::integer::u8, core::result::Result::<core::integer::u16, core::integer::u32>>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "myResult5 =", LogC.reset, myResult5);
     console.log("  encode =", myResult5.toApiRequest());
-    console.log("  decode =", myResult5.decompose(hdParsingStrategy));
+    console.log("  decode =", myResult5.decompose(cairoTypeStrategy));
 
     // Result of Result of Result
     const myResult6 = new CairoResult(CairoResultVariant.Ok, myResult4);
     console.log(LogC.bg.yellow, "myResult6 =", LogC.reset, myResult6);
-    const myResult7 = new CairoTypeResult(myResult6, "core::result::Result::<core::result::Result::<core::integer::u8, core::result::Result::<core::integer::u16, core::integer::u32>>, core::integer::u32>", hdParsingStrategy);
+    const myResult7 = new CairoTypeResult(myResult6, "core::result::Result::<core::result::Result::<core::integer::u8, core::result::Result::<core::integer::u16, core::integer::u32>>, core::integer::u32>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "myResult7 =", LogC.reset, myResult7);
     console.log("  encode =", myResult7.toApiRequest());
-    console.log("  decode =", myResult7.decompose(hdParsingStrategy));
-    const resp = myResult7.decompose(hdParsingStrategy).unwrap().unwrap().unwrap();
+    console.log("  decode =", myResult7.decompose(cairoTypeStrategy));
+    const resp = myResult7.decompose(cairoTypeStrategy).unwrap().unwrap().unwrap();
     console.log({ resp });
 
     // Result of Option 
     const myOption0 = new CairoOption<BigNumberish>(CairoOptionVariant.Some, myU8);
     const myResult8 = new CairoResult(CairoResultVariant.Err, myOption0);
-    const myResult9 = new CairoTypeResult(myResult8, "core::result::Result::<core::integer::u8, core::option::Option::<core::integer::u8>>", hdParsingStrategy);
+    const myResult9 = new CairoTypeResult(myResult8, "core::result::Result::<core::integer::u8, core::option::Option::<core::integer::u8>>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "myResult9 =", LogC.reset, myResult9);
     console.log("  encode =", myResult9.toApiRequest());
-    console.log("  unwrap =", myResult9.decompose(hdParsingStrategy));
+    console.log("  unwrap =", myResult9.decompose(cairoTypeStrategy));
 
     // Result of CairoFixedArray
-    const fArr0 = new CairoFixedArray([1, 2, 3], "[core::integer::u8; 3]", hdParsingStrategy);
-    const myResult10 = new CairoTypeResult(fArr0, "core::result::Result::<[core::integer::u8; 3], core::integer::u32>", hdParsingStrategy, CairoResultVariant.Ok);
+    const fArr0 = new CairoFixedArray([1, 2, 3], "[core::integer::u8; 3]", cairoTypeStrategy);
+    const myResult10 = new CairoTypeResult(fArr0, "core::result::Result::<[core::integer::u8; 3], core::integer::u32>", cairoTypeStrategy, CairoResultVariant.Ok);
     console.log(LogC.bg.yellow, "myResult10 =", LogC.reset, myResult10);
     console.log("  encode =", myResult10.toApiRequest());
-    console.log("  decode =", myResult10.decompose(hdParsingStrategy));
+    console.log("  decode =", myResult10.decompose(cairoTypeStrategy));
 
     // Result of fixed array
-    const myResult11 = new CairoTypeResult([1, 2, 3], "core::result::Result::<core::integer::u32, [core::integer::u8; 3]>", hdParsingStrategy, CairoResultVariant.Err);
+    const myResult11 = new CairoTypeResult([1, 2, 3], "core::result::Result::<core::integer::u32, [core::integer::u8; 3]>", cairoTypeStrategy, CairoResultVariant.Err);
     console.log(LogC.bg.yellow, "myResult11 =", LogC.reset, myResult11);
     console.log("  encode =", myResult11.toApiRequest());
-    console.log("  decode =", myResult11.decompose(hdParsingStrategy));
+    console.log("  decode =", myResult11.decompose(cairoTypeStrategy));
 
     // Result of array
-    const myResult12 = new CairoTypeResult([1, 2, 3], "core::result::Result::<core::array::Array::<core::integer::u8>, core::integer::u32>", hdParsingStrategy, CairoResultVariant.Ok);
+    const myResult12 = new CairoTypeResult([1, 2, 3], "core::result::Result::<core::array::Array::<core::integer::u8>, core::integer::u32>", cairoTypeStrategy, CairoResultVariant.Ok);
     console.log(LogC.bg.yellow, "myResult12 =", LogC.reset, myResult12);
     console.log("  encode =", myResult12.toApiRequest());
-    console.log("  decode =", myResult12.decompose(hdParsingStrategy));
+    console.log("  decode =", myResult12.decompose(cairoTypeStrategy));
 
     // Result of CairoArray
-    const myArr1 = new CairoArray([10, 11, 12], "core::array::Array::<core::integer::u8>", hdParsingStrategy);
-    const myResult13 = new CairoTypeResult(myArr1, "core::result::Result::<core::integer::u32, core::array::Array::<core::integer::u8>>", hdParsingStrategy, CairoResultVariant.Err);
+    const myArr1 = new CairoArray([10, 11, 12], "core::array::Array::<core::integer::u8>", cairoTypeStrategy);
+    const myResult13 = new CairoTypeResult(myArr1, "core::result::Result::<core::integer::u32, core::array::Array::<core::integer::u8>>", cairoTypeStrategy, CairoResultVariant.Err);
     console.log(LogC.bg.yellow, "myResult13 =", LogC.reset, myResult13);
     console.log("  encode =", myResult13.toApiRequest());
-    console.log("  decode =", myResult13.decompose(hdParsingStrategy));
+    console.log("  decode =", myResult13.decompose(cairoTypeStrategy));
 
     // Result of tuple
-    const myResult14 = new CairoTypeResult([100, 10], "core::result::Result::<(core::integer::u16, core::integer::u8), core::integer::u32>", hdParsingStrategy, CairoResultVariant.Ok);
+    const myResult14 = new CairoTypeResult([100, 10], "core::result::Result::<(core::integer::u16, core::integer::u8), core::integer::u32>", cairoTypeStrategy, CairoResultVariant.Ok);
     console.log(LogC.bg.yellow, "myResult14 =", LogC.reset, myResult14);
     console.log("  encode =", myResult14.toApiRequest());
-    console.log("  decode =", myResult14.decompose(hdParsingStrategy));
+    console.log("  decode =", myResult14.decompose(cairoTypeStrategy));
 
     // result including a struct
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/enums_test_enums.contract_class.json").toString("ascii"));
-            const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
+            const myTestCallData = new CallData(compiledSierra.abi, cairoTypeStrategy);
         const strategies=myTestCallData.parser.parsingStrategies;
         type Point = {
             x: BigNumberish,

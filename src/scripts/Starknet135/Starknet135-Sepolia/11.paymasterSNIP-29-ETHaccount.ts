@@ -2,7 +2,7 @@
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/11.paymasterSNIP-29-ETHaccount.ts
 // Coded with Starknet.js v7.1.0 + experimental
 
-import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, RPC07, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, EthSigner } from "starknet";
+import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC,  OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, EthSigner } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address, accountETHoz17snip9PrivateKey } from "../../../A1priv/A1priv";
@@ -10,6 +10,7 @@ import { ethAddress, strkAddress, USDCaddressTestnet } from "../../utils/constan
 import axios from "axios";
 import { formatBalance } from "../../utils/formatBalance";
 import { displayBalances } from "./10.getBalance"
+import { alchemyKey } from "../../../A-MainPriv/mainPriv";
 dotenv.config();
 
 function displayFees(
@@ -32,7 +33,7 @@ async function main() {
   // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_8" });
   // ********* Sepolia Testnet **************
   // local pathfinder Sepolia Testnet node
-  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8", specVersion: "0.8.1" });
+    const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
   // local Juno Sepolia Testnet node

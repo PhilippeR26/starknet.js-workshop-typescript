@@ -1,8 +1,8 @@
 // Test Cairo Result with snjs v8
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/10a.testResult.ts
-// Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
+/// Coded with Starknet.js v11.0.0 & starknet-devnet.js v0.10.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoTypeResult, CairoCustomEnum } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, cairoTypeStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoTypeResult, CairoCustomEnum } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -69,7 +69,7 @@ async function main() {
     console.log("Contract deployed at =", contractAddress);
     // const contractAddress = "0x703cd4e9816f09e44a07e170fdf37b993f036994468683dd90ea7a1ec803086";
 
-    const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
+    const myTestCallData = new CallData(compiledSierra.abi, cairoTypeStrategy);
     const myTestContract = new Contract({
         abi: compiledSierra.abi,
         address: contractAddress,
@@ -77,7 +77,7 @@ async function main() {
     });
     const strategies = myTestContract.callData.parser.parsingStrategies;
 
-    // console.log("A0=", JSON.stringify(hdParsingStrategy))
+    // console.log("A0=", JSON.stringify(cairoTypeStrategy))
     // console.log("A1 =",CallData.getAbiEnum(compiledSierra.abi));
     // console.log("A2 =",CallData.getAbiStruct(compiledSierra.abi));
     // console.log("strat1 =",myTestCallData.parser.parsingStrategies);
@@ -85,8 +85,8 @@ async function main() {
 
     // BN
     const myCairoResult0 = new CairoResult<BigNumberish, BigNumberish>(CairoResultVariant.Ok, 18);
-    const result0Ok = new CairoTypeResult(18, "core::result::Result::<core::integer::u8, core::integer::u16>", hdParsingStrategy, CairoResultVariant.Ok);
-    const result0Er = new CairoTypeResult(5, "core::result::Result::<core::integer::u8, core::integer::u16>", hdParsingStrategy, CairoOptionVariant.None);
+    const result0Ok = new CairoTypeResult(18, "core::result::Result::<core::integer::u8, core::integer::u16>", cairoTypeStrategy, CairoResultVariant.Ok);
+    const result0Er = new CairoTypeResult(5, "core::result::Result::<core::integer::u8, core::integer::u16>", cairoTypeStrategy, CairoOptionVariant.None);
     const res0ok = (await myTestContract.call("result_bn",[result0Ok])) as CairoResult<bigint, bigint>;
     const res0err = (await myTestContract.call("result_bn",[result0Er])) as CairoResult<bigint, bigint>;
     const res0 = (await myTestContract.result_bn(result0Er)) as CairoResult<bigint, bigint>;
@@ -99,8 +99,8 @@ async function main() {
     console.log("comp0bis compile() =", comp0bis);
 
     // Array
-    const result1ok = new CairoTypeResult([67, 68n, "0x34", "70"], "core::result::Result::<core::array::Array::<core::integer::u8>, core::array::Array::<core::integer::u16>>", hdParsingStrategy, CairoResultVariant.Ok);
-    const result1err = new CairoTypeResult([1,2,3], "core::result::Result::<core::array::Array::<core::integer::u8>, core::array::Array::<core::integer::u16>>", hdParsingStrategy, CairoOptionVariant.None);
+    const result1ok = new CairoTypeResult([67, 68n, "0x34", "70"], "core::result::Result::<core::array::Array::<core::integer::u8>, core::array::Array::<core::integer::u16>>", cairoTypeStrategy, CairoResultVariant.Ok);
+    const result1err = new CairoTypeResult([1,2,3], "core::result::Result::<core::array::Array::<core::integer::u8>, core::array::Array::<core::integer::u16>>", cairoTypeStrategy, CairoOptionVariant.None);
     const res1ok = (await myTestContract.call("result_array", [result1ok])) as CairoResult<Array<bigint>, Array<bigint>>;
     const res1err = (await myTestContract.call("result_array", [result1err])) as CairoResult<Array<bigint>, Array<bigint>>;
     const res1 = (await myTestContract.result_array(result1err)) as CairoResult<Array<bigint>, Array<bigint>>;
@@ -113,16 +113,16 @@ async function main() {
     console.log("comp1bis compile() =", comp1bis);
 
     // fixedArray
-    const result2ok = new CairoTypeResult([17, 18, 19], "core::result::Result::<[core::integer::u32; 3], [core::integer::u16; 2]>", hdParsingStrategy, CairoResultVariant.Ok);
-    const result2err = new CairoTypeResult([8, 9], "core::result::Result::<[core::integer::u32; 3], [core::integer::u16; 2]>", hdParsingStrategy, CairoResultVariant.Err);
+    const result2ok = new CairoTypeResult([17, 18, 19], "core::result::Result::<[core::integer::u32; 3], [core::integer::u16; 2]>", cairoTypeStrategy, CairoResultVariant.Ok);
+    const result2err = new CairoTypeResult([8, 9], "core::result::Result::<[core::integer::u32; 3], [core::integer::u16; 2]>", cairoTypeStrategy, CairoResultVariant.Err);
     const res2ok = (await myTestContract.call("result_fixed_array", [result2ok])) as CairoResult<Array<bigint>, bigint>;
     const res2err = (await myTestContract.call("result_fixed_array", [result2err])) as CairoResult<Array<bigint>, bigint>
     const res2 = (await myTestContract.result_fixed_array( result2err)) as CairoResult<Array<bigint>, bigint>
     console.log("res2 meta-function =", res2.isOk(), res2.unwrap());
 
     // Tuple
-    const cArray = new CairoArray([50, 51], "core::array::Array::<core::integer::u32>", hdParsingStrategy);
-    const cTuple = new CairoTuple([40, cArray], "(core::integer::u32, core::array::Array::<core::integer::u32>)", hdParsingStrategy);
+    const cArray = new CairoArray([50, 51], "core::array::Array::<core::integer::u32>", cairoTypeStrategy);
+    const cTuple = new CairoTuple([40, cArray], "(core::integer::u32, core::array::Array::<core::integer::u32>)", cairoTypeStrategy);
     console.log("cTuple=", cTuple.toApiRequest());
     const myTup = cairo.tuple(40, [50, 51]);
     console.log({ myTup });
@@ -133,7 +133,7 @@ async function main() {
     console.log("cairoResult3ok myTestCallData.compile() object =", myTestCallData.compile("result_tuple", { x: cairoResult3ok }));
     const resCO3Sbis = (await myTestContract.result_tuple(cairoResult3ok)) as CairoResult<Object, Object>;
     console.log("resCO3Sbis meta-function", resCO3Sbis.isOk(), resCO3Sbis.unwrap());
-    const result3S = new CairoTypeResult(cTuple, "core::result::Result::<(core::integer::u32, core::array::Array::<core::integer::u32>), (core::integer::u16, core::array::Array::<core::integer::u16>)>", hdParsingStrategy, CairoResultVariant.Ok);
+    const result3S = new CairoTypeResult(cTuple, "core::result::Result::<(core::integer::u32, core::array::Array::<core::integer::u32>), (core::integer::u16, core::array::Array::<core::integer::u16>)>", cairoTypeStrategy, CairoResultVariant.Ok);
     console.log("result3S encoded =", result3S.toApiRequest());
     console.log("result3S CallData.compile() array =", CallData.compile([result3S]));
     console.log("result3S CallData.compile() object =", CallData.compile({ x: result3S }));

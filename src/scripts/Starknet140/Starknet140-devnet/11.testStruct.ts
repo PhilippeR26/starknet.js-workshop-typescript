@@ -1,8 +1,8 @@
 // Test Cairo Option with snjs v8
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/11.testStruct.ts
-// Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
+// Coded with Starknet.js v11.0.0 & starknet-devnet.js v0.10.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoStruct, type AbiEntry, type AbiStruct, createAbiParser, CairoCustomEnum } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, cairoTypeStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoStruct, type AbiEntry, type AbiStruct, createAbiParser, CairoCustomEnum } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -61,7 +61,7 @@ async function main() {
 
     // ********** main code
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/enums_test_enums.contract_class.json").toString("ascii"));
-    const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
+    const myTestCallData = new CallData(compiledSierra.abi, cairoTypeStrategy);
     const strategies = myTestCallData.parser.parsingStrategies;
     console.log("strategies =", strategies);
 

@@ -1,8 +1,8 @@
 // Use SNIP-29 paymaster
 // Launch with npx ts-node src/scripts/Starknet135/Starknet135-Sepolia/9.paymasterSNIP-29.ts
-// Coded with Starknet.js v8.1.0
+// Coded with Starknet.js v11.0.0
 
-import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, type PaymasterDetails } from "starknet";
+import { RpcProvider, shortString, json, logger, Account, PaymasterRpc, Contract, cairo, constants, RPC, OutsideExecutionVersion, num, type TokenData, type PaymasterFeeEstimate, type PaymasterDetails, CairoBytes31 } from "starknet";
 import fs from "fs";
 import * as dotenv from "dotenv";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2BraavosSepoliaAddress, account2BraavosSepoliaPrivateKey, account3ArgentXSepoliaAddress, account3ArgentXSepoliaPrivateKey, accountETHoz17snip9Address } from "../../../A1priv/A1priv";
@@ -10,7 +10,8 @@ import { ethAddress, strkAddress, USDCaddressTestnet } from "../../utils/constan
 import axios from "axios";
 import { formatBalance } from "../../utils/formatBalance";
 import { displayBalances } from "./10.getBalance"
-dotenv.config();
+import { alchemyKey } from "../../../A-MainPriv/mainPriv";
+dotenv.config({quiet:false});
 
 function displayFees(
   fees: PaymasterFeeEstimate,
@@ -30,7 +31,7 @@ async function main() {
   // const myProvider = new RpcProvider({ nodeUrl: "https://free-rpc.nethermind.io/mainnet-juno/v0_8" });
   // ********* Sepolia Testnet **************
   // local pathfinder Sepolia Testnet node
-  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8", specVersion: "0.8.1" });
+  const myProvider = new RpcProvider({ nodeUrl: "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/" + alchemyKey }); // Sepolia Testnet 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_8" }); 
   // const myProvider = await RpcProvider.create({ nodeUrl: "http://localhost:9545/rpc/v0_7" });
   // local Juno Sepolia Testnet node
@@ -45,7 +46,7 @@ async function main() {
   // logger.setLogLevel("ERROR");
   // config.set("legacyMode",true);
   console.log(
-    "chain Id =", shortString.decodeShortString(await myProvider.getChainId()),
+    "chain Id =", new CairoBytes31(await myProvider.getChainId()).decodeUtf8(),
     ", rpc", await myProvider.getSpecVersion(),
     ", SN version =", (await myProvider.getBlock()).starknet_version);
   console.log("Provider connected to Starknet Sepolia testnet");
@@ -145,9 +146,9 @@ async function main() {
   // console.log("typedData", typed);
 
   // const gasToken = "0x30058f19ed447208015f6430f0102e8ab82d6c291566d7e73fe8e613c3d2ed"  // SWAY
-  // const gasToken = "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";  // ETH
+   const gasToken = "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";  // ETH
   // const gasToken = "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"  // STRK
-  const gasToken = "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080"  // USDC
+  // const gasToken = "0x53b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080"  // USDC
   // const built = await account0.paymaster.buildTransaction({
   //   type: 'invoke',
   //   invoke: {
@@ -197,8 +198,8 @@ async function main() {
     feeMode: { mode: "default", gasToken },
   };
   const feeEstimation = await account0.estimatePaymasterTransactionFee([myCall], feesDetails);
-  console.log("feeEstimation USDC =", feeEstimation);
-  console.log(("Processing with USDC..."));
+  console.log("feeEstimation ETH =", feeEstimation);
+  console.log(("Processing with ETH..."));
   const res2 = await account0.executePaymasterTransaction(
     [myCall],
     feesDetails,

@@ -1,6 +1,6 @@
 // Test Cairo Struct with snjs v8
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/12a.testEnum.ts
-// Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
+// Coded with Starknet.js v11.0.0 & starknet-devnet.js v0.10.0
 
 import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoTypeResult, type AbiStruct, CairoStruct, CairoCustomEnum, type AbiEnum, CairoTypeCustomEnum } from "starknet";
 import fs from "fs";

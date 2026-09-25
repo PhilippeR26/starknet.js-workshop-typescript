@@ -1,8 +1,8 @@
 // Test Cairo array with snjs v8
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/9a.testArray.ts
-// Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
+// Coded with Starknet.js v11.0.0 & starknet-devnet.js v0.10.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hdParsingStrategy,  type AbiStruct, CairoStruct, CairoCustomEnum, type AbiEnum, CairoTypeCustomEnum, type BigNumberish, CairoTuple } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, cairoTypeStrategy,  type AbiStruct, CairoStruct, CairoCustomEnum, type AbiEnum, CairoTypeCustomEnum, type BigNumberish, CairoTuple } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -67,7 +67,7 @@ async function main() {
     console.log("Contract deployed at =", contractAddress);
     // const contractAddress = "0x3cb38b467e468d3caadfc056c11cb6cf754f4c98ac430c6f1af36d35bce3e4f";
 
-    const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
+    const myTestCallData = new CallData(compiledSierra.abi, cairoTypeStrategy);
     const myTestContract = new Contract({
         abi: compiledSierra.abi,
         address: contractAddress,

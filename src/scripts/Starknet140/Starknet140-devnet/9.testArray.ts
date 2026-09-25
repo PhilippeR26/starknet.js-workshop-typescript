@@ -1,8 +1,8 @@
 // Test Cairo Option with snjs v8
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/9.testArray.ts
-// Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
+// Coded with Starknet.js v11.0.0 & starknet-devnet.js v0.10.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoCustomEnum } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, cairoTypeStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoCustomEnum, hdParsingStrategy } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -66,68 +66,62 @@ async function main() {
     const iter2 = ["3", "100", "0", "200"][Symbol.iterator]();
 
     // simple array Cairo1
-    const arr0 = new CairoArray([10, 20], "core::array::Array::<core::integer::u8>", hdParsingStrategy);
+    const arr0 = new CairoArray([10, 20], "core::array::Array::<core::integer::u8>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "arr0 =", LogC.reset, arr0);
     console.log(arr0.toApiRequest());
-    console.log(arr0.decompose(hdParsingStrategy));
-    const arr1 = new CairoArray({ "0": 10, "1": 20 }, "core::array::Array::<core::integer::u8>", hdParsingStrategy);
+    console.log(arr0.decompose(cairoTypeStrategy));
+    const arr1 = new CairoArray({ "0": 10, "1": 20 }, "core::array::Array::<core::integer::u8>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "arr1 =", LogC.reset, arr1);
     console.log(arr1.toApiRequest());
-    console.log(arr1.decompose(hdParsingStrategy));
-    const arr2 = new CairoArray(iter2, "core::array::Array::<core::integer::u8>", hdParsingStrategy);
+    console.log(arr1.decompose(cairoTypeStrategy));
+    const arr2 = new CairoArray(iter2, "core::array::Array::<core::integer::u8>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "arr2 =", LogC.reset, arr2);
     console.log(arr2.toApiRequest());
-    console.log(arr2.decompose(hdParsingStrategy));
-    const arr3 = new CairoArray(arr0, "core::array::Array::<core::integer::u8>", hdParsingStrategy);
+    console.log(arr2.decompose(cairoTypeStrategy));
+    const arr3 = new CairoArray(arr0, "core::array::Array::<core::integer::u8>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "arr3 =", LogC.reset, arr3);
     console.log(arr3.toApiRequest());
-    console.log(arr3.decompose(hdParsingStrategy));
+    console.log(arr3.decompose(cairoTypeStrategy));
 
     // empty array
-    const arr4 = new CairoArray([], "core::array::Array::<core::integer::u8>", hdParsingStrategy);
+    const arr4 = new CairoArray([], "core::array::Array::<core::integer::u8>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "arr4 =", LogC.reset, arr4);
     console.log(arr4.toApiRequest());
-    console.log(arr4.decompose(hdParsingStrategy));
-
-    // simple array Cairo0
-    const arr10 = new CairoArray([10, 20], "felt*", hdParsingStrategy);
-    console.log(LogC.bg.yellow, "arr10 =", LogC.reset, arr10);
-    console.log(arr10.toApiRequest());
-    console.log(arr10.decompose(hdParsingStrategy));
+    console.log(arr4.decompose(cairoTypeStrategy));
 
     // Array including an array
-    const arr5 = new CairoArray([[20, 30]], "core::array::Array::<core::array::Array::<core::integer::u8>>", hdParsingStrategy);
+    const arr5 = new CairoArray([[20, 30]], "core::array::Array::<core::array::Array::<core::integer::u8>>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "arr5 =", LogC.reset, arr5);
     console.log(arr5.toApiRequest());
-    console.log(arr5.decompose(hdParsingStrategy));
+    console.log(arr5.decompose(cairoTypeStrategy));
 
     // Array including a fixed array
-    const arr6 = new CairoArray([[20, 30]], "core::array::Array::<[core::integer::u8; 2]>", hdParsingStrategy);
+    const arr6 = new CairoArray([[20, 30]], "core::array::Array::<[core::integer::u8; 2]>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "arr6 =", LogC.reset, arr6);
     console.log(arr6.toApiRequest());
-    console.log(arr6.decompose(hdParsingStrategy));
+    console.log(arr6.decompose(cairoTypeStrategy));
 
     // Array including a tuple
-    const arr7 = new CairoArray([cairo.tuple(20, 30), cairo.tuple(100, 110)], "core::array::Array::<(core::integer::u8, core::integer::u16)>", hdParsingStrategy);
+    const arr7 = new CairoArray([cairo.tuple(20, 30), cairo.tuple(100, 110)], "core::array::Array::<(core::integer::u8, core::integer::u16)>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "arr7 =", LogC.reset, arr7);
     console.log(arr7.toApiRequest());
-    console.log(arr7.decompose(hdParsingStrategy));
+    console.log(arr7.decompose(cairoTypeStrategy));
 
     // Array of options
-    const arr8 = new CairoArray([myOption0, myOption0], "core::array::Array::<core::option::Option::<core::integer::u8>>", hdParsingStrategy);
+    const arr8 = new CairoArray([myOption0, myOption0], "core::array::Array::<core::option::Option::<core::integer::u8>>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "arr8 =", LogC.reset, arr8);
     console.log(arr8.toApiRequest());
-    console.log(arr8.decompose(hdParsingStrategy));
+    console.log(arr8.decompose(cairoTypeStrategy));
 
     // Array of results
-    const arr9 = new CairoArray([myResult0, myResult0], "core::array::Array::<core::result::Result::<core::integer::u8, core::integer::u16>>", hdParsingStrategy);
+    const arr9 = new CairoArray([myResult0, myResult0], "core::array::Array::<core::result::Result::<core::integer::u8, core::integer::u16>>", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "arr9 =", LogC.reset, arr9);
     console.log(arr9.toApiRequest());
-    console.log(arr9.decompose(hdParsingStrategy));
+    console.log(arr9.decompose(cairoTypeStrategy));
 
     // Array of struct
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/enums_test_enums.contract_class.json").toString("ascii"));
-    const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
+    const myTestCallData = new CallData(compiledSierra.abi, cairoTypeStrategy);
     const strategies = myTestCallData.parser.parsingStrategies;
     type Point = {
         x: BigNumberish,

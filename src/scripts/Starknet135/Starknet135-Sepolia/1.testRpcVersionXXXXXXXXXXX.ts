@@ -90,7 +90,7 @@ async function main() {
         // 'http://192.168.1.167:9545/rpc/v0_5', // my local pathfinder 
         // 'http://192.168.1.' + localIP + ':9545/rpc/v0_6', // my local pathfinder 
         // 'http://192.168.1.' + localIP + ':9545/rpc/v0_7', // my local pathfinder
-        'http://192.168.1.' + localIP + ':9545/rpc/v0_8', // my local pathfinder
+        // 'http://192.168.1.' + localIP + ':9545/rpc/v0_8', // my local pathfinder
         'http://192.168.1.' + localIP + ':9545/rpc/v0_9', // my local pathfinder
         'http://192.168.1.' + localIP + ':9545/rpc/v0_10', // my local pathfinder
         equilibriumPathfinderTestnetUrl,

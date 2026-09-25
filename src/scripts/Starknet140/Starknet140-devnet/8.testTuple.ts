@@ -1,8 +1,8 @@
 // Test Cairo Option with snjs v8
 // launch with npx ts-node src/scripts/Starknet140/Starknet140-devnet/8.testTuple.ts
-// Coded with Starknet.js v8.5.0 + experimental & starknet-devnet.js v0.5.0
+// Coded with Starknet.js v11.0.0 & starknet-devnet.js v0.10.0
 
-import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, hdParsingStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoCustomEnum } from "starknet";
+import { constants, Contract, Account, json, shortString, RpcProvider, RPC, num, ec, CallData, hash, cairo, stark, type FeeEstimate, type RevertedTransactionReceiptResponse, type SuccessfulTransactionReceiptResponse, type Call, BlockTag, CairoFixedArray, cairoTypeStrategy, CairoOption, CairoUint8, CairoOptionVariant, CairoTuple, CairoArray, CairoTypeOption, BigNumberish, CairoResult, CairoResultVariant, CairoCustomEnum } from "starknet";
 import fs from "fs";
 import { account1OZSepoliaAddress, account1OZSepoliaPrivateKey, account2TestBraavosSepoliaAddress, account2TestBraavosSepoliaPrivateKey } from "../../../A1priv/A1priv";
 import { account1IntegrationOZ8address, account1IntegrationOZ8privateKey } from "../../../A2priv/A2priv";
@@ -66,86 +66,86 @@ async function main() {
     const iter2 = ["0", "100", "0", "200"][Symbol.iterator]();
 
     // tuple from object
-    const tup0 = new CairoTuple(cairo.tuple(100, 200), "(core::integer::u8, core::integer::u16)", hdParsingStrategy);
+    const tup0 = new CairoTuple(cairo.tuple(100, 200), "(core::integer::u8, core::integer::u16)", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup0 =", LogC.reset, tup0);
     console.log(tup0.toApiRequest());
-    console.log(tup0.decompose(hdParsingStrategy));
+    console.log(tup0.decompose(cairoTypeStrategy));
 
     // tuple from CairoTuple
-    const tup10 = new CairoTuple(tup0, "(core::integer::u8, core::integer::u16)", hdParsingStrategy);
+    const tup10 = new CairoTuple(tup0, "(core::integer::u8, core::integer::u16)", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup10 =", LogC.reset, tup10);
     console.log(tup10.toApiRequest());
-    console.log(tup10.decompose(hdParsingStrategy));
+    console.log(tup10.decompose(cairoTypeStrategy));
 
     // tuple from array
-    const tup2 = new CairoTuple([100, 200], "(core::integer::u8, core::integer::u16)", hdParsingStrategy);
+    const tup2 = new CairoTuple([100, 200], "(core::integer::u8, core::integer::u16)", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup2 =", LogC.reset, tup2);
     console.log(tup2.toApiRequest());
-    console.log(tup2.decompose(hdParsingStrategy));
+    console.log(tup2.decompose(cairoTypeStrategy));
 
     // tuple including a tuple
-    const tup1 = new CairoTuple(cairo.tuple(100, cairo.tuple(200, 300)), "(core::integer::u8, (core::integer::u8, core::integer::u16))", hdParsingStrategy);
+    const tup1 = new CairoTuple(cairo.tuple(100, cairo.tuple(200, 300)), "(core::integer::u8, (core::integer::u8, core::integer::u16))", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup1 =", LogC.reset, tup1);
     console.log(tup1.toApiRequest());
-    console.log(tup1.decompose(hdParsingStrategy));
+    console.log(tup1.decompose(cairoTypeStrategy));
 
     console.log("extract types tuple:");
     console.log("Cairo 0", CairoTuple.getTupleElementTypes("(a:felt, b:felt)"));
     console.log("Cairo 1", CairoTuple.getTupleElementTypes("(core::integer::u8, core::integer::u16)"));
 
     // tuple including an array
-    const tup3 = new CairoTuple(cairo.tuple(100, [10, 20]), "(core::integer::u8, core::array::Array::<core::integer::u8>)", hdParsingStrategy);
+    const tup3 = new CairoTuple(cairo.tuple(100, [10, 20]), "(core::integer::u8, core::array::Array::<core::integer::u8>)", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup3 =", LogC.reset, tup3);
     console.log(tup3.toApiRequest());
-    console.log(tup3.decompose(hdParsingStrategy));
+    console.log(tup3.decompose(cairoTypeStrategy));
 
     // tuple including a fixed array
-    const tup4 = new CairoTuple(cairo.tuple(100, [10, 20]), "(core::integer::u8, [core::integer::u32; 2])", hdParsingStrategy);
+    const tup4 = new CairoTuple(cairo.tuple(100, [10, 20]), "(core::integer::u8, [core::integer::u32; 2])", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup4 =", LogC.reset, tup4);
     console.log(tup4.toApiRequest());
-    console.log(tup4.decompose(hdParsingStrategy));
+    console.log(tup4.decompose(cairoTypeStrategy));
 
     // tuple including an option
-    const tup5 = new CairoTuple(cairo.tuple(100, myOption0), "(core::integer::u8, core::option::Option::<core::integer::u8>)", hdParsingStrategy);
+    const tup5 = new CairoTuple(cairo.tuple(100, myOption0), "(core::integer::u8, core::option::Option::<core::integer::u8>)", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup5 =", LogC.reset, tup5);
     console.log(tup5.toApiRequest());
-    console.log(tup5.decompose(hdParsingStrategy));
+    console.log(tup5.decompose(cairoTypeStrategy));
 
     // tuple including an option, from an iterator
-    const tup6 = new CairoTuple(iter2, "(core::option::Option::<core::integer::u8>, core::option::Option::<core::integer::u16>)", hdParsingStrategy);
+    const tup6 = new CairoTuple(iter2, "(core::option::Option::<core::integer::u8>, core::option::Option::<core::integer::u16>)", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup6 =", LogC.reset, tup6);
     console.log(tup6.toApiRequest());
-    console.log(tup6.decompose(hdParsingStrategy));
+    console.log(tup6.decompose(cairoTypeStrategy));
 
     // Cairo 0 tuple
     console.log("getTupleElementTypes :");
     console.log(CairoTuple.getTupleElementTypes("(core::integer::u8, core::array::Array::<core::integer::u8>)"));
     console.log(CairoTuple.getTupleElementTypes("(x:felt, y:felt)"));
     console.log(CairoTuple.getTupleElementTypes("(felt, felt)"));
-    const tup7 = new CairoTuple(cairo.tuple(100, 200), "(x:felt, y:felt)", hdParsingStrategy);
+    const tup7 = new CairoTuple(cairo.tuple(100, 200), "(x:felt, y:felt)", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup7 =", LogC.reset, tup7);
     console.log(tup7.toApiRequest());
-    console.log(tup7.decompose(hdParsingStrategy));
-    const tup8 = new CairoTuple(cairo.tuple(100, 200), "(felt, felt)", hdParsingStrategy);
+    console.log(tup7.decompose(cairoTypeStrategy));
+    const tup8 = new CairoTuple(cairo.tuple(100, 200), "(felt, felt)", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup8 =", LogC.reset, tup8);
     console.log(tup8.toApiRequest());
-    console.log(tup8.decompose(hdParsingStrategy));
+    console.log(tup8.decompose(cairoTypeStrategy));
 
     // empty tuple
-    const tup9 = new CairoTuple(cairo.tuple(), "()", hdParsingStrategy);
+    const tup9 = new CairoTuple(cairo.tuple(), "()", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup9 =", LogC.reset, tup9);
     console.log("  encode =", tup9.toApiRequest());
-    console.log("  decode =", tup9.decompose(hdParsingStrategy));
+    console.log("  decode =", tup9.decompose(cairoTypeStrategy));
 
     // tuple including an option
-    const tup11 = new CairoTuple(cairo.tuple(100, myResult0), "(core::integer::u8, core::result::Result::<core::integer::u8, core::integer::u16>)", hdParsingStrategy);
+    const tup11 = new CairoTuple(cairo.tuple(100, myResult0), "(core::integer::u8, core::result::Result::<core::integer::u8, core::integer::u16>)", cairoTypeStrategy);
     console.log(LogC.bg.yellow, "tup11 =", LogC.reset, tup11);
     console.log("  encode =", tup11.toApiRequest());
-    console.log("  decode =", tup11.decompose(hdParsingStrategy));
+    console.log("  decode =", tup11.decompose(cairoTypeStrategy));
 
     // tuple including a struct
     const compiledSierra = json.parse(fs.readFileSync("./compiledContracts/cairo2120/enums_test_enums.contract_class.json").toString("ascii"));
-        const myTestCallData = new CallData(compiledSierra.abi, hdParsingStrategy);
+        const myTestCallData = new CallData(compiledSierra.abi, cairoTypeStrategy);
         const strategies = myTestCallData.parser.parsingStrategies;
         type Point = {
             x: BigNumberish,

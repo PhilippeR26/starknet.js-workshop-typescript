@@ -18,6 +18,8 @@ const config: Config = {
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,
   testTimeout: 100_000,
+  // ESM-only packages (noble 2.x, @scure/starknet, starknet's nested noble) are transformed by babel.
+  transformIgnorePatterns: ['/node_modules/(?!(@noble|@scure|starknet)/)'],
 
   // Indicates whether the coverage information should be collected while executing the test
   // collectCoverage: false,

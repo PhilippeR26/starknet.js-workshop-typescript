@@ -45,11 +45,17 @@ External references (read-only): falcon-rs `/home/edmond/Documents/starknet/falc
   (`lib/engine/engine.ts`). The S2morrow layer (Poseidon hash-to-point, NTT in the falcon.py convention,
   base-Q packing in 29 felts, `mul_hint`, NIST key codecs, falcon-rs import/export) is pure and has no
   `starknet` import. Only `Falcon512Signer.ts` and `verify.ts` import `starknet`.
-- **Public API** (`lib/index.ts`): `Falcon512Signer` (secret key mandatory, NIST 1281 bytes, `Uint8Array` or
-  hex; `fromFalconRs`; `getPubKey()` = NIST public key 897 bytes hex; `getStarknetPublicKey()` = 29 felts),
-  `verifyMessage` (same overloads as `typedData.verifyMessage`), `verify` (same shape as
-  `ec.starkCurve.verify`), `generateKeyPair`, `getPublicKey`, `getStarknetPublicKey`,
-  `importFalconRsSecretKey`, `exportFalconRsSecretKey`. `signHash` is internal (no blind signing).
+- **Public API** (`lib/index.ts`) exports only `Falcon512Signer`, the `falcon512` namespace and the type
+  `Falcon512KeyPair` — decided by the maintainer: no generic name (`verify`, `generateKeyPair`, …) exported
+  flat, free functions live in a namespace like `ec.starkCurve` / `typedData`; `test/publicApi.test.ts`
+  enforces it.
+  - `Falcon512Signer`: secret key mandatory (NIST 1281 bytes, `Uint8Array` or hex); `fromFalconRs`;
+    `getPubKey()` = NIST public key 897 bytes hex (imposed by `SignerInterface`); `getPackedPublicKey()` =
+    the same key as 29 felts (NTT, base-Q packed) = constructor argument `pk_packed` of the account.
+  - `falcon512.verifyMessage` (same overloads as `typedData.verifyMessage`), `falcon512.verify` (same shape
+    as `ec.starkCurve.verify`), `falcon512.generateKeyPair`, `falcon512.getPublicKey`,
+    `falcon512.getPackedPublicKey`, `falcon512.importFalconRsSecretKey`, `falcon512.exportFalconRsSecretKey`.
+  - `signHash` is internal (no blind signing).
 - **Security properties** (see `SECURITY.md`): light self-verification of every signature (mirror of
   `falcon.cairo`); salt and 48-byte sampler seed drawn separately (falcon-rs derives its sampler seed from the
   public salt: `falcon-rs/src/wasm.rs:270-274`, `falcon.rs:460-461`); strict validation (NTRU equation

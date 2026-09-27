@@ -19,7 +19,7 @@ async function main() {
 
   // *** the imported key must give the address of accountKeys.json
   const { sierra, classHash } = loadFalconAccountClass();
-  const packedPubKey = falconSigner.getStarknetPublicKey();
+  const packedPubKey = falconSigner.getPackedPublicKey();
   const constructorCalldata = new CallData(sierra.abi).compile('constructor', { pk_packed: toPkStruct(packedPubKey) });
   const expectedAddress = hash.calculateContractAddressFromHash(packedPubKey[0], classHash, constructorCalldata, 0);
   const sameAddress = num.toBigInt(expectedAddress) === num.toBigInt(accountData.address);

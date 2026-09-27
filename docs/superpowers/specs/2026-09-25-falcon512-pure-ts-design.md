@@ -163,7 +163,7 @@ Switching later to an upstream noble `internal` API only replaces this implement
 | `ntt.ts` | `ntt`, `intt`, polynomial multiplication and division mod q |
 | `hashToPoint.ts` | `hashToPoint(message: bigint[], salt: bigint[]): Uint16Array` — `poseidonHashMany(message ‖ salt)`, then 21 × 2 + 1 Hades permutations, 12 base-Q digits per felt (6 from the low u128, then 6 from the high u128) |
 | `packing.ts` | `packPoly(Uint16Array) → bigint[29]` (Horner base Q, 9 values per u128 half, `lo + hi·2¹²⁸`), `unpackPoly` with canonical-only validation |
-| `keys.ts` | NIST secret/public key codecs (own code, cross-checked with noble in tests), falcon-rs import/export, NTRU equation check, `getStarknetPublicKey` |
+| `keys.ts` | NIST secret/public key codecs (own code, cross-checked with noble in tests), falcon-rs import/export, NTRU equation check, `getPackedPublicKey` |
 | `signature.ts` | internal `signHash(msgHash, secretKey, pkNtt) → string[61]`, internal `verifyHash`, `parseSignature` |
 
 Signature layout (Serde of `PackedFalconSignatureWithHint`):
@@ -172,30 +172,36 @@ Signature layout (Serde of `PackedFalconSignatureWithHint`):
 ### Public API (`lib/index.ts`)
 
 ```ts
-// keys
-generateKeyPair(seed?: Uint8Array): { secretKey: Uint8Array; publicKey: Uint8Array } // NIST; seed exactly 48 bytes (noble), default CSPRNG
-getPublicKey(secretKey: Uint8Array | string): Uint8Array
-getStarknetPublicKey(publicKey: Uint8Array | string): string[]   // 29 felts = constructor `pk_packed`
-importFalconRsSecretKey(secretKey: Uint8Array | string): Uint8Array   // 3584 → NIST 1281
-exportFalconRsSecretKey(secretKey: Uint8Array | string): Uint8Array   // NIST 1281 → 3584
+// lib/index.ts exports only: Falcon512Signer, the `falcon512` namespace (lib/falcon512.ts), type Falcon512KeyPair
+
+// falcon512 namespace — keys
+falcon512.generateKeyPair(seed?: Uint8Array): { secretKey: Uint8Array; publicKey: Uint8Array } // NIST; seed exactly 48 bytes (noble), default CSPRNG
+falcon512.getPublicKey(secretKey: Uint8Array | string): Uint8Array
+falcon512.getPackedPublicKey(publicKey: Uint8Array | string): string[]   // 29 felts = constructor `pk_packed`
+falcon512.importFalconRsSecretKey(secretKey: Uint8Array | string): Uint8Array   // 3584 → NIST 1281
+falcon512.exportFalconRsSecretKey(secretKey: Uint8Array | string): Uint8Array   // NIST 1281 → 3584
 
 // signer
 class Falcon512Signer implements SignerInterface {
   constructor(secretKey: Uint8Array | string)          // NIST only, mandatory
   static fromFalconRs(secretKey: Uint8Array | string): Falcon512Signer
   getPubKey(): Promise<string>                         // hex of the NIST public key (897 bytes)
-  getStarknetPublicKey(): string[]                     // 29 felts
+  getPackedPublicKey(): string[]                     // 29 felts
   signMessage(typedData, accountAddress): Promise<Signature>
   signTransaction(transactions, details): Promise<Signature>            // V3 only
   signDeployAccountTransaction(details): Promise<Signature>             // V3 only
   signDeclareTransaction(details): Promise<Signature>                   // V3 only
 }
 
-// verifiers (same shapes as typedData.verifyMessage and ec.starkCurve.verify)
-verifyMessage(message: TypedData, signature: Signature, fullPublicKey: Uint8Array | string, accountAddress: BigNumberish): boolean
-verifyMessage(msgHash: BigNumberish, signature: Signature, fullPublicKey: Uint8Array | string): boolean
-verify(signature: Signature, msgHash: BigNumberish, fullPublicKey: Uint8Array | string): boolean
+// falcon512 namespace — verifiers (same shapes as typedData.verifyMessage and ec.starkCurve.verify)
+falcon512.verifyMessage(message: TypedData, signature: Signature, fullPublicKey: Uint8Array | string, accountAddress: BigNumberish): boolean
+falcon512.verifyMessage(msgHash: BigNumberish, signature: Signature, fullPublicKey: Uint8Array | string): boolean
+falcon512.verify(signature: Signature, msgHash: BigNumberish, fullPublicKey: Uint8Array | string): boolean
 ```
+
+- Naming (maintainer decision): no generic name is exported flat; free functions live in the `falcon512`
+  namespace, like `ec.starkCurve` or `typedData` in starknet.js. The packed on-chain form of the public key is
+  `getPackedPublicKey` (not a "Starknet public key"). Enforced by `test/publicApi.test.ts`.
 
 - `fullPublicKey` = NIST public key, as returned by `getPubKey()`.
 - Verifiers: malformed or invalid signature → `false`; invalid public key → throws. The message hash

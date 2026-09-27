@@ -8,12 +8,14 @@ starknet.js fork (future `starknet/falcon` subpath).
 
 ```ts
 import { Account } from 'starknet';
-import { Falcon512Signer, generateKeyPair, verifyMessage } from './lib';
+import { Falcon512Signer, falcon512 } from './lib';
 
-const { secretKey, publicKey } = generateKeyPair(); // NIST formats: 1281 / 897 bytes
+const { secretKey, publicKey } = falcon512.generateKeyPair(); // NIST formats: 1281 / 897 bytes
 const falconSigner = new Falcon512Signer(secretKey);
-const pkPacked = falconSigner.getStarknetPublicKey(); // 29 felts = constructor `pk_packed`
+const pkPacked = falconSigner.getPackedPublicKey(); // 29 felts = constructor `pk_packed`
 const falconAccount = new Account({ provider: myProvider, address, signer: falconSigner });
+// off-chain verification of a SNIP-12 message (same shape as typedData.verifyMessage)
+const isValid = falcon512.verifyMessage(myTypedData, signature, publicKey, address);
 ```
 
 > [!TIP]

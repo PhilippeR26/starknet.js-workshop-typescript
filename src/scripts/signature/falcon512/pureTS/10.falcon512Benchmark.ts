@@ -5,7 +5,7 @@
 import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
 import { parseFalcon512PublicKey } from '../11.falcon512utils';
 import * as falcon from '../pkg/falcon_rs.js';
-import { generateKeyPair, verify } from './lib';
+import { falcon512 } from './lib';
 import { publicKeyToNtt } from './lib/s2morrow/keys';
 import { signHash } from './lib/s2morrow/signature';
 
@@ -20,10 +20,10 @@ function bench<T>(label: string, runs: number, fn: () => T): T {
 function main(): void {
   const msgHash = '0x' + bytesToHex(randomBytes(31));
 
-  const keyPair = bench('TS keygen', 5, () => generateKeyPair());
+  const keyPair = bench('TS keygen', 5, () => falcon512.generateKeyPair());
   const pkNtt = publicKeyToNtt(keyPair.publicKey);
   const signature = bench('TS sign', 20, () => signHash(BigInt(msgHash), keyPair.secretKey, pkNtt));
-  bench('TS verify', 20, () => verify(signature, msgHash, keyPair.publicKey));
+  bench('TS verify', 20, () => falcon512.verify(signature, msgHash, keyPair.publicKey));
 
   const rsKeyPair = bench('WASM keygen', 2, () => falcon.keygen(randomBytes(48)) as { sk: Uint8Array; vk: Uint8Array });
   const rsPkNtt = new Int32Array(falcon.ntt_public_key(parseFalcon512PublicKey(rsKeyPair.vk)));

@@ -5,7 +5,7 @@
 import { bytesToHex } from '@noble/hashes/utils.js';
 import { Account, CallData, Contract, hash, validateAndParseAddress } from 'starknet';
 import { connectDevnet, loadErc20Abi, loadFalconAccountClass, saveAccount, STRK_ADDRESS, toPkStruct } from './demoCommon';
-import { Falcon512Signer, generateKeyPair } from './lib';
+import { Falcon512Signer, falcon512 } from './lib';
 
 async function main() {
   // 🚨 launch script 1 before this script.
@@ -20,10 +20,10 @@ async function main() {
 
   // *** keys, fully in TypeScript
   console.time('keygen');
-  const { secretKey, publicKey } = generateKeyPair();
+  const { secretKey, publicKey } = falcon512.generateKeyPair();
   console.timeEnd('keygen');
   const falconSigner = new Falcon512Signer(secretKey);
-  const packedPubKey = falconSigner.getStarknetPublicKey(); // 29 felt252
+  const packedPubKey = falconSigner.getPackedPublicKey(); // 29 felt252
 
   // *** future address of the account
   const constructorCalldata = new CallData(sierra.abi).compile('constructor', { pk_packed: toPkStruct(packedPubKey) });

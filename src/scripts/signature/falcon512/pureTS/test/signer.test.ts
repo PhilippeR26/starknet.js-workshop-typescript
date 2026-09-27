@@ -15,7 +15,7 @@ import {
   type InvocationsSignerDetails,
 } from 'starknet';
 import { Falcon512Signer } from '../lib/Falcon512Signer';
-import { generateKeyPair, getStarknetPublicKey } from '../lib/s2morrow/keys';
+import { generateKeyPair, getPackedPublicKey } from '../lib/s2morrow/keys';
 import { verify, verifyMessage } from '../lib/verify';
 import { loadFalconRsFixture } from './helpers/falconRsFixture';
 import { giftTypedData } from './helpers/giftTypedData';
@@ -63,12 +63,12 @@ describe('Falcon512Signer construction', () => {
     expect(await new Falcon512Signer(hex).getPubKey()).toBe(expected);
   });
 
-  test('getStarknetPublicKey returns a copy of the 29 packed felts', () => {
-    const packed = signer.getStarknetPublicKey();
-    expect(packed).toEqual(getStarknetPublicKey(publicKey));
+  test('getPackedPublicKey returns a copy of the 29 packed felts', () => {
+    const packed = signer.getPackedPublicKey();
+    expect(packed).toEqual(getPackedPublicKey(publicKey));
     expect(packed).toHaveLength(29);
     packed[0] = '0x0';
-    expect(signer.getStarknetPublicKey()[0]).not.toBe('0x0');
+    expect(signer.getPackedPublicKey()[0]).not.toBe('0x0');
   });
 
   test('rejects a wrong length and an invalid key', () => {
@@ -80,7 +80,7 @@ describe('Falcon512Signer construction', () => {
 
   test('fromFalconRs gives the falcon-rs packed public key', () => {
     const fixture = loadFalconRsFixture();
-    expect(Falcon512Signer.fromFalconRs(fixture.secretKey).getStarknetPublicKey()).toEqual(fixture.packedPublicKey);
+    expect(Falcon512Signer.fromFalconRs(fixture.secretKey).getPackedPublicKey()).toEqual(fixture.packedPublicKey);
   });
 
   test('the secret key is exposed neither by JSON.stringify nor by util.inspect', () => {
@@ -109,7 +109,7 @@ describe('Falcon512Signer signatures verify against starknet.js hashes', () => {
       ...common,
       nonce: 0,
       classHash: '0x37c7626b50ba517835c9556b53bce57cb6633704bb702f8c2f13a44cf151d5',
-      constructorCalldata: getStarknetPublicKey(publicKey),
+      constructorCalldata: getPackedPublicKey(publicKey),
       addressSalt: '0x123',
       contractAddress: ADDRESS,
       version: ETransactionVersion3.V3,

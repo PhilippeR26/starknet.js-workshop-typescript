@@ -242,7 +242,7 @@ export function publicKeyToNtt(publicKey: Uint8Array | string): Uint16Array {
 }
 
 /** The 29 felts of the account constructor argument `pk_packed`. */
-export function getStarknetPublicKey(publicKey: Uint8Array | string): string[] {
+export function getPackedPublicKey(publicKey: Uint8Array | string): string[] {
   return packPoly(publicKeyToNtt(publicKey)).map(feltToHex);
 }
 

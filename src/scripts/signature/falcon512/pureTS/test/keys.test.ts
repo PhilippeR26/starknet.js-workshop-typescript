@@ -9,7 +9,7 @@ import {
   exportFalconRsSecretKey,
   generateKeyPair,
   getPublicKey,
-  getStarknetPublicKey,
+  getPackedPublicKey,
   importFalconRsSecretKey,
   publicKeyToNtt,
   toBytes,
@@ -139,7 +139,7 @@ describe('falcon-rs key format (reference data generated with the falcon-rs WASM
   test('the imported key gives the falcon-rs NTT public key and packed public key', () => {
     const publicKey = getPublicKey(importFalconRsSecretKey(fixture.secretKey));
     expect(Array.from(publicKeyToNtt(publicKey))).toEqual(fixture.pkNtt);
-    expect(getStarknetPublicKey(publicKey)).toEqual(fixture.packedPublicKey);
+    expect(getPackedPublicKey(publicKey)).toEqual(fixture.packedPublicKey);
   });
 
   test('rejects a tampered G, a coefficient >= q and a wrong length', () => {

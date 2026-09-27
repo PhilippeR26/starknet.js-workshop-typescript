@@ -4,7 +4,7 @@
 
 import { Account, constants, TypedDataRevision, type TypedData } from 'starknet';
 import { connectDevnet, loadAccount } from './demoCommon';
-import { Falcon512Signer, verify, verifyMessage } from './lib';
+import { Falcon512Signer, falcon512 } from './lib';
 
 async function main() {
   // 🚨 launch script 2 before this script.
@@ -38,12 +38,12 @@ async function main() {
   console.log('signature length =', (signature as string[]).length);
 
   const results = {
-    offChainTypedData: verifyMessage(myTypedData, signature, fullPublicKey, falconAccount.address),
-    offChainHash: verifyMessage(msgHash, signature, fullPublicKey),
-    offChainLowLevel: verify(signature, msgHash, fullPublicKey),
+    offChainTypedData: falcon512.verifyMessage(myTypedData, signature, fullPublicKey, falconAccount.address),
+    offChainHash: falcon512.verifyMessage(msgHash, signature, fullPublicKey),
+    offChainLowLevel: falcon512.verify(signature, msgHash, fullPublicKey),
     onChainTypedData: await myProvider.verifyMessageInStarknet(myTypedData, signature, falconAccount.address),
     onChainHash: await myProvider.verifyMessageInStarknet(msgHash, signature, falconAccount.address),
-    wrongHashRejected: !verify(signature, '0x1234', fullPublicKey),
+    wrongHashRejected: !falcon512.verify(signature, '0x1234', fullPublicKey),
   };
   console.log(results);
   if (!Object.values(results).every(Boolean)) throw new Error('A verification gave an unexpected result');

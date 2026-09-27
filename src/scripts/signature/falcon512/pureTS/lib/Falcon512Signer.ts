@@ -16,7 +16,7 @@ import {
 } from 'starknet';
 import {
   getPublicKey,
-  getStarknetPublicKey,
+  getPackedPublicKey,
   importFalconRsSecretKey,
   publicKeyToNtt,
   SECRET_KEY_LENGTH,
@@ -38,7 +38,7 @@ export class Falcon512Signer implements SignerInterface {
 
   readonly #pkNtt: Uint16Array;
 
-  readonly #starknetPublicKey: string[];
+  readonly #packedPublicKey: string[];
 
   /** @param secretKey NIST Falcon-512 secret key (1281 bytes), Uint8Array or hex string. */
   constructor(secretKey: Uint8Array | string) {
@@ -46,7 +46,7 @@ export class Falcon512Signer implements SignerInterface {
     this.#publicKey = getPublicKey(bytes); // fully validates the key
     this.#secretKey = bytes;
     this.#pkNtt = publicKeyToNtt(this.#publicKey);
-    this.#starknetPublicKey = getStarknetPublicKey(this.#publicKey);
+    this.#packedPublicKey = getPackedPublicKey(this.#publicKey);
   }
 
   /** Builds a signer from a falcon-rs secret key (3584 bytes). */
@@ -65,8 +65,8 @@ export class Falcon512Signer implements SignerInterface {
   }
 
   /** The 29 felts of the account constructor argument `pk_packed`. */
-  public getStarknetPublicKey(): string[] {
-    return [...this.#starknetPublicKey];
+  public getPackedPublicKey(): string[] {
+    return [...this.#packedPublicKey];
   }
 
   public async signMessage(typedData: TypedData, accountAddress: string): Promise<Signature> {

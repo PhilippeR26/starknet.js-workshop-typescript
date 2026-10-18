@@ -80,6 +80,12 @@ Decision already taken by the maintainer: **option C** — the code lives in the
 dedicated subpath (e.g. `starknet/falcon`), **excluded from `index.global.js`**, so users who do not use Falcon
 pay nothing.
 
+> **Update 2026-10-08 — the entry-point mechanism already exists.** `starknet/ledger` (PR #1723) added the first
+> entry point, and PR #1724 a CI job that checks every entry point of `exports`. Follow the section "Adding an
+> entry point (`starknet/<name>`)" of the repo `CLAUDE.md`: it overrides the build details below. The output is
+> `dist/falcon/index.{js,mjs,d.ts}`, not `dist/falcon.*`. `starknet` stays external and is imported with
+> `import * as starknet from 'starknet'`, not with relative imports. The API docs need their own TypeDoc instance.
+
 ### A.1 Explore first (read-only) and report
 
 - Build tool and config (how `dist/index.*` and `index.global.js` are produced), `package.json` `exports`,

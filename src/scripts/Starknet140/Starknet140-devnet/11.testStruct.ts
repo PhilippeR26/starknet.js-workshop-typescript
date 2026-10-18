@@ -102,7 +102,9 @@ async function main() {
     console.log(LogC.bg.yellow, "struct10a =", LogC.reset, struct10a);
     console.log("  encode =", struct10a.toApiRequest());
     console.log("  decode =", struct10a.decompose(strategies));
-
+    const res0=myTestCallData.compile("write_struct_point",{x:{ y: 2, x: 1 }});
+    console.log({res0});
+process.exit(5);
     // CairoStruct from iterator
     const struct11 = new CairoStruct(iter2, abiPoint as AbiStruct, strategies);
     console.log(LogC.bg.yellow, "struct11 =", LogC.reset, struct11);

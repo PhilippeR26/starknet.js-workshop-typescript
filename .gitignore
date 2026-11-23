@@ -37,3 +37,5 @@ src/scripts/devnet-out.txt
 # Claude
 CLAUDE.md
 /.claude
+# Falcon-512 secret keys of the OZ test accounts (networks other than devnet)
+src/scripts/signature/falcon512/OZfalcon512/*Keys.json

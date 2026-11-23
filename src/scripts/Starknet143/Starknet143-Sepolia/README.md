@@ -1,5 +1,5 @@
 ## Want to test STRK20 tokens from a backend (so, without any wallet)? 
-Why not — but to access the official pools on Mainnet/Testnet, you must reach a StarkWare service that provides both the proofs and the SCREENING signatures (anti-money-laundering, AML). The catch: to this day, only Ready and Xverse have whitelisted IPs, so they're the only ones able to shield (deposit) tokens.
+Why not — but to shield (deposit) tokens in the official pools on Mainnet/Testnet, you need a SCREENING signature (anti-money-laundering, AML), given by a screening service that serves only credentialed partners. The catch: to this day, only Ready and Xverse have this access, and they make the proofs on their own servers (source: L2BEAT), so they're the only ones able to shield tokens.
 
 So, to run tests without a wallet, we'll use the unofficial Testnet pool (which lets you generate the screening signature yourself): address : `0xc7784a608eec3a1b933fe7f2630440188d61b3bbe28b597c76a06fd3686353`, Screening private key: `0xcafebabe`. You'll also need a local prover; I use this server https://github.com/PhilippeR26/secure-voty/tree/main/proofServer (heads-up: it's heavy, especially the amount of RAM it needs), which is a wrapper around the snip36 tool (https://github.com/starknet-innovation/snip-36-prover-backend).
 
@@ -127,8 +127,9 @@ This is the heart of the design (confirmed in `privacy.cairo` / `utils.cairo`):
 | **Viewing key `k`** (secret, not a signature) | Generated & held by the **Wallet** | Passed as calldata to the *virtual* `compile_actions` (off-chain) to derive nullifiers/notes; an ECDH-encrypted copy is escrowed on-chain at registration for the auditor | Never revealed on-chain in clear; only the auditor can decrypt the escrow. |
 
 **Notes**
-- The prover and the screener run **in parallel**; the official StarkWare service bundles both in a
-  single JSON-RPC response (proof + screening signature) — there is no signature-only endpoint.
+- The prover and the screener run **in parallel**; a prover deployed with the screening sidecar
+  (`proof-interceptor`) returns both in a single JSON-RPC response (proof + screening signature) —
+  there is no signature-only endpoint.
 - On the unofficial Testnet pool (see top of this README) **you** hold the screener key
   (`0xcafebabe`), so you sign the `ScreeningAttestation` yourself and can shield without a wallet.
 - **Two keys, both consumed *virtually* (neither is checked by the on-chain tx).** The **viewing
